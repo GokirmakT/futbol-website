@@ -5,7 +5,7 @@ import {
 } from "@mui/material";
 import { useData } from "../context/DataContext";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { teamLogos } from "../Components/TeamLogos";
+import { teamLogos } from "../Components/TeamLogos.js";
 import playedMatches from "/white-soccer-field.png";
 import football from "/football.png";
 import corner from "/corner.png";

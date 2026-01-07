@@ -13,7 +13,7 @@ import {
 import { useData } from "../context/DataContext";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import playedMatches from "/white-soccer-field.png";
-import { teamLogos } from "../Components/TeamLogos";
+import { teamLogos } from "../Components/TeamLogos.js";
 
 function Statistics() {
   const { matches, leagues } = useData();
