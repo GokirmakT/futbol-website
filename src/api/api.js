@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api",
+  baseURL: import.meta.env.VITE_API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
@@ -10,7 +10,9 @@ const api = axios.create({
 // MATCHES
 export const getMatches = async () => {
   const res = await api.get("/matches");
-  return res.data;
+  const data = res.data;
+  // Eğer data bir dizi değilse, boş dizi döndür
+  return Array.isArray(data) ? data : [];
 };
 
 // STANDINGS
