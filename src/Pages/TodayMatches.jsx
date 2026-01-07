@@ -7,7 +7,7 @@ import {
   Divider
 } from "@mui/material";
 import { useData } from "../context/DataContext";
-import { teamLogos } from "../Components/TeamLogos.js";
+import { teamLogos } from "../Components/teamLogos.js";
 
 function TodayMatches() {
   const { matches, isLoading, error } = useData();

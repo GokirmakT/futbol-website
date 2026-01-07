@@ -1,6 +1,6 @@
 import { Stack, Box, Typography, Divider, TextField, Select, MenuItem, FormControlLabel, Checkbox } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { teamLogos } from "../Components/TeamLogos.js";
+import { teamLogos } from "../Components/teamLogos.js";
 import corner from "/corner.png";
 import redCard from "/cards.png";
 import shoot from "/kicking-ball.png";

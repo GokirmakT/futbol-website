@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import { useData } from "../context/DataContext";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { teamLogos } from "../Components/TeamLogos.js";
+import { teamLogos } from "../Components/teamLogos.js";
 
 function Standings() {
   const { leagueId } = useParams();
