@@ -32,17 +32,17 @@ export default function Header() {
   const headerButtons = useMediaQuery("(max-width: 650px)");
 
   const leagues = [
-    { id: "superlig", name: "Süper Lig", icon: "/leagues/superlig.png" },
-    { id: "premier-league", name: "Premier League", icon: "/leagues/premier-league.png" },
-    { id: "efl-championship" , name: "EFL Championship", icon: "/leagues/premier-league.png" },
-    { id: "laliga", name: "LaLiga", icon: "/leagues/laliga.png" },
-    { id: "seriea", name: "Serie A", icon: "/leagues/seriea.png" },
-    { id: "bundesliga", name: "Bundesliga", icon: "/leagues/bundesliga.png" },
-    { id: "ligue1", name: "Ligue 1", icon: "/leagues/ligue1.png" },
-    { id: "eredivisie", name: "Eredivisie", icon: "/leagues/eredivise.png" },
-    { id: "champions-league", name: "UEFA Champions League", icon: "/leagues/champions-league.png" },
-    { id: "europa-league", name: "UEFA Europa League", icon: "/leagues/europa-league.png" },
-    { id: "europa-conference-league", name: "UEFA Europa Conference League", icon: "/leagues/europa-conference-league.png" },
+    { id: "superlig", name: "Süper Lig", icon: "/leagues/Super Lig.png" },
+    { id: "premier-league", name: "Premier League", icon: "/leagues/Premier League.png" },
+    { id: "efl-championship" , name: "EFL Championship", icon: "/leagues/EFL Championship.png" },
+    { id: "laliga", name: "LaLiga", icon: "/leagues/LaLiga.png" },
+    { id: "seriea", name: "Serie A", icon: "/leagues/Serie A.png" },
+    { id: "bundesliga", name: "Bundesliga", icon: "/leagues/Bundesliga.png" },
+    { id: "ligue1", name: "Ligue 1", icon: "/leagues/Ligue 1.png" },
+    { id: "eredivisie", name: "Eredivisie", icon: "/leagues/Eredivisie.png" },
+    { id: "champions-league", name: "UEFA Champions League", icon: "/leagues/UEFA Champions League.png" },
+    { id: "europa-league", name: "UEFA Europa League", icon: "/leagues/UEFA Europa League.png" },
+    { id: "europa-conference-league", name: "UEFA Europa Conference League", icon: "/leagues/UEFA Europa Conference League.png" },
     { id: "primeira-liga", name: "Primeira Liga", icon: "/leagues/primeira-liga.webp" },
     { id: "pro-league", name: "Pro League", icon: "/leagues/pro-league.webp" },
     { id: "saudi-pro-league", name: "Saudi Pro League", icon: "/leagues/saudi-pro-league.png" }
@@ -177,7 +177,7 @@ export default function Header() {
                   setLeagueAnchor(null);
                 }}
               >
-                <MenuItem onClick={() => {navigate("/TodayMatches"); setMenuAnchor(null);}}>
+                <MenuItem onClick={() => {navigate("/TodayMatches"); setMenuAnchor(null);}} sx={{gap: 0.5}}>
                   <img
                     src = "/stream.png"
                     alt="menu"
@@ -190,7 +190,7 @@ export default function Header() {
                 </MenuItem>
 
                 <MenuItem
-                  onMouseEnter={(e) => setLeagueAnchor(e.currentTarget)}
+                  onMouseEnter={(e) => setLeagueAnchor(e.currentTarget)} sx={{gap: 0.5}}
                 >
                   <img
                     src = "/champions.png"
@@ -202,17 +202,17 @@ export default function Header() {
                   />
                   Ligler
                 </MenuItem>
-                <MenuItem onClick={() => {navigate("/Cards"); setMenuAnchor(null);}}>
+                <MenuItem onClick={() => {navigate("/Cards"); setMenuAnchor(null);}} sx={{gap: 0.5}}>
                 <img
                     src = "/yellow-card.png"
                     alt="menu"
                     style={{
                       width: 24,
-                      height: 24,                     
+                      height: 24,                    
                     }}
                   />
                   Kart</MenuItem>
-                <MenuItem onClick={() => {navigate("/Corners"); setMenuAnchor(null);}}>
+                <MenuItem onClick={() => {navigate("/Corners"); setMenuAnchor(null);}} sx={{gap: 0.5}}>
                 <img
                     src = "/corner.png"
                     alt="menu"
@@ -222,7 +222,7 @@ export default function Header() {
                     }}
                   />
                   Korner</MenuItem>
-                <MenuItem onClick={() => {navigate("/Goals"); setMenuAnchor(null);}}>
+                <MenuItem onClick={() => {navigate("/Goals"); setMenuAnchor(null);}} sx={{gap: 0.5}}>
                 <img
                     src = "/football.png"
                     alt="menu"
@@ -232,7 +232,7 @@ export default function Header() {
                     }}
                   />
                   Gol</MenuItem>
-                <MenuItem onClick={() => {navigate("/Statistics"); setMenuAnchor(null);}}>
+                <MenuItem onClick={() => {navigate("/Statistics"); setMenuAnchor(null);}} sx={{gap: 0.5}}>
                 <img
                     src = "/football.png"
                     alt="menu"
