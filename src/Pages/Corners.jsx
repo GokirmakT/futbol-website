@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import {
   Stack, Typography, Box, Autocomplete, TextField, Button,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper
@@ -17,6 +17,7 @@ import OverHomeCornersTable2 from "../Components/Tables/CornerTables/OverHomeCor
 function Corner() {
   const { cornerStats, isLoading, selectedLeague, setSelectedLeague, error, leagues } = useData();
   const isMobile = useMediaQuery("(max-width: 900px)");
+  const inputRef = useRef(null);
 
   const getBgColor = (percent) => {
     if (percent <= 20) return "#ff4d4d";      // kırmızı
@@ -25,6 +26,14 @@ function Corner() {
     if (percent <= 80) return "#b3ff66";      // açık yeşil
     return "#66ff66";                         // yeşil
     };  
+
+  const leagueOptions = leagues.map(l => ({
+    label: l,
+    icon: `/leagues/${l}.png` // örn: public/leagues/Super Lig.png
+  }));
+
+  const toggleBodyScroll = (lock) => {
+  document.body.style.overflow = lock ? "hidden" : "auto";};
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error loading matches</div>;
@@ -40,13 +49,59 @@ function Corner() {
           </Typography>
 
           <Autocomplete
-            options={leagues}
-            value={selectedLeague}
-            onChange={(event, val) => setSelectedLeague(val)}
-            renderInput={(params) => <TextField {...params} label="Lig Seç" />}
+            options={leagueOptions}
+            value={leagueOptions.find(l => l.label === selectedLeague) || null}
+            onOpen={() => toggleBodyScroll(true)}
+            onClose={() => toggleBodyScroll(false)}
+            onChange={(event, val) => {
+              setSelectedLeague(val?.label || null);
+
+              // 📱 mobilde klavyeyi kapat
+              setTimeout(() => {
+                inputRef.current?.blur();
+              }, 0);
+            }}
+            blurOnSelect
+            getOptionLabel={(option) => option.label}
+            isOptionEqualToValue={(opt, val) => opt.label === val.label}
+
+            renderOption={(props, option) => (
+              <Box
+                component="li"
+                {...props}
+                sx={{ display: "flex", alignItems: "center", gap: 1 }}
+              >
+                <img src={option.icon} width={20} height={20} />
+                {option.label}
+              </Box>
+            )}
+
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Lig Seç"
+                inputRef={inputRef}
+                InputProps={{
+                  ...params.InputProps,
+                  startAdornment: selectedLeague && (
+                    <img
+                      src={`/leagues/${selectedLeague}.png`}
+                      width={20}
+                      height={20}
+                      style={{ marginRight: 8 }}
+                    />
+                  )
+                }}
+              />
+            )}
+
             sx={{
-              "& .MuiOutlinedInput-root": { backgroundColor: "#fff" },
-              mt: 4, pl: 1.5, pr: 1.5
+              mt: 4,
+              pl: 1.5,
+              pr: 1.5,
+              "& .MuiOutlinedInput-root": {
+                backgroundColor: "#fff"
+              }
             }}
           />
         </Box>
