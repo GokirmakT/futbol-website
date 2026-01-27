@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import { useData } from "../context/DataContext";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { teamLogos } from "../Components/teamLogos.js";
+import { getTeamLogo } from "../Components/teamLogos.js";
 
 function Standings() {
   const { leagueId } = useParams();
@@ -288,7 +288,7 @@ function Standings() {
                         <Stack direction="row" alignItems="center" spacing={1}>
                           <img
                             src={
-                              teamLogos[team.team] ||
+                              getTeamLogo(team.team) ||
                               "/logos/default.png"
                             }
                             alt={team.team}

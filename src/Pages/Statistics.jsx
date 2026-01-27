@@ -13,7 +13,7 @@ import {
 import { useData } from "../context/DataContext";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import playedMatches from "/white-soccer-field.png";
-import { teamLogos } from "../Components/teamLogos.js";
+import { getTeamLogo } from "../Components/teamLogos.js";
 
 function Statistics() {
   const { matches, leagues } = useData();
@@ -197,7 +197,7 @@ function getFirstHalfWinner(match) {
                         spacing={1}   // icon ile yazı arasındaki boşluk
                       >
                         <img
-                          src={teamLogos[row.team]}
+                          src={getTeamLogo(row.team)}
                           alt={row.team}
                           style={{ width: 22, height: 22 }}
                         />

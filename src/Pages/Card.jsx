@@ -2,7 +2,7 @@ import { useState, useMemo, useRef } from 'react';
 import { Stack, Typography, Box, Autocomplete, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 import { useData } from "../context/DataContext";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { teamLogos } from "../Components/teamLogos.js";
+import { getTeamLogo } from "../Components/teamLogos.js";
 import playedMatches from "/white-soccer-field.png";
 import football from "/football.png";
 import card from "/yellow-card.png";
@@ -107,7 +107,7 @@ function Card() {
         </Stack> 
 
         {/* Tablo */}
-        <OverYellowCardsTable cardStats={cardStats} selectedLeague={selectedLeague} isMobile={isMobile} teamLogos={teamLogos} card={card} playedMatches={playedMatches} getBgColor={getBgColor}/>        
+        <OverYellowCardsTable cardStats={cardStats} selectedLeague={selectedLeague} isMobile={isMobile} getTeamLogo={getTeamLogo} card={card} playedMatches={playedMatches} getBgColor={getBgColor}/>        
         {/* Tablo Altı İkon + Yazı */}
         {selectedLeague && (
           <Stack
@@ -138,7 +138,7 @@ function Card() {
           </Typography>
         </Stack>      
 
-        <OverRedCardsTable cardStats={cardStats} selectedLeague={selectedLeague} isMobile={isMobile} teamLogos={teamLogos} card={card} playedMatches={playedMatches} getBgColor={getBgColor}/>        
+        <OverRedCardsTable cardStats={cardStats} selectedLeague={selectedLeague} isMobile={isMobile} getTeamLogo={getTeamLogo} card={card} playedMatches={playedMatches} getBgColor={getBgColor}/>        
         
         {selectedLeague && (
           <Stack
@@ -169,7 +169,7 @@ function Card() {
           </Typography>
         </Stack>      
 
-        <OverPenaltyScoreTable cardStats={cardStats} selectedLeague={selectedLeague} isMobile={isMobile} teamLogos={teamLogos} card={card} playedMatches={playedMatches} getBgColor={getBgColor}/>        
+        <OverPenaltyScoreTable cardStats={cardStats} selectedLeague={selectedLeague} isMobile={isMobile} getTeamLogo={getTeamLogo} card={card} playedMatches={playedMatches} getBgColor={getBgColor}/>        
                   
 
       </Stack>

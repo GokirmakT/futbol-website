@@ -7,7 +7,7 @@ import {
   Divider
 } from "@mui/material";
 import { useData } from "../context/DataContext";
-import { teamLogos } from "../Components/teamLogos.js";
+import { getTeamLogo } from "../Components/teamLogos.js";
 
 function TodayMatches() {
   const { matches, isLoading, error } = useData();
@@ -101,7 +101,7 @@ function TodayMatches() {
 
                     {/* ⚽ MAÇ */}
                     <Stack sx={{ flex: 1 }} direction="row" justifyContent="center" alignItems="center" spacing={1}>
-                      <img src={teamLogos[match.homeTeam]} alt={match.homeTeam} style={{ height: 24 }} />
+                      <img src={getTeamLogo(match.homeTeam)} alt={match.homeTeam} style={{ height: 24 }} />
                       <Box component="span" sx={{ textAlign: "center" }}>
                         {match.homeTeam}
                         {isPlayed
@@ -109,7 +109,7 @@ function TodayMatches() {
                           : " vs "}
                         {match.awayTeam}
                       </Box>
-                      <img src={teamLogos[match.awayTeam]} alt={match.awayTeam} style={{ height: 24 }} />
+                      <img src={getTeamLogo(match.awayTeam)} alt={match.awayTeam} style={{ height: 24 }} />
                   </Stack>
                 </Stack>
 

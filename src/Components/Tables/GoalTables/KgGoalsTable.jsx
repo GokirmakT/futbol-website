@@ -7,7 +7,7 @@ import home from "/home.png";
 import plane from "/plane.png";
 import { useNavigate } from "react-router-dom";
 
-const KgGoals = ({ goalStats, selectedLeague, isMobile, teamLogos, football, playedMatches, getBgColor }) => {  
+const KgGoals = ({ goalStats, selectedLeague, isMobile, getTeamLogo, football, playedMatches, getBgColor }) => {  
 
     const navigate = useNavigate();
 
@@ -137,7 +137,7 @@ const KgGoals = ({ goalStats, selectedLeague, isMobile, teamLogos, football, pla
                     >
                       <Stack direction="row" alignItems="center" spacing={1}>
                         <img
-                          src={teamLogos[row.team]}
+                          src={getTeamLogo(row.team)}
                           alt={row.team}
                           style={{ width: 22, height: 22 }}
                         />

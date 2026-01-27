@@ -6,7 +6,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 
-const OverCorners = ({ cornerStats, selectedLeague, isMobile, teamLogos, corner, playedMatches, getBgColor }) => {  
+const OverCorners = ({ cornerStats, selectedLeague, isMobile, getTeamLogo, corner, playedMatches, getBgColor }) => {  
 
     const navigate = useNavigate();
 
@@ -115,7 +115,7 @@ const OverCorners = ({ cornerStats, selectedLeague, isMobile, teamLogos, corner,
                             >
                               <Stack direction="row" alignItems="center" spacing={1}>
                                 <img
-                                  src={teamLogos[row.team]}
+                                  src={getTeamLogo(row.team)}
                                   alt={row.team}
                                   style={{ width: 22, height: 22 }}
                                 />

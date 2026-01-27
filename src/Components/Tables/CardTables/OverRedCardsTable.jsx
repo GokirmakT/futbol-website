@@ -6,7 +6,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 
-const OverCards = ({ cardStats, selectedLeague, isMobile, teamLogos, card, playedMatches, getBgColor }) => {  
+const OverCards = ({ cardStats, selectedLeague, isMobile, getTeamLogo, card, playedMatches, getBgColor }) => {  
 
     const navigate = useNavigate();
 
@@ -113,7 +113,7 @@ const OverCards = ({ cardStats, selectedLeague, isMobile, teamLogos, card, playe
                     >
                       <Stack direction="row" alignItems="center" spacing={1}>
                         <img
-                          src={teamLogos[row.team]}
+                          src={getTeamLogo(row.team)}
                           alt={row.team}
                           style={{ width: 22, height: 22 }}
                         />

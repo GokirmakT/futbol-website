@@ -5,7 +5,7 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
-const OverGoals = ({ goalStats, selectedLeague, isMobile, teamLogos, football, playedMatches, getBgColor }) => {  
+const OverGoals = ({ goalStats, selectedLeague, isMobile, getTeamLogo, football, playedMatches, getBgColor }) => {  
 
   const navigate = useNavigate();
 
@@ -106,7 +106,7 @@ const OverGoals = ({ goalStats, selectedLeague, isMobile, teamLogos, football, p
                     >
                       <Stack direction="row" alignItems="center" spacing={1}>
                         <img
-                          src={teamLogos[row.team]}
+                          src={getTeamLogo(row.team)}
                           alt={row.team}
                           style={{ width: 22, height: 22 }}
                         />

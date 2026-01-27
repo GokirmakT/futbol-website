@@ -1,6 +1,6 @@
 import { Stack, Box, Typography, Divider, TextField, Select, MenuItem, FormControlLabel, Checkbox } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { teamLogos } from "../Components/teamLogos.js";
+import { getTeamLogo } from "../Components/teamLogos.js";
 import corner from "/corner.png";
 import redCard from "/cards.png";
 import shoot from "/kicking-ball.png";
@@ -9,13 +9,19 @@ import { useNavigate } from "react-router-dom";
 import { useData } from "../context/DataContext";
 import { useState } from "react";
 
-const TeamFixture = ({ matches, team }) => {
+const TeamFixture = ({ matches, team, league }) => {
   const navigate = useNavigate();
   const isTablet = useMediaQuery("(max-width: 800px)");
   const isMobile = useMediaQuery("(max-width: 500px)");
-  const { selectedLeague } = useData();
+
+  const teamLeagues = [...new Set(
+  matches
+    .filter(m => m.homeTeam === team || m.awayTeam === team)
+    .map(m => m.league)
+)];
 
   const [filters, setFilters] = useState({
+    league: league || "",
     shots: null,          // 10 | 15 | 20
     shotsOnTarget: null,  // 5 | 8
     corners: null,        // 7 | 9 | 11
@@ -26,6 +32,15 @@ const TeamFixture = ({ matches, team }) => {
     goals: null           // "over25" | "over35"
   });
   
+  const filteredMatches = matches.filter(m => {
+  // takım filtresi (çok önemli)
+  if (m.homeTeam !== team && m.awayTeam !== team) return false;
+
+  // lig filtresi
+  if (filters.league && m.league !== filters.league) return false;
+
+  return true;
+});
 
   const checkMatchFilters = (m, f) => {
     if (f.corners && (m.cornerHome + m.cornerAway) < f.corners) return false;
@@ -39,8 +54,7 @@ const TeamFixture = ({ matches, team }) => {
   
     return true;
   };
-  
-  
+    
   const getBgColor = (team, homeTeam, homeGoal, awayGoal) => {
     const isHome = team === homeTeam;
   
@@ -73,6 +87,23 @@ const TeamFixture = ({ matches, team }) => {
           <MenuItem value={7}>7+</MenuItem>
           <MenuItem value={9}>9+</MenuItem>
           <MenuItem value={11}>11+</MenuItem>
+        </Select>
+
+        <Select
+          size="small"
+          value={filters.league}
+          displayEmpty
+          onChange={e =>
+            setFilters(f => ({ ...f, league: e.target.value }))
+          }
+        >
+          <MenuItem value="">Tüm Ligler</MenuItem>
+
+          {teamLeagues.map(lg => (
+            <MenuItem key={lg} value={lg}>
+              {lg}
+            </MenuItem>
+          ))}
         </Select>
 
         <Select
@@ -112,14 +143,15 @@ const TeamFixture = ({ matches, team }) => {
         </Stack>
 
     <Stack spacing={2} width="100%" alignItems="center">
-      {matches.map((m, i) => {
+      {filteredMatches.map((m, i) => {
         const isPlayed = m.winner !== "TBD";  
         
         const passes = isPlayed && checkMatchFilters(m, filters);
 
-        const isFilterEmpty = Object.values(filters).every(
-          v => v === null || v === false
-        );
+        const isVisualFilterEmpty = Object.entries(filters)
+          .filter(([key]) => key !== "league") // 👈 league HARİÇ
+          .every(([, v]) => v === null || v === false);
+
 
         return (
           <Stack
@@ -128,7 +160,7 @@ const TeamFixture = ({ matches, team }) => {
               borderRadius: 2,
               backgroundColor: !isPlayed
                 ? "#e3f2fd"           // oynanmamış maç
-                : isFilterEmpty
+                : isVisualFilterEmpty
                 ? "#f5f5f5"           // 🟦 filtre YOKSA (normal renk)
                 : passes
                 ? "#a7faa7"           // 🟩 filtre VAR + koşul sağlandı
@@ -170,7 +202,7 @@ const TeamFixture = ({ matches, team }) => {
             >
               {/* HOME LOGO */}
               <img
-                src={teamLogos[m.homeTeam]}
+                src={getTeamLogo(m.homeTeam)}
                 alt={m.homeTeam}
                 width={28}
                 height={28}
@@ -191,7 +223,7 @@ const TeamFixture = ({ matches, team }) => {
                 title={m.homeTeam}
                 textAlign="left"
                 onClick={() =>
-                        navigate(`/team/${selectedLeague}/${m.homeTeam}`)
+                        navigate(`/team/${league}/${m.homeTeam}`)
                       }
               >
                 {m.homeTeam}
@@ -223,7 +255,7 @@ const TeamFixture = ({ matches, team }) => {
                 title={m.awayTeam}
                 textAlign="right"
                  onClick={() =>
-                        navigate(`/team/${selectedLeague}/${m.awayTeam}`)
+                        navigate(`/team/${league}/${m.awayTeam}`)
                       }
               >
                 {m.awayTeam}
@@ -231,7 +263,7 @@ const TeamFixture = ({ matches, team }) => {
           
               {/* AWAY LOGO */}
               <img
-                src={teamLogos[m.awayTeam]}
+                src={getTeamLogo(m.awayTeam)}
                 alt={m.awayTeam}
                 width={28}
                 height={28}                

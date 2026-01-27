@@ -5,7 +5,7 @@ import {
 } from "@mui/material";
 import { useData } from "../context/DataContext";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { teamLogos } from "../Components/teamLogos.js";
+import { getTeamLogo } from "../Components/teamLogos.js";
 import playedMatches from "/white-soccer-field.png";
 import football from "/football.png";
 import corner from "/corner.png";
@@ -112,7 +112,7 @@ function Corner() {
           </Typography>
         </Stack> 
 
-        <OverCornersTable cornerStats={cornerStats} selectedLeague={selectedLeague} isMobile={isMobile} teamLogos={teamLogos} football={football} playedMatches={playedMatches} getBgColor={getBgColor}/>    
+        <OverCornersTable cornerStats={cornerStats} selectedLeague={selectedLeague} isMobile={isMobile} getTeamLogo={getTeamLogo} football={football} playedMatches={playedMatches} getBgColor={getBgColor}/>    
 
         {/* Tablo Altı İkon + Yazı */}
         {selectedLeague && (
@@ -144,7 +144,7 @@ function Corner() {
           </Typography>
         </Stack> 
         
-        <OverHomeCornersTable cornerStats={cornerStats} selectedLeague={selectedLeague} isMobile={isMobile} teamLogos={teamLogos} corner={corner} playedMatches={playedMatches} getBgColor={getBgColor}/>        
+        <OverHomeCornersTable cornerStats={cornerStats} selectedLeague={selectedLeague} isMobile={isMobile} getTeamLogo={getTeamLogo} corner={corner} playedMatches={playedMatches} getBgColor={getBgColor}/>        
         {/* Tablo Altı İkon + Yazı */}
         {selectedLeague && (
           <Stack
@@ -175,7 +175,7 @@ function Corner() {
           </Typography>
         </Stack>     
 
-        <OverHomeCornersTable2 cornerStats={cornerStats} selectedLeague={selectedLeague} isMobile={isMobile} teamLogos={teamLogos} corner={corner} playedMatches={playedMatches} getBgColor={getBgColor}/>        
+        <OverHomeCornersTable2 cornerStats={cornerStats} selectedLeague={selectedLeague} isMobile={isMobile} getTeamLogo={getTeamLogo} corner={corner} playedMatches={playedMatches} getBgColor={getBgColor}/>        
       </Stack>
     </Stack>
   );

@@ -119,3 +119,11 @@ export const teamLogos = {
     "Mallorca" : "/logos/real_mallorca.png",
     "Osasuna" : "/logos/osasuna.png"
 };
+
+export const DEFAULT_TEAM_LOGO = "/logos/disabled.png";
+
+export function getTeamLogo(teamName) {
+   
+  return teamLogos[teamName] || DEFAULT_TEAM_LOGO;
+}
+

@@ -5,7 +5,7 @@ import {
 } from "@mui/material";
 import { useData } from "../context/DataContext";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { teamLogos } from "../Components/teamLogos.js";
+import { getTeamLogo } from "../Components/teamLogos.js";
 import playedMatches from "/white-soccer-field.png";
 import football from "/football.png";
 import OverGoalsTable from "../Components/Tables/GoalTables/OverGoalsTable";
@@ -199,11 +199,11 @@ function Goals() {
         </Box>
 
         {statType === "both" ? (
-          <ScoreBothHalf goalStats={goalStats} selectedLeague={selectedLeague} isMobile={isMobile} teamLogos={teamLogos} football={football} playedMatches={playedMatches} getBgColor={getBgColor}/>        
+          <ScoreBothHalf goalStats={goalStats} selectedLeague={selectedLeague} isMobile={isMobile} getTeamLogo={getTeamLogo} football={football} playedMatches={playedMatches} getBgColor={getBgColor}/>        
         ) : 
 
         statType === "kg" ? (
-          <KgGoalsTable goalStats={goalStats} selectedLeague={selectedLeague} isMobile={isMobile} teamLogos={teamLogos} football={football} playedMatches={playedMatches} getBgColor={getBgColor}/>        
+          <KgGoalsTable goalStats={goalStats} selectedLeague={selectedLeague} isMobile={isMobile} getTeamLogo={getTeamLogo} football={football} playedMatches={playedMatches} getBgColor={getBgColor}/>        
         ) : (
 
           <>
@@ -215,9 +215,9 @@ function Goals() {
           </Stack> 
 
           {statType === "over" ? (
-            <OverGoalsTable goalStats={goalStats} selectedLeague={selectedLeague} isMobile={isMobile} teamLogos={teamLogos} football={football} playedMatches={playedMatches} getBgColor={getBgColor}/>        
+            <OverGoalsTable goalStats={goalStats} selectedLeague={selectedLeague} isMobile={isMobile} getTeamLogo={getTeamLogo} football={football} playedMatches={playedMatches} getBgColor={getBgColor}/>        
           ) : (
-            <LessGoalsTable goalStats={goalStats} selectedLeague={selectedLeague} isMobile={isMobile} teamLogos={teamLogos} football={football} playedMatches={playedMatches} getBgColor={getBgColor}/>
+            <LessGoalsTable goalStats={goalStats} selectedLeague={selectedLeague} isMobile={isMobile} getTeamLogo={getTeamLogo} football={football} playedMatches={playedMatches} getBgColor={getBgColor}/>
           )}
 
           {/* Tablo Altı İkon + Yazı */}
@@ -285,9 +285,9 @@ function Goals() {
 
         {/* Takımların Maç Başına Gol 2.5 Üst İstatistikleri */}
         {statType === "over" ? (
-            <OverGoals25HomeAway goalStats={goalStats} selectedLeague={selectedLeague} isMobile={isMobile} teamLogos={teamLogos} football={football} playedMatches={playedMatches} getBgColor={getBgColor}/>        
+            <OverGoals25HomeAway goalStats={goalStats} selectedLeague={selectedLeague} isMobile={isMobile} getTeamLogo={getTeamLogo} football={football} playedMatches={playedMatches} getBgColor={getBgColor}/>        
           ) : (
-            <LessGoals25HomeAway goalStats={goalStats} selectedLeague={selectedLeague} isMobile={isMobile} teamLogos={teamLogos} football={football} playedMatches={playedMatches} getBgColor={getBgColor}/>
+            <LessGoals25HomeAway goalStats={goalStats} selectedLeague={selectedLeague} isMobile={isMobile} getTeamLogo={getTeamLogo} football={football} playedMatches={playedMatches} getBgColor={getBgColor}/>
           )}
         <Stack justifyContent="flex-end" sx={{mt:'20px', display: selectedLeague ? 'block' : 'none', width: isMobile ? '100%' : '70%', backgroundColor: "#1d1d1d" }}>
           <Typography variant="h6" sx={{color: "#fff", fontWeight: "bold", mb: 1}}>
@@ -297,9 +297,9 @@ function Goals() {
 
         {/* Takımların Maç Başına Gol 2.5 Üst İstatistikleri */}
         {statType === "over" ? (
-            <OverGoals15HomeAway goalStats={goalStats} selectedLeague={selectedLeague} isMobile={isMobile} teamLogos={teamLogos} football={football} playedMatches={playedMatches} getBgColor={getBgColor}/>        
+            <OverGoals15HomeAway goalStats={goalStats} selectedLeague={selectedLeague} isMobile={isMobile} getTeamLogo={getTeamLogo} football={football} playedMatches={playedMatches} getBgColor={getBgColor}/>        
           ) : (
-            <LessGoals15HomeAway goalStats={goalStats} selectedLeague={selectedLeague} isMobile={isMobile} teamLogos={teamLogos} football={football} playedMatches={playedMatches} getBgColor={getBgColor}/>
+            <LessGoals15HomeAway goalStats={goalStats} selectedLeague={selectedLeague} isMobile={isMobile} getTeamLogo={getTeamLogo} football={football} playedMatches={playedMatches} getBgColor={getBgColor}/>
           )}
         <Stack justifyContent="flex-end" sx={{mt:'20px', display: selectedLeague ? 'block' : 'none', width: isMobile ? '100%' : '70%', backgroundColor: "#1d1d1d" }}>
           <Typography variant="h6" sx={{color: "#fff", fontWeight: "bold", mb: 1}}>
@@ -308,9 +308,9 @@ function Goals() {
         </Stack>
 
         {statType === "over" ? (
-            <OverGoals35HomeAway goalStats={goalStats} selectedLeague={selectedLeague} isMobile={isMobile} teamLogos={teamLogos} football={football} playedMatches={playedMatches} getBgColor={getBgColor}/>        
+            <OverGoals35HomeAway goalStats={goalStats} selectedLeague={selectedLeague} isMobile={isMobile} getTeamLogo={getTeamLogo} football={football} playedMatches={playedMatches} getBgColor={getBgColor}/>        
           ) : (
-            <LessGoals35HomeAway goalStats={goalStats} selectedLeague={selectedLeague} isMobile={isMobile} teamLogos={teamLogos} football={football} playedMatches={playedMatches} getBgColor={getBgColor}/>
+            <LessGoals35HomeAway goalStats={goalStats} selectedLeague={selectedLeague} isMobile={isMobile} getTeamLogo={getTeamLogo} football={football} playedMatches={playedMatches} getBgColor={getBgColor}/>
           )}
         <Stack justifyContent="flex-end" sx={{mt:'20px', display: selectedLeague ? 'block' : 'none', width: isMobile ? '100%' : '70%', backgroundColor: "#1d1d1d" }}>
           <Typography variant="h6" sx={{color: "#fff", fontWeight: "bold", mb: 1}}>
@@ -319,9 +319,9 @@ function Goals() {
         </Stack>
 
         {statType === "over" ? (
-            <OverGoals45HomeAway goalStats={goalStats} selectedLeague={selectedLeague} isMobile={isMobile} teamLogos={teamLogos} football={football} playedMatches={playedMatches} getBgColor={getBgColor}/>        
+            <OverGoals45HomeAway goalStats={goalStats} selectedLeague={selectedLeague} isMobile={isMobile} getTeamLogo={getTeamLogo} football={football} playedMatches={playedMatches} getBgColor={getBgColor}/>        
           ) : (
-            <LessGoals45HomeAway goalStats={goalStats} selectedLeague={selectedLeague} isMobile={isMobile} teamLogos={teamLogos} football={football} playedMatches={playedMatches} getBgColor={getBgColor}/>
+            <LessGoals45HomeAway goalStats={goalStats} selectedLeague={selectedLeague} isMobile={isMobile} getTeamLogo={getTeamLogo} football={football} playedMatches={playedMatches} getBgColor={getBgColor}/>
           )}          
           
           </>         
