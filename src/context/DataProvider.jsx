@@ -31,322 +31,200 @@ const DataProvider = ({ children }) => {
     return [...new Set(matches.map(m => m.league))].sort();
   }, [matches]);
 
-  // Gol istatistikleri hesaplaması (GLOBAL)
+  // Gol istatistikleri hesaplaması (seçili lig)
   const goalStats = useMemo(() => {
     if (!selectedLeague || !Array.isArray(matches) || !matches.length) return [];
 
     const hasScoredBothHalves = (minutesStr) => {
       if (!minutesStr) return false;
-    
       const minutes = minutesStr.split("|").map(m => {
         if (m.includes("+")) {
           const [base, extra] = m.split("+").map(Number);
-          return base + extra; // 45+1 → 46 gibi davranır
+          return base + extra;
         }
         return Number(m);
       });
-    
       const scoredFirstHalf = minutes.some(m => m <= 45);
       const scoredSecondHalf = minutes.some(m => m >= 46);
-    
       return scoredFirstHalf && scoredSecondHalf;
-    };    
+    };
 
     const leagueMatches = matches.filter(m => m.league === selectedLeague && m.winner !== "TBD");
     const teamGoals = {};
 
     leagueMatches.forEach(match => {
-      const totalGoals = match.goalHome + match.goalAway;      
-
-      // Home team
+      const totalGoals = match.goalHome + match.goalAway;
       if (!teamGoals[match.homeTeam]) {
         teamGoals[match.homeTeam] = {
           team: match.homeTeam,
-          goalsFor: 0,
-          goalsAgainst: 0,
-          homeMatchCount: 0,
-          awayMatchCount: 0,         
-          matchCount: 0,
-          totalMatchGoals: 0,
-
-          bts: 0,
-          homeBts: 0,
-          awayBts: 0,
-
-          bothHalvesScored: 0,
-          homeBothHalvesScored: 0,
-          awayBothHalvesScored: 0,
-
-          over25Count: 0,
-          homeOver25Count: 0,
-          awayOver25Count: 0,         
-
-          over35Count: 0,
-          homeOver35Count: 0,
-          awayOver35Count: 0,
-
-          over45Count: 0,
-          homeOver45Count: 0,
-          awayOver45Count: 0,
-
-          over15Count: 0,
-          homeOver15Count: 0,
-          awayOver15Count: 0,
-
-          less25Count: 0,
-          homeLess25Count: 0,
-          awayLess25Count: 0,         
-
-          less35Count: 0,
-          homeLess35Count: 0,
-          awayLess35Count: 0,
-
-          less45Count: 0,
-          homeLess45Count: 0,
-          awayLess45Count: 0,
-
-          less15Count: 0,
-          homeLess15Count: 0,
-          awayLess15Count: 0
+          goalsFor: 0, goalsAgainst: 0, homeMatchCount: 0, awayMatchCount: 0, matchCount: 0, totalMatchGoals: 0,
+          bts: 0, homeBts: 0, awayBts: 0, bothHalvesScored: 0, homeBothHalvesScored: 0, awayBothHalvesScored: 0,
+          over25Count: 0, homeOver25Count: 0, awayOver25Count: 0, over35Count: 0, homeOver35Count: 0, awayOver35Count: 0,
+          over45Count: 0, homeOver45Count: 0, awayOver45Count: 0, over15Count: 0, homeOver15Count: 0, awayOver15Count: 0,
+          less25Count: 0, homeLess25Count: 0, awayLess25Count: 0, less35Count: 0, homeLess35Count: 0, awayLess35Count: 0,
+          less45Count: 0, homeLess45Count: 0, awayLess45Count: 0, less15Count: 0, homeLess15Count: 0, awayLess15Count: 0,
         };
       }
+      teamGoals[match.homeTeam].goalsFor += match.goalHome;
+      teamGoals[match.homeTeam].goalsAgainst += match.goalAway;
+      teamGoals[match.homeTeam].homeMatchCount++;
+      teamGoals[match.homeTeam].matchCount++;
+      teamGoals[match.homeTeam].totalMatchGoals += totalGoals;
+      if (match.goalHome > 0 && match.goalAway > 0) teamGoals[match.homeTeam].bts++;
+      if (totalGoals > 2.5) { teamGoals[match.homeTeam].over25Count++; teamGoals[match.homeTeam].homeOver25Count++; }
+      if (totalGoals > 3.5) { teamGoals[match.homeTeam].over35Count++; teamGoals[match.homeTeam].homeOver35Count++; }
+      if (totalGoals > 4.5) { teamGoals[match.homeTeam].over45Count++; teamGoals[match.homeTeam].homeOver45Count++; }
+      if (totalGoals > 1.5) { teamGoals[match.homeTeam].over15Count++; teamGoals[match.homeTeam].homeOver15Count++; }
+      if (totalGoals < 2.5) { teamGoals[match.homeTeam].less25Count++; teamGoals[match.homeTeam].homeLess25Count++; }
+      if (totalGoals < 3.5) { teamGoals[match.homeTeam].less35Count++; teamGoals[match.homeTeam].homeLess35Count++; }
+      if (totalGoals < 4.5) { teamGoals[match.homeTeam].less45Count++; teamGoals[match.homeTeam].homeLess45Count++; }
+      if (totalGoals < 1.5) { teamGoals[match.homeTeam].less15Count++; teamGoals[match.homeTeam].homeLess15Count++; }
+      if (hasScoredBothHalves(match.homeGoalsMinutes)) teamGoals[match.homeTeam].bothHalvesScored++;
 
-        teamGoals[match.homeTeam].goalsFor += match.goalHome;
-        teamGoals[match.homeTeam].goalsAgainst += match.goalAway;
-        teamGoals[match.homeTeam].homeMatchCount++;
-        teamGoals[match.homeTeam].matchCount++;
-        teamGoals[match.homeTeam].totalMatchGoals += totalGoals;
-
-        if (match.goalHome > 0 && match.goalAway > 0) {
-          teamGoals[match.homeTeam].bts++;
-          teamGoals[match.homeTeam].homeBts++;
-        }
-
-        if (totalGoals > 2.5) teamGoals[match.homeTeam].over25Count++;
-        if (totalGoals > 2.5) teamGoals[match.homeTeam].homeOver25Count++;   
-
-        if (totalGoals > 3.5) teamGoals[match.homeTeam].over35Count++;
-        if (totalGoals > 3.5) teamGoals[match.homeTeam].homeOver35Count++;
-       
-        if (totalGoals > 4.5) teamGoals[match.homeTeam].over45Count++;
-        if (totalGoals > 4.5) teamGoals[match.homeTeam].homeOver45Count++;
-
-        if (totalGoals > 1.5) teamGoals[match.homeTeam].over15Count++;
-        if (totalGoals > 1.5) teamGoals[match.homeTeam].homeOver15Count++;
-        
-        if (totalGoals < 2.5) teamGoals[match.homeTeam].less25Count++;
-        if (totalGoals < 2.5) teamGoals[match.homeTeam].homeLess25Count++;   
-
-        if (totalGoals < 3.5) teamGoals[match.homeTeam].less35Count++;
-        if (totalGoals < 3.5) teamGoals[match.homeTeam].homeLess35Count++;
-       
-        if (totalGoals < 4.5) teamGoals[match.homeTeam].less45Count++;
-        if (totalGoals < 4.5) teamGoals[match.homeTeam].homeLess45Count++;
-
-        if (totalGoals < 1.5) teamGoals[match.homeTeam].less15Count++;
-        if (totalGoals < 1.5) teamGoals[match.homeTeam].homeLess15Count++;
-
-        const homeBothHalves = hasScoredBothHalves(match.homeGoalsMinutes);
-
-        if (homeBothHalves) {
-          teamGoals[match.homeTeam].bothHalvesScored++;
-          teamGoals[match.homeTeam].homeBothHalvesScored++;
-        }
-
-
-      // Away team
       if (!teamGoals[match.awayTeam]) {
         teamGoals[match.awayTeam] = {
-            team: match.awayTeam,
-            goalsFor: 0,
-            goalsAgainst: 0,
-            homeMatchCount: 0,
-            awayMatchCount: 0,
-            matchCount: 0,
-            totalMatchGoals: 0,
-
-            bts: 0,
-            homeBts: 0,
-            awayBts: 0,
-
-            bothHalvesScored: 0,
-            homeBothHalvesScored: 0,
-            awayBothHalvesScored: 0,
-
-            over25Count: 0,
-            homeOver25Count: 0,
-            awayOver25Count: 0,
-
-            over35Count: 0,
-            homeOver35Count: 0,
-            awayOver35Count: 0,
-
-            over45Count: 0,
-            homeOver45Count: 0,
-            awayOver45Count: 0,
-
-            over15Count: 0,
-            homeOver15Count: 0,
-            awayOver15Count: 0,
-
-            less25Count: 0,
-            homeLess25Count: 0,
-            awayLess25Count: 0,         
-
-            less35Count: 0,
-            homeLess35Count: 0,
-            awayLess35Count: 0,
-
-            less45Count: 0,
-            homeLess45Count: 0,
-            awayLess45Count: 0,
-
-            less15Count: 0,
-            homeLess15Count: 0,
-            awayLess15Count: 0
-
+          team: match.awayTeam,
+          goalsFor: 0, goalsAgainst: 0, homeMatchCount: 0, awayMatchCount: 0, matchCount: 0, totalMatchGoals: 0,
+          bts: 0, homeBts: 0, awayBts: 0, bothHalvesScored: 0, homeBothHalvesScored: 0, awayBothHalvesScored: 0,
+          over25Count: 0, homeOver25Count: 0, awayOver25Count: 0, over35Count: 0, homeOver35Count: 0, awayOver35Count: 0,
+          over45Count: 0, homeOver45Count: 0, awayOver45Count: 0, over15Count: 0, homeOver15Count: 0, awayOver15Count: 0,
+          less25Count: 0, homeLess25Count: 0, awayLess25Count: 0, less35Count: 0, homeLess35Count: 0, awayLess35Count: 0,
+          less45Count: 0, homeLess45Count: 0, awayLess45Count: 0, less15Count: 0, homeLess15Count: 0, awayLess15Count: 0,
         };
       }
-
-        teamGoals[match.awayTeam].goalsFor += match.goalAway;
-        teamGoals[match.awayTeam].goalsAgainst += match.goalHome;
-        teamGoals[match.awayTeam].awayMatchCount++;
-        teamGoals[match.awayTeam].matchCount++;
-        teamGoals[match.awayTeam].totalMatchGoals += totalGoals;
-
-        if (match.goalHome > 0 && match.goalAway > 0) {
-          teamGoals[match.awayTeam].bts++;
-          teamGoals[match.awayTeam].awayBts++;
-        }
-
-        if (totalGoals > 2.5) teamGoals[match.awayTeam].over25Count++;
-        if (totalGoals > 2.5) teamGoals[match.awayTeam].awayOver25Count++;
-
-        if (totalGoals > 3.5) teamGoals[match.awayTeam].over35Count++;
-        if (totalGoals > 3.5) teamGoals[match.awayTeam].awayOver35Count++;
-
-        if (totalGoals > 4.5) teamGoals[match.awayTeam].over45Count++;
-        if (totalGoals > 4.5) teamGoals[match.awayTeam].awayOver45Count++;
-
-        if (totalGoals > 1.5) teamGoals[match.awayTeam].over15Count++;
-        if (totalGoals > 1.5) teamGoals[match.awayTeam].awayOver15Count++;
-
-        if (totalGoals < 2.5) teamGoals[match.awayTeam].less25Count++;
-        if (totalGoals < 2.5) teamGoals[match.awayTeam].awayLess25Count++;   
-
-        if (totalGoals < 3.5) teamGoals[match.awayTeam].less35Count++;
-        if (totalGoals < 3.5) teamGoals[match.awayTeam].awayLess35Count++;
-       
-        if (totalGoals < 4.5) teamGoals[match.awayTeam].less45Count++;
-        if (totalGoals < 4.5) teamGoals[match.awayTeam].awayLess45Count++;
-
-        if (totalGoals < 1.5) teamGoals[match.awayTeam].less15Count++;
-        if (totalGoals < 1.5) teamGoals[match.awayTeam].awayLess15Count++;
-
-        const awayBothHalves = hasScoredBothHalves(match.awayGoalsMinutes);
-
-        if (awayBothHalves) {
-          teamGoals[match.awayTeam].bothHalvesScored++;
-          teamGoals[match.awayTeam].awayBothHalvesScored++;
-        }
-
+      teamGoals[match.awayTeam].goalsFor += match.goalAway;
+      teamGoals[match.awayTeam].goalsAgainst += match.goalHome;
+      teamGoals[match.awayTeam].awayMatchCount++;
+      teamGoals[match.awayTeam].matchCount++;
+      teamGoals[match.awayTeam].totalMatchGoals += totalGoals;
+      if (match.goalHome > 0 && match.goalAway > 0) teamGoals[match.awayTeam].bts++;
+      if (totalGoals > 2.5) { teamGoals[match.awayTeam].over25Count++; teamGoals[match.awayTeam].awayOver25Count++; }
+      if (totalGoals > 3.5) { teamGoals[match.awayTeam].over35Count++; teamGoals[match.awayTeam].awayOver35Count++; }
+      if (totalGoals > 4.5) { teamGoals[match.awayTeam].over45Count++; teamGoals[match.awayTeam].awayOver45Count++; }
+      if (totalGoals > 1.5) { teamGoals[match.awayTeam].over15Count++; teamGoals[match.awayTeam].awayOver15Count++; }
+      if (totalGoals < 2.5) { teamGoals[match.awayTeam].less25Count++; teamGoals[match.awayTeam].awayLess25Count++; }
+      if (totalGoals < 3.5) { teamGoals[match.awayTeam].less35Count++; teamGoals[match.awayTeam].awayLess35Count++; }
+      if (totalGoals < 4.5) { teamGoals[match.awayTeam].less45Count++; teamGoals[match.awayTeam].awayLess45Count++; }
+      if (totalGoals < 1.5) { teamGoals[match.awayTeam].less15Count++; teamGoals[match.awayTeam].awayLess15Count++; }
+      if (hasScoredBothHalves(match.awayGoalsMinutes)) teamGoals[match.awayTeam].awayBothHalvesScored++;
     });
 
-    const stats = Object.values(teamGoals).map(team => {
-        const avgGoalsFor = team.goalsFor / team.matchCount;
-        const avgMatchGoals = team.totalMatchGoals / team.matchCount;
-
-        const btsRate = (team.bts / team.matchCount) * 100;
-        const homeBtsRate = (team.homeBts / team.homeMatchCount) * 100;
-        const awayBtsRate = (team.awayBts / team.awayMatchCount) * 100;
-
-        const over25Rate = (team.over25Count / team.matchCount) * 100;
-        const over35Rate = (team.over35Count / team.matchCount) * 100;
-        const over45Rate = (team.over45Count / team.matchCount) * 100;
-        const over15Rate = (team.over15Count / team.matchCount) * 100;
-
-        const less25Rate = (team.less25Count / team.matchCount) * 100;
-        const less35Rate = (team.less35Count / team.matchCount) * 100;
-        const less45Rate = (team.less45Count / team.matchCount) * 100;
-        const less15Rate = (team.less15Count / team.matchCount) * 100;
-
-        const homeOver25Rate = (team.homeOver25Count / team.homeMatchCount) * 100;
-        const awayOver25Rate = (team.awayOver25Count / team.awayMatchCount) * 100;
-
-        const homeOver35Rate = (team.homeOver35Count / team.homeMatchCount) * 100;
-        const awayOver35Rate = (team.awayOver35Count / team.awayMatchCount) * 100;
-
-        const homeOver45Rate = (team.homeOver45Count / team.homeMatchCount) * 100;
-        const awayOver45Rate = (team.awayOver45Count / team.awayMatchCount) * 100;
-
-        const homeOver15Rate = (team.homeOver15Count / team.homeMatchCount) * 100;
-        const awayOver15Rate = (team.awayOver15Count / team.awayMatchCount) * 100;
-
-        const homeLess25Rate = (team.homeLess25Count / team.homeMatchCount) * 100;
-        const awayLess25Rate = (team.awayLess25Count / team.awayMatchCount) * 100;
-
-        const homeLess35Rate = (team.homeLess35Count / team.homeMatchCount) * 100;
-        const awayLess35Rate = (team.awayLess35Count / team.awayMatchCount) * 100;
-
-        const homeLess45Rate = (team.homeLess45Count / team.homeMatchCount) * 100;
-        const awayLess45Rate = (team.awayLess45Count / team.awayMatchCount) * 100;
-
-        const homeLess15Rate = (team.homeLess15Count / team.homeMatchCount) * 100;
-        const awayLess15Rate = (team.awayLess15Count / team.awayMatchCount) * 100;
-
-        const bothHalvesRate = (team.bothHalvesScored / team.matchCount) * 100;
-        const homeBothHalvesRate = (team.homeBothHalvesScored / team.homeMatchCount) * 100;
-        const awayBothHalvesRate = (team.awayBothHalvesScored / team.awayMatchCount) * 100;
-
-      return {        
-        ...team,
-        avgGoalsFor,
-        avgMatchGoals,
-
-        btsRate,
-        homeBtsRate,
-        awayBtsRate,
-
-        over25Rate,
-        over35Rate,
-        over45Rate,   
-        over15Rate,        
-        
-        homeOver25Rate,
-        awayOver25Rate,
-        homeOver35Rate,
-        awayOver35Rate,
-        homeOver45Rate,
-        awayOver45Rate,
-        homeOver15Rate,
-        awayOver15Rate,
-
-        less25Rate,
-        less35Rate,
-        less45Rate,   
-        less15Rate,        
-        
-        homeLess25Rate,
-        awayLess25Rate,
-        homeLess35Rate,
-        awayLess35Rate,
-        homeLess45Rate,
-        awayLess45Rate,
-        homeLess15Rate,
-        awayLess15Rate,
-
-        bothHalvesRate,
-        homeBothHalvesRate,
-        awayBothHalvesRate,
-
-      };
-    });
-
-    return stats
-      .sort((a, b) => b.over25Rate - a.over25Rate)
-      .map((t, i) => ({ ...t, rank: i + 1 }));
-
+    const stats = Object.values(teamGoals).map(team => ({
+      ...team,
+      avgGoalsFor: team.goalsFor / team.matchCount,
+      avgMatchGoals: team.totalMatchGoals / team.matchCount,
+      btsRate: (team.bts / team.matchCount) * 100,
+      homeBtsRate: team.homeMatchCount ? (team.homeBts / team.homeMatchCount) * 100 : 0,
+      awayBtsRate: team.awayMatchCount ? (team.awayBts / team.awayMatchCount) * 100 : 0,
+      over25Rate: (team.over25Count / team.matchCount) * 100,
+      over35Rate: (team.over35Count / team.matchCount) * 100,
+      over45Rate: (team.over45Count / team.matchCount) * 100,
+      over15Rate: (team.over15Count / team.matchCount) * 100,
+      less25Rate: (team.less25Count / team.matchCount) * 100,
+      less35Rate: (team.less35Count / team.matchCount) * 100,
+      less45Rate: (team.less45Count / team.matchCount) * 100,
+      less15Rate: (team.less15Count / team.matchCount) * 100,
+      homeOver25Rate: team.homeMatchCount ? (team.homeOver25Count / team.homeMatchCount) * 100 : 0,
+      awayOver25Rate: team.awayMatchCount ? (team.awayOver25Count / team.awayMatchCount) * 100 : 0,
+      homeOver35Rate: team.homeMatchCount ? (team.homeOver35Count / team.homeMatchCount) * 100 : 0,
+      awayOver35Rate: team.awayMatchCount ? (team.awayOver35Count / team.awayMatchCount) * 100 : 0,
+      homeOver45Rate: team.homeMatchCount ? (team.homeOver45Count / team.homeMatchCount) * 100 : 0,
+      awayOver45Rate: team.awayMatchCount ? (team.awayOver45Count / team.awayMatchCount) * 100 : 0,
+      homeOver15Rate: team.homeMatchCount ? (team.homeOver15Count / team.homeMatchCount) * 100 : 0,
+      awayOver15Rate: team.awayMatchCount ? (team.awayOver15Count / team.awayMatchCount) * 100 : 0,
+      homeLess25Rate: team.homeMatchCount ? (team.homeLess25Count / team.homeMatchCount) * 100 : 0,
+      awayLess25Rate: team.awayMatchCount ? (team.awayLess25Count / team.awayMatchCount) * 100 : 0,
+      homeLess35Rate: team.homeMatchCount ? (team.homeLess35Count / team.homeMatchCount) * 100 : 0,
+      awayLess35Rate: team.awayMatchCount ? (team.awayLess35Count / team.awayMatchCount) * 100 : 0,
+      homeLess45Rate: team.homeMatchCount ? (team.homeLess45Count / team.homeMatchCount) * 100 : 0,
+      awayLess45Rate: team.awayMatchCount ? (team.awayLess45Count / team.awayMatchCount) * 100 : 0,
+      homeLess15Rate: team.homeMatchCount ? (team.homeLess15Count / team.homeMatchCount) * 100 : 0,
+      awayLess15Rate: team.awayMatchCount ? (team.awayLess15Count / team.awayMatchCount) * 100 : 0,
+      bothHalvesRate: (team.bothHalvesScored / team.matchCount) * 100,
+      homeBothHalvesRate: team.homeMatchCount ? (team.homeBothHalvesScored / team.homeMatchCount) * 100 : 0,
+      awayBothHalvesRate: team.awayMatchCount ? (team.awayBothHalvesScored / team.awayMatchCount) * 100 : 0,
+    }));
+    return stats.sort((a, b) => b.over25Rate - a.over25Rate).map((t, i) => ({ ...t, rank: i + 1 }));
   }, [selectedLeague, matches]);
+
+  // Tüm ligler için istatistikler (Bugünkü Maçlar – her maç kendi ligine göre)
+  const goalStatsByLeague = useMemo(() => {
+    const result = {};
+    leagues.forEach(leagueName => {
+      const leagueMatches = matches.filter(m => m.league === leagueName && m.winner !== "TBD");
+      const teamGoals = {};
+      leagueMatches.forEach(match => {
+        const totalGoals = match.goalHome + match.goalAway;
+        if (!teamGoals[match.homeTeam]) {
+          teamGoals[match.homeTeam] = { team: match.homeTeam, matchCount: 0, over25Count: 0 };
+        }
+        teamGoals[match.homeTeam].matchCount++;
+        if (totalGoals > 2.5) teamGoals[match.homeTeam].over25Count++;
+        if (!teamGoals[match.awayTeam]) {
+          teamGoals[match.awayTeam] = { team: match.awayTeam, matchCount: 0, over25Count: 0 };
+        }
+        teamGoals[match.awayTeam].matchCount++;
+        if (totalGoals > 2.5) teamGoals[match.awayTeam].over25Count++;
+      });
+      result[leagueName] = Object.values(teamGoals).map(t => ({
+        team: t.team,
+        over25Rate: (t.over25Count / t.matchCount) * 100,
+      }));
+    });
+    return result;
+  }, [matches, leagues]);
+
+  const cardStatsByLeague = useMemo(() => {
+    const result = {};
+    leagues.forEach(leagueName => {
+      const leagueMatches = matches.filter(m => m.league === leagueName && m.winner !== "TBD");
+      const teamCards = {};
+      leagueMatches.forEach(match => {
+        const matchTotalYellow = match.yellowHome + match.yellowAway;
+        if (!teamCards[match.homeTeam]) {
+          teamCards[match.homeTeam] = { team: match.homeTeam, matchCount: 0, over35Count: 0 };
+        }
+        teamCards[match.homeTeam].matchCount++;
+        if (matchTotalYellow > 3.5) teamCards[match.homeTeam].over35Count++;
+        if (!teamCards[match.awayTeam]) {
+          teamCards[match.awayTeam] = { team: match.awayTeam, matchCount: 0, over35Count: 0 };
+        }
+        teamCards[match.awayTeam].matchCount++;
+        if (matchTotalYellow > 3.5) teamCards[match.awayTeam].over35Count++;
+      });
+      result[leagueName] = Object.values(teamCards).map(t => ({
+        team: t.team,
+        over35Rate: (t.over35Count / t.matchCount) * 100,
+      }));
+    });
+    return result;
+  }, [matches, leagues]);
+
+  const cornerStatsByLeague = useMemo(() => {
+    const result = {};
+    leagues.forEach(leagueName => {
+      const leagueMatches = matches.filter(m => m.league === leagueName && m.winner !== "TBD");
+      const teamCorners = {};
+      leagueMatches.forEach(match => {
+        const matchCorners = match.cornerHome + match.cornerAway;
+        if (!teamCorners[match.homeTeam]) {
+          teamCorners[match.homeTeam] = { team: match.homeTeam, matchCount: 0, over85Count: 0 };
+        }
+        teamCorners[match.homeTeam].matchCount++;
+        if (matchCorners > 8.5) teamCorners[match.homeTeam].over85Count++;
+        if (!teamCorners[match.awayTeam]) {
+          teamCorners[match.awayTeam] = { team: match.awayTeam, matchCount: 0, over85Count: 0 };
+        }
+        teamCorners[match.awayTeam].matchCount++;
+        if (matchCorners > 8.5) teamCorners[match.awayTeam].over85Count++;
+      });
+      result[leagueName] = Object.values(teamCorners).map(t => ({
+        team: t.team,
+        over85Rate: (t.over85Count / t.matchCount) * 100,
+      }));
+    });
+    return result;
+  }, [matches, leagues]);
 
   // Seçilen lige göre kartların sıralaması
   const cardStats = useMemo(() => {
@@ -684,7 +562,10 @@ const DataProvider = ({ children }) => {
     standingsError,
     goalStats,
     cardStats,
-    cornerStats
+    cornerStats,
+    goalStatsByLeague,
+    cardStatsByLeague,
+    cornerStatsByLeague,
   };
    
   if (isLoading) {
