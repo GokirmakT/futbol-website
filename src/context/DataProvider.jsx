@@ -182,18 +182,21 @@ const DataProvider = ({ children }) => {
       leagueMatches.forEach(match => {
         const matchTotalYellow = match.yellowHome + match.yellowAway;
         if (!teamCards[match.homeTeam]) {
-          teamCards[match.homeTeam] = { team: match.homeTeam, matchCount: 0, over35Count: 0 };
+          teamCards[match.homeTeam] = { team: match.homeTeam, matchCount: 0, over25Count: 0, over35Count: 0 };
         }
         teamCards[match.homeTeam].matchCount++;
+        if (matchTotalYellow > 2.5) teamCards[match.homeTeam].over25Count++;
         if (matchTotalYellow > 3.5) teamCards[match.homeTeam].over35Count++;
         if (!teamCards[match.awayTeam]) {
-          teamCards[match.awayTeam] = { team: match.awayTeam, matchCount: 0, over35Count: 0 };
+          teamCards[match.awayTeam] = { team: match.awayTeam, matchCount: 0, over25Count: 0, over35Count: 0 };
         }
         teamCards[match.awayTeam].matchCount++;
+        if (matchTotalYellow > 2.5) teamCards[match.awayTeam].over25Count++;
         if (matchTotalYellow > 3.5) teamCards[match.awayTeam].over35Count++;
       });
       result[leagueName] = Object.values(teamCards).map(t => ({
         team: t.team,
+        over25Rate: (t.over25Count / t.matchCount) * 100,
         over35Rate: (t.over35Count / t.matchCount) * 100,
       }));
     });

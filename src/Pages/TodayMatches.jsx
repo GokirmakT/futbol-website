@@ -91,9 +91,29 @@ function TodayMatches() {
 
   return (
     <Box maxWidth="800px" mx="auto" mt={3} px={2}>
-      <Typography variant="h5" textAlign="center" mb={3}>
+      <Typography variant="h5" textAlign="center" mb={1}>
         Bugünün Maçları
       </Typography>
+
+      <Paper sx={{ p: 1.5, mb: 3, backgroundColor: "#f5f5f5" }}>
+        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+          Tablo ikonları:
+        </Typography>
+        <Stack direction="row" flexWrap="wrap" gap={2} useFlexGap>
+          <Stack direction="row" alignItems="center" spacing={0.5}>
+            <img src={football} alt="" style={{ width: 18, height: 18 }} />
+            <Typography variant="body2">: 2.5 üst gol oranı (%)</Typography>
+          </Stack>
+          <Stack direction="row" alignItems="center" spacing={0.5}>
+            <img src={corner} alt="" style={{ width: 18, height: 18 }} />
+            <Typography variant="body2">: 8.5 üst korner oranı (%)</Typography>
+          </Stack>
+          <Stack direction="row" alignItems="center" spacing={0.5}>
+            <img src={card} alt="" style={{ width: 18, height: 18 }} />
+            <Typography variant="body2">: 2.5 üst kart oranı (%)</Typography>
+          </Stack>
+        </Stack>
+      </Paper>
 
       {leagues.map(league => (        
         <Box key={league} mb={4}>
@@ -121,8 +141,8 @@ function TodayMatches() {
 
               const homeCardStats = leagueCardStats.find(t => t.team === match.homeTeam);
               const awayCardStats = leagueCardStats.find(t => t.team === match.awayTeam);
-              const homeCardOver35 = homeCardStats?.over35Rate != null ? homeCardStats.over35Rate.toFixed(0) : "—";
-              const awayCardOver35 = awayCardStats?.over35Rate != null ? awayCardStats.over35Rate.toFixed(0) : "—";
+              const homeCardOver25 = homeCardStats?.over25Rate != null ? homeCardStats.over25Rate.toFixed(0) : "—";
+              const awayCardOver25 = awayCardStats?.over25Rate != null ? awayCardStats.over25Rate.toFixed(0) : "—";
 
               
 
@@ -191,6 +211,11 @@ function TodayMatches() {
                           />    
                           </Stack>
                         </TableCell>
+
+                        <TableCell sx={{ color: "#ffaaff", fontWeight: "bold", pr: 0, pl: 0}} align="center">
+                          
+                        </TableCell>
+
                         <TableCell sx={{ color: "#ffaaff", fontWeight: "bold", pr: isMobile ? 1 : 2, pl: isMobile ? 0 : 2}} align="center">
                           <Stack alignItems={'center'}>
                           <img
@@ -220,14 +245,17 @@ function TodayMatches() {
 
                     <TableBody>
                       
-                        <TableRow  sx={{ "&:hover": { backgroundColor: "#cecece" } }}>
+                        <TableRow>
                         
                           <TableCell align="center" sx={{color: "#000000ff",backgroundColor: getBgColor(homeGoalOver25), fontWeight: "bold", pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{homeGoalOver25 === "—" ? "—" : `${homeGoalOver25}%`}</TableCell>
                           <TableCell align="center" sx={{color: "#000000ff",backgroundColor: getBgColor(homeCornerOver85), fontWeight: "bold", pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{homeCornerOver85 === "—" ? "—" : `${homeCornerOver85}%`}</TableCell>
-                          <TableCell align="center" sx={{color: "#000000ff",backgroundColor: getBgColor(homeCardOver35), fontWeight: "bold", pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{homeCardOver35 === "—" ? "—" : `${homeCardOver35}%`}</TableCell>
+                          <TableCell align="center" sx={{color: "#000000ff",backgroundColor: getBgColor(homeCardOver25), fontWeight: "bold", pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{homeCardOver25 === "—" ? "—" : `${homeCardOver25}%`}</TableCell>
+                          
+                          <TableCell align="center" sx={{color: "#000000ff", fontWeight: "bold", pr: 1, pl: 1}}></TableCell>
+
                           <TableCell align="center" sx={{color: "#000000ff",backgroundColor: getBgColor(awayGoalOver25), fontWeight: "bold", pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{awayGoalOver25 === "—" ? "—" : `${awayGoalOver25}%`}</TableCell>
                           <TableCell align="center" sx={{color: "#000000ff",backgroundColor: getBgColor(awayCornerOver85), fontWeight: "bold", pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{awayCornerOver85 === "—" ? "—" : `${awayCornerOver85}%`}</TableCell>
-                          <TableCell align="center" sx={{color: "#000000ff",backgroundColor: getBgColor(awayCardOver35), fontWeight: "bold", pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{awayCardOver35 === "—" ? "—" : `${awayCardOver35}%`}</TableCell>
+                          <TableCell align="center" sx={{color: "#000000ff",backgroundColor: getBgColor(awayCardOver25), fontWeight: "bold", pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{awayCardOver25 === "—" ? "—" : `${awayCardOver25}%`}</TableCell>
                           
                         </TableRow>
                      
