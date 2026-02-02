@@ -8,6 +8,7 @@ import TodayMatches from "./Pages/TodayMatches.jsx";
 import Standings from "./Pages/Standings.jsx";
 import Statistics from "./Pages/Statistics.jsx";
 import TeamDetail from "./Pages/TeamDetail.jsx";
+import MatchDetail from "./Pages/MatchDetail.jsx";
 
 export default function App() {
   return (
@@ -22,7 +23,7 @@ export default function App() {
         <Route path="/Goals" element={<Goal />} />
         <Route path="/Statistics" element={<Statistics />} />
         <Route path="/team/:league/:team" element={<TeamDetail />} />
-
+        <Route path="/match/:league/:home/:away" element={<MatchDetail />} />
       </Routes>
     </>
   );

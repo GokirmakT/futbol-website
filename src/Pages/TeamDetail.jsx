@@ -72,7 +72,7 @@ const TeamDetail = () => {
           <Typography fontWeight="bold">Fikstür</Typography>
         </AccordionSummary>
         <AccordionDetails sx={{p: 1}}>
-          <TeamFixture matches={sortedTeamMatches} team={team} league={league} />
+          <TeamFixture matches={sortedTeamMatches} team={team} league={league} display={"block"} />
         </AccordionDetails>
       </Accordion>
       

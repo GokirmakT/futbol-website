@@ -16,7 +16,7 @@ import football from "/football.png";
 import card from "/yellow-card.png";
 import corner from "/corner.png";
 import useMediaQuery from "@mui/material/useMediaQuery";
- 
+import { Link } from "react-router-dom";
 
 function TodayMatches() {
   const { goalStatsByLeague, cornerStatsByLeague, cardStatsByLeague, matches, isLoading, error } = useData();
@@ -144,10 +144,23 @@ function TodayMatches() {
               const homeCardOver25 = homeCardStats?.over25Rate != null ? homeCardStats.over25Rate.toFixed(0) : "—";
               const awayCardOver25 = awayCardStats?.over25Rate != null ? awayCardStats.over25Rate.toFixed(0) : "—";
 
-              
-
               return (
-                <Box key={i} mb={2}>
+                <Box
+                  key={i}
+                  mb={2}
+                  component={Link}
+                  to={`/match/${encodeURIComponent(match.league)}/${encodeURIComponent(
+                    match.homeTeam
+                  )}/${encodeURIComponent(match.awayTeam)}`}
+                  sx={{
+                    textDecoration: "none",
+                    color: "inherit",
+                    display: "block",
+                    "&:hover": { backgroundColor: "#f0f0f0" },
+                    borderRadius: 1,
+                    transition: "background-color 0.2s ease",
+                  }}
+                >
                   <Stack
                     direction="row"
                     justifyContent="space-between"
