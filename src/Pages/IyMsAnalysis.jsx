@@ -168,11 +168,11 @@ const IyMsAnalysis = () => {
 
           <Grid item xs={12} sm={4}>
             <Paper sx={{ p: 2, backgroundColor: "#263238" }}>
-              <Typography variant="subtitle2">En Sık Gelen İY/MS Paterni</Typography>
+              <Typography variant="subtitle2" color="#fff">En Sık Gelen İY/MS Paterni</Typography>
               {bestPattern ? (
                 <Stack direction="row" spacing={1} alignItems="center" mt={1}>
                   <Chip label={bestPattern} color="primary" sx={{ fontWeight: "bold" }} />
-                  <Typography variant="h6" fontWeight="bold">
+                  <Typography variant="h6" fontWeight="bold" color="#fff">
                     {bestCount} kez
                   </Typography>
                 </Stack>
@@ -186,7 +186,7 @@ const IyMsAnalysis = () => {
 
           <Grid item xs={12} sm={4}>
             <Paper sx={{ p: 2, backgroundColor: "#263238" }}>
-              <Typography variant="subtitle2">Otomatik Analiz</Typography>
+              <Typography variant="subtitle2" color="#fff">Otomatik Analiz</Typography>
               <Typography variant="body2" color="grey.300" mt={1}>
                 {bestPattern
                   ? `Bu takım için en sık görülen İY/MS paterni ${bestPattern}. Özellikle bu skora uygun maç dinamiği ve oyun tarzı dikkat çekiyor.`
