@@ -79,6 +79,8 @@ const IyMsAnalysis = () => {
   }, [detailedMatches, selectedPatternFilter]);
 
   const totalMatches = stats?.overall.total || 0;
+  const totalHomeMatches = stats?.home.total || 0;
+  const totalAwayMatches = stats?.away.total || 0;
   const bestPattern = stats?.mostFrequentPattern?.pattern || null;
   const bestCount = stats?.mostFrequentPattern?.count || 0;
 
@@ -416,6 +418,9 @@ const IyMsAnalysis = () => {
           İY/MS Dağılım Grafiği (Genel / İç Saha / Deplasman)
         </Typography>
         <Paper sx={{ p: 2, mb: 4, backgroundColor: "#1c262b" }}>
+          <Typography variant="body2" color="grey.300" mb={2}>
+            İç saha maçları: {totalHomeMatches}, Deplasman maçları: {totalAwayMatches}
+          </Typography>
           <Stack spacing={1.5}>
             {IY_MS_PATTERNS.map(pattern => {
               const overallPerc = stats?.overallPerc[pattern] || 0;

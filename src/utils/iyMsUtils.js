@@ -88,7 +88,9 @@ export function aggregateIyMsStats(matches, teamName) {
   };
 
   const overallPerc = calcPercentages(overall);
+
   const homePerc = calcPercentages(home);
+
   const awayPerc = calcPercentages(away);
 
   const mostFrequentPattern = IY_MS_PATTERNS.reduce(

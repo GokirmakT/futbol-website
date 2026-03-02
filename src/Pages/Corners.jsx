@@ -1,8 +1,9 @@
 import { useState, useMemo, useRef } from "react";
 import {
-  Stack, Typography, Box, Autocomplete, TextField, Button,
+  Stack, Typography, Box, Autocomplete, TextField, Button, IconButton,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import { useData } from "../context/DataContext";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { getTeamLogo } from "../Components/teamLogos.js";
@@ -18,6 +19,8 @@ function Corner() {
   const { cornerStats, isLoading, selectedLeague, setSelectedLeague, error, leagues } = useData();
   const isMobile = useMediaQuery("(max-width: 900px)");
   const inputRef = useRef(null);
+  const [isLeaguePanelOpen, setIsLeaguePanelOpen] = useState(false);
+
 
   const getBgColor = (percent) => {
     if (percent <= 20) return "#ff4d4d";      // kırmızı
@@ -48,62 +51,158 @@ function Corner() {
             Korner İstatistikleri
           </Typography>
 
-          <Autocomplete
-            options={leagueOptions}
-            value={leagueOptions.find(l => l.label === selectedLeague) || null}
-            onOpen={() => toggleBodyScroll(true)}
-            onClose={() => toggleBodyScroll(false)}
-            onChange={(event, val) => {
-              setSelectedLeague(val?.label || null);
-
-              // 📱 mobilde klavyeyi kapat
-              setTimeout(() => {
-                inputRef.current?.blur();
-              }, 0);
-            }}
-            blurOnSelect
-            getOptionLabel={(option) => option.label}
-            isOptionEqualToValue={(opt, val) => opt.label === val.label}
-
-            renderOption={(props, option) => (
-              <Box
-                component="li"
-                {...props}
-                sx={{ display: "flex", alignItems: "center", gap: 1 }}
-              >
-                <img src={option.icon} width={20} height={20} />
-                {option.label}
+                    {/* Autocomplete yerine buton + panel */}
+          <Box sx={{ mt: 4, px: 1.5 }}>
+            <Button
+              fullWidth
+              variant="outlined"
+              ref={inputRef}
+              onClick={() => {
+                setIsLeaguePanelOpen(true);
+                toggleBodyScroll(true);
+              }}
+              sx={{
+                justifyContent: "flex-start",
+                textTransform: "none",
+                backgroundColor: "#fff",
+                borderColor: "#ccc",
+                borderRadius: 1,
+                py: 1.1,
+                "&:hover": {
+                  backgroundColor: "#f5f5f5",
+                  borderColor: "#bbb",
+                },
+              }}
+            >
+              {selectedLeague && (
+                <img
+                  src={`/leagues/${selectedLeague}.png`}
+                  width={24}
+                  height={24}
+                  style={{ marginRight: 8, borderRadius: "4px" }}
+                  alt={selectedLeague}
+                />
+              )}
+              <Box sx={{ textAlign: "left" }}>
+                <Typography variant="caption" sx={{ display: "block", color: "#888" }}>
+                  Lig Seç
+                </Typography>
+                <Typography variant="body1" sx={{ color: "#222" }}>
+                  {selectedLeague || "Lig seçmek için tıklayın"}
+                </Typography>
               </Box>
-            )}
+            </Button>
+          </Box>
 
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Lig Seç"
-                inputRef={inputRef}
-                InputProps={{
-                  ...params.InputProps,
-                  startAdornment: selectedLeague && (
-                    <img
-                      src={`/leagues/${selectedLeague}.png`}
-                      width={20}
-                      height={20}
-                      style={{ marginRight: 8 }}
-                    />
-                  )
+          {/* Lig seçim paneli */}
+          {isLeaguePanelOpen && (
+            <Box
+              sx={{
+                position: "fixed",
+                inset: 0,
+                zIndex: 1300,
+                backgroundColor: "rgba(0,0,0,0.7)",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+              onClick={() => {
+                setIsLeaguePanelOpen(false);
+                toggleBodyScroll(false);
+              }}
+            >
+              <Paper
+                sx={{
+                  maxWidth: 700,
+                  width: "92%",
+                  maxHeight: "80vh",
+                  backgroundColor: "#1d1d1d",
+                  color: "#fff",
+                  borderRadius: 2,
+                  boxShadow: 24,
+                  p: 2,
                 }}
-              />
-            )}
+                onClick={e => e.stopPropagation()}
+              >
+                <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+                  <Typography variant="h6" fontWeight="bold">
+                    Lig Seçimi
+                  </Typography>
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      setIsLeaguePanelOpen(false);
+                      toggleBodyScroll(false);
+                    }}
+                    sx={{ color: "#fff" }}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                </Stack>
 
-            sx={{
-              mt: 4,
-              pl: 1.5,
-              pr: 1.5,
-              "& .MuiOutlinedInput-root": {
-                backgroundColor: "#fff"
-              }
-            }}
-          />
+                <Typography variant="body2" color="grey.400" mb={2}>
+                  Oynamak istediğin ligi seçmek için kartlara tıkla.
+                </Typography>
+
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: { xs: "repeat(2, 1fr)", sm: "repeat(3, 1fr)", md: "repeat(4, 1fr)" },
+                    gap: 1.5,
+                    maxHeight: "60vh",
+                    overflowY: "auto",
+                    pr: 0.5,
+                  }}
+                >
+                  {leagueOptions.map(option => (
+                    <Paper
+                      key={option.label}
+                      onClick={() => {
+                        setSelectedLeague(option.label);
+                        setIsLeaguePanelOpen(false);
+                        toggleBodyScroll(false);
+                      }}
+                      sx={{
+                        cursor: "pointer",
+                        backgroundColor:
+                          option.label === selectedLeague ? "#ff9800" : "#2a3b47",
+                        borderRadius: 1.5,
+                        p: 1,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        textAlign: "center",
+                        transition: "transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease",
+                        "&:hover": {
+                          transform: "translateY(-2px)",
+                          boxShadow: "0 6px 12px rgba(0,0,0,0.7)",
+                          backgroundColor:
+                            option.label === selectedLeague ? "#ffa726" : "#344955",
+                        },
+                      }}
+                    >
+                      <img
+                        src={option.icon}
+                        width={32}
+                        height={32}
+                        alt={option.label}
+                        style={{ marginBottom: 6 }}
+                      />
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontWeight: option.label === selectedLeague ? "bold" : "normal",
+                        }}
+                      >
+                        {option.label}
+                      </Typography>
+                    </Paper>
+                  ))}
+                </Box>
+              </Paper>
+            </Box>
+          )}
         </Box>
 
         <Stack justifyContent="flex-end" sx={{mt:'20px', display: selectedLeague ? 'block' : 'none', width: isMobile ? '100%' : '70%', backgroundColor: "#1d1d1d" }}>
