@@ -71,6 +71,7 @@ const DataProvider = ({ children }) => {
       teamGoals[match.homeTeam].matchCount++;
       teamGoals[match.homeTeam].totalMatchGoals += totalGoals;
       if (match.goalHome > 0 && match.goalAway > 0) teamGoals[match.homeTeam].bts++;
+      if (match.goalHome > 0 && match.goalAway > 0) teamGoals[match.homeTeam].homeBts++;
       if (totalGoals > 2.5) { teamGoals[match.homeTeam].over25Count++; teamGoals[match.homeTeam].homeOver25Count++; }
       if (totalGoals > 3.5) { teamGoals[match.homeTeam].over35Count++; teamGoals[match.homeTeam].homeOver35Count++; }
       if (totalGoals > 4.5) { teamGoals[match.homeTeam].over45Count++; teamGoals[match.homeTeam].homeOver45Count++; }
@@ -79,7 +80,7 @@ const DataProvider = ({ children }) => {
       if (totalGoals < 3.5) { teamGoals[match.homeTeam].less35Count++; teamGoals[match.homeTeam].homeLess35Count++; }
       if (totalGoals < 4.5) { teamGoals[match.homeTeam].less45Count++; teamGoals[match.homeTeam].homeLess45Count++; }
       if (totalGoals < 1.5) { teamGoals[match.homeTeam].less15Count++; teamGoals[match.homeTeam].homeLess15Count++; }
-      if (hasScoredBothHalves(match.homeGoalsMinutes)) teamGoals[match.homeTeam].bothHalvesScored++;
+      if (hasScoredBothHalves(match.homeGoalsMinutes)) teamGoals[match.homeTeam].homeBothHalvesScored++;
 
       if (!teamGoals[match.awayTeam]) {
         teamGoals[match.awayTeam] = {
@@ -98,6 +99,7 @@ const DataProvider = ({ children }) => {
       teamGoals[match.awayTeam].matchCount++;
       teamGoals[match.awayTeam].totalMatchGoals += totalGoals;
       if (match.goalHome > 0 && match.goalAway > 0) teamGoals[match.awayTeam].bts++;
+      if (match.goalHome > 0 && match.goalAway > 0) teamGoals[match.awayTeam].awayBts++;
       if (totalGoals > 2.5) { teamGoals[match.awayTeam].over25Count++; teamGoals[match.awayTeam].awayOver25Count++; }
       if (totalGoals > 3.5) { teamGoals[match.awayTeam].over35Count++; teamGoals[match.awayTeam].awayOver35Count++; }
       if (totalGoals > 4.5) { teamGoals[match.awayTeam].over45Count++; teamGoals[match.awayTeam].awayOver45Count++; }
@@ -140,7 +142,7 @@ const DataProvider = ({ children }) => {
       awayLess45Rate: team.awayMatchCount ? (team.awayLess45Count / team.awayMatchCount) * 100 : 0,
       homeLess15Rate: team.homeMatchCount ? (team.homeLess15Count / team.homeMatchCount) * 100 : 0,
       awayLess15Rate: team.awayMatchCount ? (team.awayLess15Count / team.awayMatchCount) * 100 : 0,
-      bothHalvesRate: (team.bothHalvesScored / team.matchCount) * 100,
+      bothHalvesRate: (team.homeBothHalvesScored + team.awayBothHalvesScored) / team.matchCount * 100,
       homeBothHalvesRate: team.homeMatchCount ? (team.homeBothHalvesScored / team.homeMatchCount) * 100 : 0,
       awayBothHalvesRate: team.awayMatchCount ? (team.awayBothHalvesScored / team.awayMatchCount) * 100 : 0,
     }));

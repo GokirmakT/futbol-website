@@ -136,6 +136,9 @@ export default function Header() {
               <Button variant="contained" onClick={() => navigate("/Goals")}>
                 Gol
               </Button>
+              <Button variant="contained" onClick={() => navigate("/iy-ms")}>
+                iy-ms
+              </Button>
             </>
           )}
 
@@ -232,6 +235,16 @@ export default function Header() {
                     }}
                   />
                   Gol</MenuItem>
+                <MenuItem onClick={() => {navigate("/iy-ms"); setMenuAnchor(null);}} sx={{gap: 0.5}}>
+                <img
+                    src = "/football.png"
+                    alt="menu"
+                    style={{
+                      width: 24,
+                      height: 24,                                          
+                    }}
+                  />
+                  İy-Ms İstatistikleri</MenuItem>
                 <MenuItem onClick={() => {navigate("/Statistics"); setMenuAnchor(null);}} sx={{gap: 0.5}}>
                 <img
                     src = "/football.png"

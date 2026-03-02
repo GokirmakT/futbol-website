@@ -9,6 +9,7 @@ import Standings from "./Pages/Standings.jsx";
 import Statistics from "./Pages/Statistics.jsx";
 import TeamDetail from "./Pages/TeamDetail.jsx";
 import MatchDetail from "./Pages/MatchDetail.jsx";
+import IyMsAnalysis from "./Pages/IyMsAnalysis.jsx";
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="/Statistics" element={<Statistics />} />
         <Route path="/team/:league/:team" element={<TeamDetail />} />
         <Route path="/match/:league/:home/:away" element={<MatchDetail />} />
+        <Route path="/iy-ms" element={<IyMsAnalysis />} />
       </Routes>
     </>
   );
