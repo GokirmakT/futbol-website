@@ -22,38 +22,47 @@ const TeamFixture = ({ matches, team, league, display }) => {
 
   const [filters, setFilters] = useState({
     league: league || "",
-    shots: null,          // 10 | 15 | 20
-    shotsOnTarget: null,  // 5 | 8
-    corners: null,        // 7 | 9 | 11
-    cornerWinner: null,   // "home" | "away"    
-    penaltyScore: null,   // 3 | 4 | 5
+    shots: null,
+    shotsOnTarget: null,
+    corners: null,
+    cornerWinner: null,
+    penaltyScore: null,
     hasRedCard: false,
-    result: null,         // "home" | "away" | "draw"
-    goals: null           // "over25" | "over35"
+    result: null,
+    goals: null,
   });
   
   const filteredMatches = matches.filter(m => {
-  // takım filtresi (çok önemli)
-  if (m.homeTeam !== team && m.awayTeam !== team) return false;
-
-  // lig filtresi
-  if (filters.league && m.league !== filters.league) return false;
-
-  return true;
-});
+    if (m.homeTeam !== team && m.awayTeam !== team) return false;
+    if (filters.league && m.league !== filters.league) return false;
+    return true;
+  });
 
   const checkMatchFilters = (m, f) => {
     if (f.corners && (m.cornerHome + m.cornerAway) < f.corners) return false;
-  
+
     if (f.cornerWinner === "home" && m.cornerHome <= m.cornerAway) return false;
     if (f.cornerWinner === "away" && m.cornerAway <= m.cornerHome) return false;
-  
+
     if (f.hasRedCard && (m.redHome + m.redAway) === 0) return false;
 
-    if (f.penaltyScore && ((m.yellowHome + (m.redHome * 2)) + (m.yellowAway + (m.redAway * 2 )))  < f.penaltyScore) return false;
-  
+    if (
+      f.penaltyScore &&
+      (m.yellowHome + m.redHome * 2 + (m.yellowAway + m.redAway * 2)) < f.penaltyScore
+    )
+      return false;
+
     return true;
   };
+
+  const isVisualFilterEmpty = Object.entries(filters)
+    .filter(([key]) => key !== "league")
+    .every(([, v]) => v === null || v === false);
+
+  const matchesPassingAllFilters = filteredMatches.filter(m => {
+    const isPlayed = m.winner !== "TBD";
+    return isPlayed && checkMatchFilters(m, filters);
+  });
     
   const getBgColor = (team, homeTeam, homeGoal, awayGoal) => {
     const isHome = team === homeTeam;
@@ -140,17 +149,21 @@ const TeamFixture = ({ matches, team, league, display }) => {
           }
           label="Kırmızı"
         />
-        </Stack>
+      </Stack>
+
+      {/* Filtre sonucu maç sayısı (lig HARİÇ en az bir filtre aktifse) */}
+      {!isVisualFilterEmpty && (
+        <Typography variant="body2" sx={{ mt: 1 }}>
+          Bu filtrelere uyan{" "}
+          <strong>{matchesPassingAllFilters.length}</strong> maç bulundu.
+        </Typography>
+      )}
 
     <Stack spacing={2} width="100%" alignItems="center">
       {filteredMatches.map((m, i) => {
         const isPlayed = m.winner !== "TBD";  
         
         const passes = isPlayed && checkMatchFilters(m, filters);
-
-        const isVisualFilterEmpty = Object.entries(filters)
-          .filter(([key]) => key !== "league") // 👈 league HARİÇ
-          .every(([, v]) => v === null || v === false);
 
 
         return (

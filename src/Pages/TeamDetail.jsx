@@ -1,15 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useEffect } from "react";
-import {
-  Typography,
-  Stack,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Divider,
-  Box,
-  Grid
-} from "@mui/material";
+import { Typography, Stack, Divider } from "@mui/material";
 import { useData } from "../context/DataContext";
 import GoalsStats from "../Components/TeamDetail_Goal.jsx";
 import CornerStats from "../Components/TeamDetail_Corner.jsx";
@@ -58,52 +49,59 @@ const TeamDetail = () => {
   );  
 
   return (
-    <Stack spacing={2}>
+    <Stack spacing={3}>
       {/* HEADER */}
-      <Typography variant="h4">{team}</Typography>
-      <Typography variant="subtitle1" color="text.secondary">
-        {league}
-      </Typography>
+      <Stack spacing={0.5}>
+        <Typography variant="h4">{team}</Typography>
+        <Typography variant="subtitle1" color="text.secondary">
+          {league}
+        </Typography>
+      </Stack>
 
       <Divider />
-      
-      <Accordion>
-        <AccordionSummary>
-          <Typography fontWeight="bold">Fikstür</Typography>
-        </AccordionSummary>
-        <AccordionDetails sx={{p: 1}}>
-          <TeamFixture matches={sortedTeamMatches} team={team} league={league} display={"block"} />
-        </AccordionDetails>
-      </Accordion>
-      
-      <Accordion>
-        <AccordionSummary >
-          <Typography fontWeight="bold">Gol İstatistikleri</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <GoalsStats matches={teamMatches} team={team} goalStats={goalStats}/>
-        </AccordionDetails>
-      </Accordion>
 
-      
-      <Accordion>
-        <AccordionSummary >
-          <Typography fontWeight="bold">Korner İstatistikleri</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <CornerStats matches={teamMatches} />
-        </AccordionDetails>
-      </Accordion>
+      {/* Fikstür */}
+      <Stack spacing={1}>
+        <Typography variant="h6" fontWeight="bold">
+          Fikstür
+        </Typography>
+        <TeamFixture
+          matches={sortedTeamMatches}
+          team={team}
+          league={league}
+          display={"block"}
+        />
+      </Stack>
 
-     
-      <Accordion>
-        <AccordionSummary >
-          <Typography fontWeight="bold">Kart İstatistikleri</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <CardStats matches={teamMatches} />
-        </AccordionDetails>
-      </Accordion>
+      <Divider />
+
+      {/* Gol İstatistikleri */}
+      <Stack spacing={1}>
+        <Typography variant="h6" fontWeight="bold">
+          Gol İstatistikleri
+        </Typography>
+        <GoalsStats matches={teamMatches} team={team} goalStats={goalStats} />
+      </Stack>
+
+      <Divider />
+
+      {/* Korner İstatistikleri */}
+      <Stack spacing={1}>
+        <Typography variant="h6" fontWeight="bold">
+          Korner İstatistikleri
+        </Typography>
+        <CornerStats matches={teamMatches} />
+      </Stack>
+
+      <Divider />
+
+      {/* Kart İstatistikleri */}
+      <Stack spacing={1}>
+        <Typography variant="h6" fontWeight="bold">
+          Kart İstatistikleri
+        </Typography>
+        <CardStats matches={teamMatches} />
+      </Stack>
     </Stack>
   );
 };
