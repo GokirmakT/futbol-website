@@ -165,7 +165,7 @@ function Corner() {
                       sx={{
                         cursor: "pointer",
                         backgroundColor:
-                          option.label === selectedLeague ? "#ff9800" : "#2a3b47",
+                          option.label === selectedLeague ? "#ff9800" : "#ffffff",
                         borderRadius: 1.5,
                         p: 1,
                         display: "flex",
@@ -184,8 +184,8 @@ function Corner() {
                     >
                       <img
                         src={option.icon}
-                        width={32}
-                        height={32}
+                        width={64}
+                        height={64}
                         alt={option.label}
                         style={{ marginBottom: 6 }}
                       />

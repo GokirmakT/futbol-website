@@ -56,7 +56,7 @@ function Goals() {
       <Stack direction={'column'} alignItems="center" sx={{pt: 5}}>
 
         {/* Lig seçimi */}
-        <Box sx={{ width: '70%' }} justifyContent="center" alignItems="center" direction={{ xs: 'column', md: 'row' }}>
+        <Box sx={{ width: { xs: '90%', md: '70%', lg: '50%' } }} justifyContent="center" alignItems="center" direction={{ xs: 'column', md: 'row' }}>
           <Typography textAlign="center" variant="h5" sx={{ color: "#fff", fontWeight: "bold"}}>
             Gol İstatistikleri
           </Typography>
@@ -87,8 +87,8 @@ function Goals() {
               {selectedLeague && (
                 <img
                   src={`/leagues/${selectedLeague}.png`}
-                  width={24}
-                  height={24}
+                  width={32}
+                  height={32}
                   style={{ marginRight: 8, borderRadius: "4px" }}
                   alt={selectedLeague}
                 />
@@ -175,7 +175,7 @@ function Goals() {
                       sx={{
                         cursor: "pointer",
                         backgroundColor:
-                          option.label === selectedLeague ? "#ff9800" : "#2a3b47",
+                          option.label === selectedLeague ? "#ff9800" : "#ffffff",
                         borderRadius: 1.5,
                         p: 1,
                         display: "flex",
@@ -194,8 +194,8 @@ function Goals() {
                     >
                       <img
                         src={option.icon}
-                        width={32}
-                        height={32}
+                        width={64}
+                        height={64}
                         alt={option.label}
                         style={{ marginBottom: 6 }}
                       />

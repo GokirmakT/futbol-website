@@ -5,14 +5,13 @@ import {
   Typography,
   Paper,
   Grid,
-  TextField,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
+  Button,
+  IconButton,
   LinearProgress,
   Chip,
 } from "@mui/material";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import CloseIcon from "@mui/icons-material/Close";
 import { useData } from "../context/DataContext";
 import { getTeamLogo } from "../Components/teamLogos.js";
 import {
@@ -32,21 +31,39 @@ const getBgColor = (percent) => {
 };
 
 const IyMsAnalysis = () => {
-  const { matches } = useData();
+  const { matches, leagues, selectedLeague, setSelectedLeague } = useData();
+  const isMobile = useMediaQuery("(max-width: 900px)");
 
-  const teams = useMemo(() => {
+  const [selectedTeam, setSelectedTeam] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [selectedPatternFilter, setSelectedPatternFilter] = useState("");
+  const [isLeaguePanelOpen, setIsLeaguePanelOpen] = useState(false);
+  const [isTeamPanelOpen, setIsTeamPanelOpen] = useState(false);
+
+  const toggleBodyScroll = lock => {
+    document.body.style.overflow = lock ? "hidden" : "auto";
+  };
+
+  const leagueOptions = useMemo(
+    () =>
+      leagues?.map(l => ({
+        label: l,
+        icon: `/leagues/${l}.png`,
+      })) || [],
+    [leagues]
+  );
+
+  const leagueTeams = useMemo(() => {
+    if (!selectedLeague) return [];
     const set = new Set();
     matches.forEach(m => {
+      if (m.league !== selectedLeague) return;
       if (m.homeTeam) set.add(m.homeTeam);
       if (m.awayTeam) set.add(m.awayTeam);
     });
     return Array.from(set).sort();
-  }, [matches]);
-
-  const [selectedTeam, setSelectedTeam] = useState(teams[0] || "");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [selectedPatternFilter, setSelectedPatternFilter] = useState("");
+  }, [matches, selectedLeague]);
 
   const filteredMatches = useMemo(() => {
     if (!selectedTeam) return [];
@@ -95,8 +112,18 @@ const IyMsAnalysis = () => {
     >
       <Box maxWidth="1400px" mx="auto" px={{ xs: 1.5, md: 3 }}>
         {/* Üst Bölüm */}
-        <Stack direction={{ xs: "column", md: "row" }} spacing={2} mb={3} alignItems="center">
-          <Stack direction="row" spacing={2} alignItems="center" flex={1}>
+        <Stack
+          direction={{ xs: "column", md: "row" }}
+          spacing={2}
+          mb={3}
+          alignItems={{ xs: "stretch", md: "center" }}
+        >
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={2}
+            alignItems={{ xs: "center", sm: "center" }}
+            flex={1}
+          >
             {selectedTeam && (
               <Box
                 sx={{
@@ -117,7 +144,7 @@ const IyMsAnalysis = () => {
                 />
               </Box>
             )}
-            <Box>
+            <Box sx={{ textAlign: { xs: "center", sm: "left" } }}>
               <Typography variant="h5" fontWeight="bold">
                 İlk Yarı / Maç Sonucu Analizi
               </Typography>
@@ -127,24 +154,346 @@ const IyMsAnalysis = () => {
             </Box>
           </Stack>
 
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-            <FormControl size="small" sx={{ minWidth: 200 }}>
-              <InputLabel sx={{ color: "#fff" }}>Takım</InputLabel>
-              <Select
-                label="Takım"
-                value={selectedTeam}
-                onChange={e => setSelectedTeam(e.target.value)}
-                sx={{ color: "#fff", ".MuiOutlinedInput-notchedOutline": { borderColor: "#546e7a" } }}
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={2}
+            sx={{
+              mt: { xs: 2, md: 0 },
+              alignItems: { xs: "center", sm: "flex-end" },
+            }}
+          >
+            {/* Lig Seçimi Butonu */}
+            <Box sx={{ width: { xs: "100%", sm: 220 } }}>
+              <Button
+                fullWidth
+                variant="outlined"
+                onClick={() => {
+                  setIsLeaguePanelOpen(true);
+                  toggleBodyScroll(true);
+                }}
+                sx={{
+                  justifyContent: "flex-start",
+                  textTransform: "none",
+                  backgroundColor: "#fff",
+                  borderColor: "#ccc",
+                  borderRadius: 1,
+                  py: 1,
+                  "&:hover": {
+                    backgroundColor: "#f5f5f5",
+                    borderColor: "#bbb",
+                  },
+                }}
               >
-                {teams.map(team => (
-                  <MenuItem key={team} value={team}>
-                    {team}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+                {selectedLeague && (
+                  <img
+                    src={`/leagues/${selectedLeague}.png`}
+                    width={28}
+                    height={28}
+                    style={{ marginRight: 8}}
+                    alt={selectedLeague}
+                  />
+                )}
+                <Box sx={{ textAlign: "left" }}>
+                  <Typography variant="caption" sx={{ display: "block", color: "#888" }}>
+                    Lig Seç
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "#222" }}>
+                    {selectedLeague || "Lig seçmek için tıklayın"}
+                  </Typography>
+                </Box>
+              </Button>
+            </Box>
+
+            {/* Takım Seçimi Butonu */}
+            <Box sx={{ width: { xs: "100%", sm: 220 } }}>
+              <Button
+                fullWidth
+                variant="outlined"
+                disabled={!selectedLeague || leagueTeams.length === 0}
+                onClick={() => {
+                  setIsTeamPanelOpen(true);
+                  toggleBodyScroll(true);
+                }}
+                sx={{
+                  justifyContent: "flex-start",
+                  textTransform: "none",
+                  backgroundColor: disabled =>
+                    disabled ? "rgb(255, 255, 255)" : "#fff",
+                  borderColor: "#ccc",
+                  borderRadius: 1,
+                  py: 1,
+                  "&:hover": {
+                    backgroundColor: "#f5f5f5",
+                    borderColor: "#bbb",
+                  },
+                }}
+              >
+                {selectedTeam && (
+                  <img
+                    src={getTeamLogo(selectedTeam)}
+                    width={28}
+                    height={28}
+                    style={{ marginRight: 8 }}
+                    alt={selectedTeam}
+                  />
+                )}
+                <Box sx={{ textAlign: "left" }}>
+                  <Typography variant="caption" sx={{ display: "block", color: "#888" }}>
+                    Takım Seç
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "#222" }}>
+                    {selectedTeam || (selectedLeague ? "Takım seçmek için tıklayın" : "Önce lig seçin")}
+                  </Typography>
+                </Box>
+              </Button>
+            </Box>
           </Stack>
         </Stack>
+
+        {/* Lig Seçim Paneli */}
+        {isLeaguePanelOpen && (
+          <Box
+            sx={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 1300,
+              backgroundColor: "rgba(0,0,0,0.7)",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+            onClick={() => {
+              setIsLeaguePanelOpen(false);
+              toggleBodyScroll(false);
+            }}
+          >
+            <Paper
+              sx={{
+                maxWidth: 700,
+                width: "92%",
+                maxHeight: "80vh",
+                backgroundColor: "#1d1d1d",
+                color: "#fff",
+                borderRadius: 2,
+                boxShadow: 24,
+                p: 2,
+              }}
+              onClick={e => e.stopPropagation()}
+            >
+              <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+                <Typography variant="h6" fontWeight="bold">
+                  Lig Seçimi
+                </Typography>
+                <IconButton
+                  size="small"
+                  onClick={() => {
+                    setIsLeaguePanelOpen(false);
+                    toggleBodyScroll(false);
+                  }}
+                  sx={{ color: "#fff" }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </Stack>
+
+              <Typography variant="body2" color="grey.400" mb={2}>
+                Analiz yapmak istediğin ligi seçmek için kartlara tıkla.
+              </Typography>
+
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: {
+                    xs: "repeat(2, 1fr)",
+                    sm: "repeat(3, 1fr)",
+                    md: "repeat(4, 1fr)",
+                  },
+                  gap: 1.5,
+                  maxHeight: "60vh",
+                  overflowY: "auto",
+                  pr: 0.5,
+                }}
+              >
+                {leagueOptions.map(option => (
+                  <Paper
+                    key={option.label}
+                    onClick={() => {
+                      setSelectedLeague(option.label);
+                      setSelectedTeam("");
+                      setIsLeaguePanelOpen(false);
+                      toggleBodyScroll(false);
+                    }}
+                    sx={{
+                      cursor: "pointer",
+                      backgroundColor:
+                        option.label === selectedLeague ? "#ff9800" : "#ffffff",
+                      borderRadius: 1.5,
+                      p: 1,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      textAlign: "center",
+                      transition:
+                        "transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease",
+                      "&:hover": {
+                        transform: "translateY(-2px)",
+                        boxShadow: "0 6px 12px rgba(0,0,0,0.7)",
+                        backgroundColor:
+                          option.label === selectedLeague ? "#ffa726" : "#344955",
+                      },
+                    }}
+                  >
+                    <img
+                      src={option.icon}
+                      width={56}
+                      height={56}
+                      alt={option.label}
+                      style={{ marginBottom: 6 }}
+                    />
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontWeight:
+                          option.label === selectedLeague ? "bold" : "normal",
+                      }}
+                    >
+                      {option.label}
+                    </Typography>
+                  </Paper>
+                ))}
+              </Box>
+            </Paper>
+          </Box>
+        )}
+
+        {/* Takım Seçim Paneli */}
+        {isTeamPanelOpen && (
+          <Box
+            sx={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 1300,
+              backgroundColor: "rgba(0,0,0,0.7)",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+            onClick={() => {
+              setIsTeamPanelOpen(false);
+              toggleBodyScroll(false);
+            }}
+          >
+            <Paper
+              sx={{
+                maxWidth: 700,
+                width: "92%",
+                maxHeight: "80vh",
+                backgroundColor: "#1d1d1d",
+                color: "#fff",
+                borderRadius: 2,
+                boxShadow: 24,
+                p: 2,
+              }}
+              onClick={e => e.stopPropagation()}
+            >
+              <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+                <Typography variant="h6" fontWeight="bold">
+                  Takım Seçimi
+                </Typography>
+                <IconButton
+                  size="small"
+                  onClick={() => {
+                    setIsTeamPanelOpen(false);
+                    toggleBodyScroll(false);
+                  }}
+                  sx={{ color: "#fff" }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </Stack>
+
+              <Typography variant="body2" color="grey.400" mb={2}>
+                {selectedLeague
+                  ? `${selectedLeague} ligi içerisinden analiz etmek istediğin takımı seç.`
+                  : "Önce bir lig seçmelisin."}
+              </Typography>
+
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: {
+                    xs: "repeat(2, 1fr)",
+                    sm: "repeat(3, 1fr)",
+                    md: "repeat(4, 1fr)",
+                  },
+                  gap: 1.5,
+                  maxHeight: "60vh",
+                  overflowY: "auto",
+                  pr: 0.5,
+                }}
+              >
+                {leagueTeams.map(team => (
+                  <Paper
+                    key={team}
+                    onClick={() => {
+                      setSelectedTeam(team);
+                      setIsTeamPanelOpen(false);
+                      toggleBodyScroll(false);
+                    }}
+                    sx={{
+                      cursor: "pointer",
+                      backgroundColor:
+                        team === selectedTeam ? "#ff9800" : "#ffffff",
+                      borderRadius: 1.5,
+                      p: 1,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      textAlign: "center",
+                      transition:
+                        "transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease",
+                      "&:hover": {
+                        transform: "translateY(-2px)",
+                        boxShadow: "0 6px 12px rgba(0,0,0,0.7)",
+                        backgroundColor:
+                          team === selectedTeam ? "#ffa726" : "#344955",
+                      },
+                    }}
+                  >
+                    <img
+                      src={getTeamLogo(team)}
+                      width={40}
+                      height={40}
+                      alt={team}
+                      style={{ marginBottom: 6}}
+                    />
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontWeight: team === selectedTeam ? "bold" : "normal",
+                        color: team === selectedTeam ? "#fff" : "#000",
+                      }}
+                    >
+                      {team}
+                    </Typography>
+                  </Paper>
+                ))}
+
+                {leagueTeams.length === 0 && (
+                  <Typography
+                    variant="body2"
+                    color="grey.400"
+                    sx={{ gridColumn: "1 / -1", textAlign: "center", mt: 2 }}
+                  >
+                    Bu lig için takım bulunamadı.
+                  </Typography>
+                )}
+              </Box>
+            </Paper>
+          </Box>
+        )}
 
         {/* Info & Özet */}
         <Grid container spacing={2} mb={3}>
@@ -197,10 +546,10 @@ const IyMsAnalysis = () => {
         </Grid>
 
         {/* Kart Grid (9 İY/MS) */}
-        <Typography variant="h6" fontWeight="bold" mb={1}>
+        <Typography variant="h6" fontWeight="bold" mb={3}>
           İY/MS Patern Kartları
         </Typography>
-        <Grid container spacing={2} mb={4}>
+        <Grid container spacing={2} mb={4} justifyContent="center">
           {IY_MS_PATTERNS.map(pattern => {
             const count = stats?.overall.patterns[pattern] || 0;
             const perc = stats?.overallPerc[pattern] || 0;
