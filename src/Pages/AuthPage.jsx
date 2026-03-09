@@ -15,6 +15,8 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
 const AuthPage = () => {
   const [mode, setMode] = useState("signin");
   const [loading, setLoading] = useState(false);
@@ -82,7 +84,7 @@ const AuthPage = () => {
 
     try {
       setLoading(true);
-      const res = await fetch(`${VITE_API_BASE_URL}/auth/login`, {
+      const res = await fetch(`${API_BASE}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -124,7 +126,7 @@ const AuthPage = () => {
 
     try {
       setLoading(true);
-      const res = await fetch(`${VITE_API_BASE_URL}/auth/register`, {
+      const res = await fetch(`${API_BASE}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
