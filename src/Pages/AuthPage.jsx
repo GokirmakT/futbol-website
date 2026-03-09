@@ -88,7 +88,7 @@ const AuthPage = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          identifier: signInData.identifier,
+          email: signInData.identifier,
           password: signInData.password,
         }),
       });
