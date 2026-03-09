@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Paper,
@@ -18,6 +19,8 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
 const AuthPage = () => {
+  const navigate = useNavigate();
+
   const [mode, setMode] = useState("signin");
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -105,6 +108,9 @@ const AuthPage = () => {
 
       setSuccessMessage("Başarıyla giriş yapıldı.");
       // İstersen burada redirect yapabilirsin:
+      setTimeout(() => {
+        navigate("/TodayMatches");
+      }, 1000);
       // window.location.href = "/TodayMatches";
     } catch (err) {
       setErrorMessage(err.message || "Beklenmeyen bir hata oluştu.");
@@ -148,6 +154,9 @@ const AuthPage = () => {
 
       setSuccessMessage("Kayıt başarılı. Giriş yapabilirsiniz.");
       // İstersen otomatik signin moduna geç:
+      setTimeout(() => {
+        navigate("/TodayMatches");
+      }, 1000);
       // setMode("signin");
     } catch (err) {
       setErrorMessage(err.message || "Beklenmeyen bir hata oluştu.");
