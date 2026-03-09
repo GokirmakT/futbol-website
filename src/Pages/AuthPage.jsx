@@ -82,7 +82,7 @@ const AuthPage = () => {
 
     try {
       setLoading(true);
-      const res = await fetch("/api/auth/login", {
+      const res = await fetch(`${VITE_API_BASE_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -124,7 +124,7 @@ const AuthPage = () => {
 
     try {
       setLoading(true);
-      const res = await fetch("/api/auth/register", {
+      const res = await fetch(`${VITE_API_BASE_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
