@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   Box,
   Stack,
@@ -10,6 +10,10 @@ import {
   TableRow,
   TableCell, TableHead, TableContainer
 } from "@mui/material";
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { tr } from 'date-fns/locale';
 import { useData } from "../context/DataContext";
 import { getTeamLogo } from "../Components/teamLogos.js";
 import football from "/football.png";
@@ -21,6 +25,7 @@ import { Link } from "react-router-dom";
 function TodayMatches() {
   const { goalStatsByLeague, cornerStatsByLeague, cardStatsByLeague, matches, isLoading, error } = useData();
   const isMobile = useMediaQuery("(max-width: 900px)");
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
     const getBgColor = (percent) => {
     if (percent === "—" || percent == null || (typeof percent === "string" && isNaN(Number(percent)))) return "#e0e0e0";
@@ -51,7 +56,7 @@ function TodayMatches() {
   };
 
   // test için sabit tarih
-  const today = new Date().toISOString().slice(0, 10);
+  const today = selectedDate.toISOString().slice(0, 10);
 
   const groupedMatches = useMemo(() => {
     if (!matches?.length) return {};
@@ -86,14 +91,25 @@ function TodayMatches() {
   if (isLoading) return <Typography textAlign="center">Yükleniyor...</Typography>;
   if (error) return <Typography textAlign="center">Hata oluştu</Typography>;
 
-  const leagues = Object.keys(groupedMatches);
-  if (!leagues.length) return <Typography textAlign="center">Bugün maç yok</Typography>;
+  const leagues = Object.keys(groupedMatches);/*
+  if (!leagues.length) return <Typography textAlign="center">Seçilen tarihte maç yok</Typography>;*/
 
   return (
     <Box maxWidth="800px" mx="auto" mt={3} px={2}>
       <Typography variant="h5" textAlign="center" mb={1}>
-        Bugünün Maçları
+        Maç Takvimi - {selectedDate.toLocaleDateString('tr-TR')}
       </Typography>
+      
+      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={tr}>
+        <Box display="flex" justifyContent="center" mb={2}>
+          <DatePicker
+            label="Tarih Seçin"
+            value={selectedDate}
+            onChange={(newValue) => setSelectedDate(newValue)}
+            format="dd/MM/yyyy"
+          />
+        </Box>
+      </LocalizationProvider>
 
       <Paper sx={{ p: 1.5, mb: 3, backgroundColor: "#f5f5f5" }}>
         <Typography variant="subtitle2" color="text.secondary" gutterBottom>
