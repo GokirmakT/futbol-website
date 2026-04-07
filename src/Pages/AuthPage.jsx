@@ -1,458 +1,262 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import {
   Box,
-  Paper,
-  Tabs,
-  Tab,
-  TextField,
+  Stack,
   Button,
+  Container,
   Typography,
-  InputAdornment,
-  IconButton,
-  Alert,
-  CircularProgress,
-  Fade,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 
 const AuthPage = () => {
-  const navigate = useNavigate();
+  const heroSliderImages = ["/slider1.PNG", "/slider1-2.PNG"];
+  const secondSectionSliderImages = ["/slider2.PNG", "/slider2-2.PNG"];
+  const [heroSlideIndex, setHeroSlideIndex] = useState(0);
+  const [secondSlideIndex, setSecondSlideIndex] = useState(0);
 
-  const [mode, setMode] = useState("signin");
-  const [loading, setLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setHeroSlideIndex(prev =>
+        prev === heroSliderImages.length - 1 ? 0 : prev + 1
+      );
+    }, 4200);
 
-  const [signInData, setSignInData] = useState({
-    identifier: "",
-    password: "",
-  });
+    return () => clearInterval(intervalId);
+  }, [heroSliderImages.length]);
 
-  const [signUpData, setSignUpData] = useState({
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setSecondSlideIndex(prev =>
+        prev === secondSectionSliderImages.length - 1 ? 0 : prev + 1
+      );
+    }, 4200);
 
-  const [showSignInPassword, setShowSignInPassword] = useState(false);
-  const [showSignUpPassword, setShowSignUpPassword] = useState(false);
-  const [showSignUpConfirmPassword, setShowSignUpConfirmPassword] =
-    useState(false);
+    return () => clearInterval(intervalId);
+  }, [secondSectionSliderImages.length]);
 
-  const handleModeChange = (_e, newValue) => {
-    setMode(newValue);
-    setErrorMessage("");
-    setSuccessMessage("");
+  const sectionImageSx = {
+    width: "100%",
+    height: { xs: 320, md: 430 },
+    objectFit: "cover",
+    borderRadius: "24px",
+    boxShadow: "0 14px 34px rgba(15, 23, 42, 0.14)",
   };
 
-  const validateEmail = email =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).toLowerCase());
-
-  const validateSignIn = () => {
-    if (!signInData.identifier.trim()) {
-      return "Email veya kullanıcı adı zorunlu.";
-    }
-    if (!signInData.password || signInData.password.length < 6) {
-      return "Şifre en az 6 karakter olmalı.";
-    }
-    return "";
+  const pillButtonSx = {
+    borderRadius: "999px",
+    px: 3,
+    py: 1.15,
+    fontWeight: 700,
+    textTransform: "none",
+    transition: "all 0.25s ease",
+    "&:hover": {
+      transform: "translateY(-2px)",
+      boxShadow: "0 12px 22px rgba(99, 102, 241, 0.2)",
+    },
   };
 
-  const validateSignUp = () => {
-    const { username, email, password, confirmPassword } = signUpData;
-    if (!username.trim()) return "Kullanıcı adı zorunlu.";
-    if (!email.trim()) return "Email zorunlu.";
-    if (!validateEmail(email)) return "Geçerli bir email girin.";
-    if (!password || password.length < 6)
-      return "Şifre en az 6 karakter olmalı.";
-    if (password !== confirmPassword)
-      return "Şifre ve şifre tekrar aynı olmalı.";
-    return "";
-  };
-
-  const handleSignInSubmit = async e => {
-    e.preventDefault();
-    setErrorMessage("");
-    setSuccessMessage("");
-
-    const validationError = validateSignIn();
-    if (validationError) {
-      setErrorMessage(validationError);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const res = await fetch(`${API_BASE}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: signInData.identifier,
-          password: signInData.password,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data?.message || "Giriş başarısız.");
-      }
-
-      if (data?.token) {
-        localStorage.setItem("token", data.token);
-      }
-
-      setSuccessMessage("Başarıyla giriş yapıldı.");
-      // İstersen burada redirect yapabilirsin:
-      setTimeout(() => {
-        navigate("/TodayMatches");
-      }, 1000);
-      // window.location.href = "/TodayMatches";
-    } catch (err) {
-      setErrorMessage(err.message || "Beklenmeyen bir hata oluştu.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSignUpSubmit = async e => {
-    e.preventDefault();
-    setErrorMessage("");
-    setSuccessMessage("");
-
-    const validationError = validateSignUp();
-    if (validationError) {
-      setErrorMessage(validationError);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const res = await fetch(`${API_BASE}/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: signUpData.username,
-          email: signUpData.email,
-          password: signUpData.password,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data?.message || "Kayıt işlemi başarısız.");
-      }
-
-      if (data?.token) {
-        localStorage.setItem("token", data.token);
-      }
-
-      setSuccessMessage("Kayıt başarılı. Giriş yapabilirsiniz.");
-      // İstersen otomatik signin moduna geç:
-      setTimeout(() => {
-        navigate("/TodayMatches");
-      }, 1000);
-      // setMode("signin");
-    } catch (err) {
-      setErrorMessage(err.message || "Beklenmeyen bir hata oluştu.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const SplitSection = ({
+    title,
+    description,
+    image,
+    imageSliderImages,
+    activeSlideIndex = 0,
+    imageAlt,
+    imageRightDesktop = false,
+    actions,
+  }) => (
+    <Box sx={{ py: { xs: 8, md: 12 } }}>
+      <Stack
+        direction={{ xs: "column", md: "row" }}
+        spacing={{ xs: 5, md: 8 }}
+        alignItems="center"
+      >
+        <Box sx={{ width: { xs: "100%", md: "50%" }, order: { xs: 1, md: imageRightDesktop ? 2 : 1 } }}>
+          {Array.isArray(imageSliderImages) && imageSliderImages.length > 0 ? (
+            <Box sx={{ position: "relative", ...sectionImageSx, overflow: "hidden" }}>
+              {imageSliderImages.map((sliderImage, index) => (
+                <Box
+                  key={sliderImage}
+                  component="img"
+                  src={sliderImage}
+                  alt={`${imageAlt} ${index + 1}`}
+                  sx={{
+                    position: "absolute",
+                    inset: 0,
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "fill",
+                    opacity: activeSlideIndex === index ? 1 : 0,
+                    transition: "opacity 900ms ease-in-out",
+                  }}
+                />
+              ))}
+            </Box>
+          ) : (
+            <Box
+              component="img"
+              src={image}
+              alt={imageAlt}
+              sx={sectionImageSx}
+            />
+          )}
+        </Box>
+        <Box sx={{ width: { xs: "100%", md: "50%" }, order: { xs: 2, md: imageRightDesktop ? 1 : 2 } }}>
+          <Typography
+            variant="h4"
+            fontWeight={800}
+            sx={{ mb: 2, letterSpacing: "0.02em" }}
+          >
+            {title}
+          </Typography>
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ mb: 3.5, whiteSpace: "pre-line" }}
+          >
+            {description}
+          </Typography>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5 }}>
+            {actions}
+          </Box>
+        </Box>
+      </Stack>
+    </Box>
+  );
 
   return (
     <Box
       sx={{
-        minHeight: "100vh",
-        background:
-          "radial-gradient(circle at top, #263238 0, #1b2838 40%, #0f172a 100%)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        p: 2,
+        backgroundColor: "#f8fafc",
+        color: "#0f172a",
       }}
     >
-      <Paper
-        elevation={8}
-        sx={{
-          width: "100%",
-          maxWidth: 420,
-          borderRadius: 3,
-          overflow: "hidden",
-          backgroundColor: "rgba(15, 23, 42, 0.95)",
-          backdropFilter: "blur(10px)",
-          color: "#fff",
-        }}
-      >
-        <Tabs
-          value={mode}
-          onChange={handleModeChange}
-          variant="fullWidth"
-          textColor="inherit"
-          TabIndicatorProps={{ style: { backgroundColor: "#22c55e" } }}
-          sx={{
-            background:
-              "linear-gradient(90deg, rgba(56,189,248,0.25), rgba(34,197,94,0.35))",
-          }}
-        >
-          <Tab
-            label="Giriş Yap"
-            value="signin"
-            sx={{ fontWeight: "bold", textTransform: "none" }}
-          />
-          <Tab
-            label="Kayıt Ol"
-            value="signup"
-            sx={{ fontWeight: "bold", textTransform: "none" }}
-          />
-        </Tabs>
-
-        <Box sx={{ p: 3 }}>
-          <Typography variant="h5" fontWeight="bold" mb={0.5}>
-            Futbol İstatistik Platformu
-          </Typography>
-          <Typography variant="body2" color="grey.400" mb={2}>
-            Maç verilerine erişmek için hesap oluştur veya giriş yap.
-          </Typography>
-
-          {errorMessage && (
-            <Alert
-              severity="error"
-              sx={{ mb: 2, backgroundColor: "rgba(248, 113, 113, 0.1)" }}
-            >
-              {errorMessage}
-            </Alert>
-          )}
-          {successMessage && (
-            <Alert
-              severity="success"
-              sx={{ mb: 2, backgroundColor: "rgba(74, 222, 128, 0.1)" }}
-            >
-              {successMessage}
-            </Alert>
-          )}
-
-          <Fade in={mode === "signin"} timeout={300} unmountOnExit>
-            <Box
-              component="form"
-              onSubmit={handleSignInSubmit}
-              sx={{
-                display: mode === "signin" ? "block" : "none",
-              }}
-            >
-              <TextField
-                label="Email veya Kullanıcı Adı"
-                variant="outlined"
-                fullWidth
-                margin="normal"
-                value={signInData.identifier}
-                onChange={e =>
-                  setSignInData(s => ({ ...s, identifier: e.target.value }))
-                }
-                InputProps={{
-                  sx: {
-                    color: "#fff",
-                  },
-                }}
-              />
-
-              <TextField
-                label="Şifre"
-                variant="outlined"
-                fullWidth
-                margin="normal"
-                type={showSignInPassword ? "text" : "password"}
-                value={signInData.password}
-                onChange={e =>
-                  setSignInData(s => ({ ...s, password: e.target.value }))
-                }
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        edge="end"
-                        onClick={() =>
-                          setShowSignInPassword(prev => !prev)
-                        }
-                        sx={{ color: "#cbd5f5" }}
-                      >
-                        {showSignInPassword ? (
-                          <VisibilityOff />
-                        ) : (
-                          <Visibility />
-                        )}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                  sx: {
-                    color: "#fff",
-                  },
-                }}
-              />
-
+      <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
+        <SplitSection
+          title="VERİYLE BAHİS YAPIN"
+          description={"Futbol bahislerinde sezgilere degil, guclu verilere dayali kararlar alin. Platformumuz, gelismis istatistikler, gecmis mac analizleri ve gercek zamanli verilerle farkli bahis seceneklerini detayli sekilde degerlendirmenizi saglar. Akilli filtreleme araclari sayesinde oranlari karsilastirabilir, maclarin olasiliklarini daha net analiz edebilir ve riskleri daha kontrollu bir sekilde yonetebilirsiniz.\n\nBoylece yalnizca tahminlere dayali degil, veriye dayali stratejiler gelistirerek daha bilincli, daha planli ve daha surdurulebilir bahis kararlari alabilirsiniz."}
+          image={heroSliderImages[heroSlideIndex]}
+          imageSliderImages={heroSliderImages}
+          activeSlideIndex={heroSlideIndex}
+          imageAlt="Futbol sahasi gorunumu"
+          actions={
+            <>
               <Button
-                type="submit"
                 variant="contained"
-                fullWidth
-                disabled={loading}
+                color="error"
+                sx={{ ...pillButtonSx, boxShadow: "0 10px 20px rgba(220, 38, 38, 0.24)" }}
+              >
+                VERI AKISLARI
+              </Button>
+              <Button variant="outlined" color="error" sx={pillButtonSx}>
+                CANLI TAKIPCI
+              </Button>
+              <Button variant="outlined" color="error" sx={pillButtonSx}>
+                WIDGETS
+              </Button>
+            </>
+          }
+        />
+
+        <SplitSection
+          title="EN GENIS KAPSAM"
+          description="Ligdeki tum maclari, canli olasilik hareketlerini ve derin mac istatistiklerini tek bir akisla izleyin. Veri odakli kararlar icin hizli ve guvenilir altyapi."
+          image={secondSectionSliderImages[secondSlideIndex]}
+          imageSliderImages={secondSectionSliderImages}
+          activeSlideIndex={secondSlideIndex}
+          imageAlt="Stadyum ve taraftarlar"
+          imageRightDesktop
+          actions={
+            <Button variant="contained" color="error" sx={pillButtonSx}>
+              KAPSAMI GOR
+            </Button>
+          }
+        />
+
+        <Box sx={{ py: { xs: 8, md: 12 } }}>
+          <Stack
+            direction={{ xs: "column", md: "row" }}
+            spacing={{ xs: 5, md: 8 }}
+            alignItems="center"
+          >
+            <Box sx={{ width: { xs: "100%", md: "50%" }, order: { xs: 1, md: 1 } }}>
+              <Box
                 sx={{
-                  mt: 2,
-                  py: 1.2,
-                  fontWeight: "bold",
-                  textTransform: "none",
-                  background:
-                    "linear-gradient(135deg, #22c55e, #16a34a)",
-                  "&:hover": {
-                    background:
-                      "linear-gradient(135deg, #16a34a, #15803d)",
-                  },
+                  position: "relative",
+                  minHeight: { xs: 340, md: 400 },
                 }}
               >
-                {loading ? (
-                  <CircularProgress size={24} sx={{ color: "#fff" }} />
-                ) : (
-                  "Giriş Yap"
-                )}
+                <Box
+                  component="img"
+                  src="https://images.unsplash.com/photo-1577223625816-7546f13df25d?auto=format&fit=crop&w=900&q=80"
+                  alt="YouTube canli yayin paneli"
+                  sx={{
+                    width: { xs: "85%", md: "82%" },
+                    height: { xs: 260, md: 300 },
+                    objectFit: "cover",
+                    borderRadius: "24px",
+                    boxShadow: "0 18px 34px rgba(15, 23, 42, 0.2)",
+                  }}
+                />
+                <Box
+                  component="img"
+                  src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=900&q=80"
+                  alt="Dashboard analiz ekrani"
+                  sx={{
+                    position: "absolute",
+                    right: { xs: 0, md: 14 },
+                    bottom: 0,
+                    width: { xs: "62%", md: "58%" },
+                    height: { xs: 190, md: 210 },
+                    objectFit: "cover",
+                    borderRadius: "22px",
+                    border: "6px solid #f8fafc",
+                    boxShadow: "0 16px 32px rgba(15, 23, 42, 0.22)",
+                  }}
+                />
+              </Box>
+            </Box>
+            <Box sx={{ width: { xs: "100%", md: "50%" }, order: { xs: 2, md: 2 } }}>
+              <Typography variant="h4" fontWeight={800} sx={{ mb: 2 }}>
+                CANLI YORUM KANALI / YOUTUBER ICIN TRACKER-PRO
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ mb: 2.5 }}>
+                Icerik ureticiler icin tasarlanan Tracker-Pro, yayina ozel veri katmanlari
+                ile yorum kalitesini artirir, izleyici etkilesimini guclendirir.
+              </Typography>
+
+              <List sx={{ mb: 3, py: 0 }}>
+                <ListItem disableGutters>
+                  <ListItemIcon sx={{ minWidth: 34 }}>
+                    <CheckCircleRoundedIcon color="error" />
+                  </ListItemIcon>
+                  <ListItemText primary="Cok boyutlu ve derinlemesine istatistikler" />
+                </ListItem>
+                <ListItem disableGutters>
+                  <ListItemIcon sx={{ minWidth: 34 }}>
+                    <CheckCircleRoundedIcon color="error" />
+                  </ListItemIcon>
+                  <ListItemText primary="Ozellestirilmis cozumler" />
+                </ListItem>
+                <ListItem disableGutters>
+                  <ListItemIcon sx={{ minWidth: 34 }}>
+                    <CheckCircleRoundedIcon color="error" />
+                  </ListItemIcon>
+                  <ListItemText primary="Daha uygun maliyetli teklif" />
+                </ListItem>
+              </List>
+
+              <Button variant="contained" color="error" sx={pillButtonSx}>
+                DEVAMINI OKU
               </Button>
             </Box>
-          </Fade>
-
-          <Fade in={mode === "signup"} timeout={300} unmountOnExit>
-            <Box
-              component="form"
-              onSubmit={handleSignUpSubmit}
-              sx={{
-                display: mode === "signup" ? "block" : "none",
-              }}
-            >
-              <TextField
-                label="Kullanıcı Adı"
-                variant="outlined"
-                fullWidth
-                margin="normal"
-                value={signUpData.username}
-                onChange={e =>
-                  setSignUpData(s => ({ ...s, username: e.target.value }))
-                }
-                InputProps={{
-                  sx: { color: "#fff" },
-                }}
-              />
-
-              <TextField
-                label="Email"
-                variant="outlined"
-                fullWidth
-                margin="normal"
-                value={signUpData.email}
-                onChange={e =>
-                  setSignUpData(s => ({ ...s, email: e.target.value }))
-                }
-                InputProps={{
-                  sx: { color: "#fff" },
-                }}
-              />
-
-              <TextField
-                label="Şifre"
-                variant="outlined"
-                fullWidth
-                margin="normal"
-                type={showSignUpPassword ? "text" : "password"}
-                value={signUpData.password}
-                onChange={e =>
-                  setSignUpData(s => ({ ...s, password: e.target.value }))
-                }
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        edge="end"
-                        onClick={() =>
-                          setShowSignUpPassword(prev => !prev)
-                        }
-                        sx={{ color: "#cbd5f5" }}
-                      >
-                        {showSignUpPassword ? (
-                          <VisibilityOff />
-                        ) : (
-                          <Visibility />
-                        )}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                  sx: { color: "#fff" },
-                }}
-              />
-
-              <TextField
-                label="Şifre Tekrar"
-                variant="outlined"
-                fullWidth
-                margin="normal"
-                type={showSignUpConfirmPassword ? "text" : "password"}
-                value={signUpData.confirmPassword}
-                onChange={e =>
-                  setSignUpData(s => ({
-                    ...s,
-                    confirmPassword: e.target.value,
-                  }))
-                }
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        edge="end"
-                        onClick={() =>
-                          setShowSignUpConfirmPassword(prev => !prev)
-                        }
-                        sx={{ color: "#cbd5f5" }}
-                      >
-                        {showSignUpConfirmPassword ? (
-                          <VisibilityOff />
-                        ) : (
-                          <Visibility />
-                        )}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                  sx: { color: "#fff" },
-                }}
-              />
-
-              <Button
-                type="submit"
-                variant="contained"
-                fullWidth
-                disabled={loading}
-                sx={{
-                  mt: 2,
-                  py: 1.2,
-                  fontWeight: "bold",
-                  textTransform: "none",
-                  background:
-                    "linear-gradient(135deg, #22c55e, #16a34a)",
-                  "&:hover": {
-                    background:
-                      "linear-gradient(135deg, #16a34a, #15803d)",
-                  },
-                }}
-              >
-                {loading ? (
-                  <CircularProgress size={24} sx={{ color: "#fff" }} />
-                ) : (
-                  "Kayıt Ol"
-                )}
-              </Button>
-            </Box>
-          </Fade>
+          </Stack>
         </Box>
-      </Paper>
+      </Container>
     </Box>
   );
 };

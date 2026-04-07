@@ -161,12 +161,17 @@ const DataProvider = ({ children }) => {
           teamGoals[match.homeTeam] = { team: match.homeTeam, matchCount: 0, over25Count: 0 };
         }
         teamGoals[match.homeTeam].matchCount++;
+        if (totalGoals > 1.5) teamGoals[match.homeTeam].over15Count++;
         if (totalGoals > 2.5) teamGoals[match.homeTeam].over25Count++;
+        if (totalGoals > 3.5) teamGoals[match.homeTeam].over35Count++;
+
         if (!teamGoals[match.awayTeam]) {
           teamGoals[match.awayTeam] = { team: match.awayTeam, matchCount: 0, over25Count: 0 };
         }
         teamGoals[match.awayTeam].matchCount++;
+        if (totalGoals > 1.5) teamGoals[match.awayTeam].over15Count++;
         if (totalGoals > 2.5) teamGoals[match.awayTeam].over25Count++;
+        if (totalGoals > 3.5) teamGoals[match.awayTeam].over35Count++;
       });
       result[leagueName] = Object.values(teamGoals).map(t => ({
         team: t.team,
@@ -182,24 +187,26 @@ const DataProvider = ({ children }) => {
       const leagueMatches = matches.filter(m => m.league === leagueName && m.winner !== "TBD");
       const teamCards = {};
       leagueMatches.forEach(match => {
-        const matchTotalYellow = match.yellowHome + match.yellowAway;
+        const matchTotalPenaltyScore = (match.yellowHome * 1) + (match.redHome * 2) + (match.yellowAway * 1) + (match.redAway * 2);
         if (!teamCards[match.homeTeam]) {
-          teamCards[match.homeTeam] = { team: match.homeTeam, matchCount: 0, over25Count: 0, over35Count: 0 };
+          teamCards[match.homeTeam] = { team: match.homeTeam, matchCount: 0, penaltyOver25Count: 0, penaltyOver35Count: 0 };
         }
         teamCards[match.homeTeam].matchCount++;
-        if (matchTotalYellow > 2.5) teamCards[match.homeTeam].over25Count++;
-        if (matchTotalYellow > 3.5) teamCards[match.homeTeam].over35Count++;
+        if (matchTotalPenaltyScore > 2.5) teamCards[match.homeTeam].penaltyOver25Count++;
+        if (matchTotalPenaltyScore > 3.5) teamCards[match.homeTeam].penaltyOver35Count++;
+
         if (!teamCards[match.awayTeam]) {
-          teamCards[match.awayTeam] = { team: match.awayTeam, matchCount: 0, over25Count: 0, over35Count: 0 };
+          teamCards[match.awayTeam] = { team: match.awayTeam, matchCount: 0, penaltyOver25Count: 0, penaltyOver35Count: 0 };
         }
         teamCards[match.awayTeam].matchCount++;
-        if (matchTotalYellow > 2.5) teamCards[match.awayTeam].over25Count++;
-        if (matchTotalYellow > 3.5) teamCards[match.awayTeam].over35Count++;
+        if (matchTotalPenaltyScore > 2.5) teamCards[match.awayTeam].penaltyOver25Count++;
+        if (matchTotalPenaltyScore > 3.5) teamCards[match.awayTeam].penaltyOver35Count++;
       });
       result[leagueName] = Object.values(teamCards).map(t => ({
         team: t.team,
-        over25Rate: (t.over25Count / t.matchCount) * 100,
-        over35Rate: (t.over35Count / t.matchCount) * 100,
+        penaltyOver25Rate: (t.penaltyOver25Count / t.matchCount) * 100,
+        penaltyOver35Rate: (t.penaltyOver35Count / t.matchCount) * 100,
+        penaltyOver45Rate: (t.penaltyOver45Count / t.matchCount) * 100,
       }));
     });
     return result;
@@ -213,19 +220,26 @@ const DataProvider = ({ children }) => {
       leagueMatches.forEach(match => {
         const matchCorners = match.cornerHome + match.cornerAway;
         if (!teamCorners[match.homeTeam]) {
-          teamCorners[match.homeTeam] = { team: match.homeTeam, matchCount: 0, over85Count: 0 };
+          teamCorners[match.homeTeam] = { team: match.homeTeam, matchCount: 0, over85Count: 0, over95Count: 0, over105Count: 0};
         }
         teamCorners[match.homeTeam].matchCount++;
         if (matchCorners > 8.5) teamCorners[match.homeTeam].over85Count++;
+        if (matchCorners > 9.5) teamCorners[match.homeTeam].over95Count++;
+        if (matchCorners > 10.5) teamCorners[match.homeTeam].over105Count++;
+
         if (!teamCorners[match.awayTeam]) {
-          teamCorners[match.awayTeam] = { team: match.awayTeam, matchCount: 0, over85Count: 0 };
+          teamCorners[match.awayTeam] = { team: match.awayTeam, matchCount: 0, over85Count: 0, over95Count: 0, over105Count: 0};
         }
         teamCorners[match.awayTeam].matchCount++;
         if (matchCorners > 8.5) teamCorners[match.awayTeam].over85Count++;
+        if (matchCorners > 9.5) teamCorners[match.awayTeam].over95Count++;
+        if (matchCorners > 10.5) teamCorners[match.awayTeam].over105Count++;
       });
       result[leagueName] = Object.values(teamCorners).map(t => ({
         team: t.team,
         over85Rate: (t.over85Count / t.matchCount) * 100,
+        over95Rate: (t.over95Count / t.matchCount) * 100,
+        over105Rate: (t.over105Count / t.matchCount) * 100,
       }));
     });
     return result;

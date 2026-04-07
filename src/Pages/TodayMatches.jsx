@@ -126,7 +126,7 @@ function TodayMatches() {
           </Stack>
           <Stack direction="row" alignItems="center" spacing={0.5}>
             <img src={card} alt="" style={{ width: 18, height: 18 }} />
-            <Typography variant="body2">: 2.5 üst kart oranı (%)</Typography>
+            <Typography variant="body2">: 3.5 üst ceza skoru oranı (%)</Typography>
           </Stack>
         </Stack>
       </Paper>
@@ -147,18 +147,63 @@ function TodayMatches() {
 
               const homeGoalStats = leagueGoalStats.find(t => t.team === match.homeTeam);
               const awayGoalStats = leagueGoalStats.find(t => t.team === match.awayTeam);
+              const homeGoalOver15 = homeGoalStats?.over15Rate != null ? homeGoalStats.over15Rate.toFixed(0) : "—";
+              const awayGoalOver15 = awayGoalStats?.over15Rate != null ? awayGoalStats.over15Rate.toFixed(0) : "—";
+
               const homeGoalOver25 = homeGoalStats?.over25Rate != null ? homeGoalStats.over25Rate.toFixed(0) : "—";
               const awayGoalOver25 = awayGoalStats?.over25Rate != null ? awayGoalStats.over25Rate.toFixed(0) : "—";
+
+              const homeGoalOver35 = homeGoalStats?.over35Rate != null ? homeGoalStats.over35Rate.toFixed(0) : "—";
+              const awayGoalOver35 = awayGoalStats?.over35Rate != null ? awayGoalStats.over35Rate.toFixed(0) : "—";
 
               const homeCornerStats = leagueCornerStats.find(t => t.team === match.homeTeam);
               const awayCornerStats = leagueCornerStats.find(t => t.team === match.awayTeam);
               const homeCornerOver85 = homeCornerStats?.over85Rate != null ? homeCornerStats.over85Rate.toFixed(0) : "—";
               const awayCornerOver85 = awayCornerStats?.over85Rate != null ? awayCornerStats.over85Rate.toFixed(0) : "—";
 
+              const homeCornerOver95 = homeCornerStats?.over95Rate != null ? homeCornerStats.over95Rate.toFixed(0) : "—";
+              const awayCornerOver95 = awayCornerStats?.over95Rate != null ? awayCornerStats.over95Rate.toFixed(0) : "—";
+
+              const homeCornerOver105 = homeCornerStats?.over105Rate != null ? homeCornerStats.over105Rate.toFixed(0) : "—";
+              const awayCornerOver105 = awayCornerStats?.over105Rate != null ? awayCornerStats.over105Rate.toFixed(0) : "—";
+
               const homeCardStats = leagueCardStats.find(t => t.team === match.homeTeam);
               const awayCardStats = leagueCardStats.find(t => t.team === match.awayTeam);
-              const homeCardOver25 = homeCardStats?.over25Rate != null ? homeCardStats.over25Rate.toFixed(0) : "—";
-              const awayCardOver25 = awayCardStats?.over25Rate != null ? awayCardStats.over25Rate.toFixed(0) : "—";
+              const homeCardOver25 = homeCardStats?.penaltyOver25Rate != null ? homeCardStats.penaltyOver25Rate.toFixed(0) : "—";
+              const awayCardOver25 = awayCardStats?.penaltyOver25Rate != null ? awayCardStats.penaltyOver25Rate.toFixed(0) : "—";
+
+              const homeCardOver35 = homeCardStats?.penaltyOver35Rate != null ? homeCardStats.penaltyOver35Rate.toFixed(0) : "—";
+              const awayCardOver35 = awayCardStats?.penaltyOver35Rate != null ? awayCardStats.penaltyOver35Rate.toFixed(0) : "—";
+
+              const homeCardOver45 = homeCardStats?.penaltyOver45Rate != null ? homeCardStats.penaltyOver45Rate.toFixed(0) : "—";
+              const awayCardOver45 = awayCardStats?.penaltyOver45Rate != null ? awayCardStats.penaltyOver45Rate.toFixed(0) : "—";
+
+              const toNumberOrNull = (value) => {
+                if (value === "—" || value == null) return null;
+                const n = Number(value);
+                return Number.isNaN(n) ? null : n;
+              };
+
+              const avg = (a, b) => {
+                if (a == null && b == null) return null;
+                if (a == null) return b;
+                if (b == null) return a;
+                return (a + b) / 2;
+              };
+
+              const goal15 = avg(toNumberOrNull(homeGoalOver15), toNumberOrNull(awayGoalOver15));
+              const goal25 = avg(toNumberOrNull(homeGoalOver25), toNumberOrNull(awayGoalOver25));
+              const goal35 = avg(toNumberOrNull(homeGoalOver35), toNumberOrNull(awayGoalOver35));
+
+              const corner85 = avg(toNumberOrNull(homeCornerOver85), toNumberOrNull(awayCornerOver85));
+              const corner95 = avg(toNumberOrNull(homeCornerOver95), toNumberOrNull(awayCornerOver95));
+              const corner105 = avg(toNumberOrNull(homeCornerOver105), toNumberOrNull(awayCornerOver105));
+
+              const card25 = avg(toNumberOrNull(homeCardOver25), toNumberOrNull(awayCardOver25));
+              const card35 = avg(toNumberOrNull(homeCardOver35), toNumberOrNull(awayCardOver35));
+              const card45 = avg(toNumberOrNull(homeCardOver45), toNumberOrNull(awayCardOver45));
+
+              const formatRate = (value) => (value == null ? "—" : `${value.toFixed(0)}%`);
 
               return (
                 <Box
@@ -278,13 +323,13 @@ function TodayMatches() {
                         
                           <TableCell align="center" sx={{color: "#000000ff",backgroundColor: getBgColor(homeGoalOver25), fontWeight: "bold", pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{homeGoalOver25 === "—" ? "—" : `${homeGoalOver25}%`}</TableCell>
                           <TableCell align="center" sx={{color: "#000000ff",backgroundColor: getBgColor(homeCornerOver85), fontWeight: "bold", pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{homeCornerOver85 === "—" ? "—" : `${homeCornerOver85}%`}</TableCell>
-                          <TableCell align="center" sx={{color: "#000000ff",backgroundColor: getBgColor(homeCardOver25), fontWeight: "bold", pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{homeCardOver25 === "—" ? "—" : `${homeCardOver25}%`}</TableCell>
+                          <TableCell align="center" sx={{color: "#000000ff",backgroundColor: getBgColor(homeCardOver35), fontWeight: "bold", pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{homeCardOver35 === "—" ? "—" : `${homeCardOver35}%`}</TableCell>
                           
                           <TableCell align="center" sx={{color: "#000000ff", fontWeight: "bold", pr: 1, pl: 1}}></TableCell>
 
                           <TableCell align="center" sx={{color: "#000000ff",backgroundColor: getBgColor(awayGoalOver25), fontWeight: "bold", pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{awayGoalOver25 === "—" ? "—" : `${awayGoalOver25}%`}</TableCell>
                           <TableCell align="center" sx={{color: "#000000ff",backgroundColor: getBgColor(awayCornerOver85), fontWeight: "bold", pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{awayCornerOver85 === "—" ? "—" : `${awayCornerOver85}%`}</TableCell>
-                          <TableCell align="center" sx={{color: "#000000ff",backgroundColor: getBgColor(awayCardOver25), fontWeight: "bold", pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{awayCardOver25 === "—" ? "—" : `${awayCardOver25}%`}</TableCell>
+                          <TableCell align="center" sx={{color: "#000000ff",backgroundColor: getBgColor(awayCardOver35), fontWeight: "bold", pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{awayCardOver35 === "—" ? "—" : `${awayCardOver35}%`}</TableCell>
                           
                         </TableRow>
                      
