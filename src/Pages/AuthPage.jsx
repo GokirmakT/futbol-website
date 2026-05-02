@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Stack,
@@ -9,14 +10,29 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
+  TextField,
+  Alert,
+  CircularProgress,
 } from "@mui/material";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
+import { loginUser, registerUser } from "../api/api";
 
 const AuthPage = () => {
+  const navigate = useNavigate();
   const heroSliderImages = ["/slider1.PNG", "/slider1-2.PNG"];
   const secondSectionSliderImages = ["/slider2.PNG", "/slider2-2.PNG"];
   const [heroSlideIndex, setHeroSlideIndex] = useState(0);
   const [secondSlideIndex, setSecondSlideIndex] = useState(0);
+
+  // Form states
+  const [isLogin, setIsLogin] = useState(true);
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [authError, setAuthError] = useState("");
+  const [authSuccess, setAuthSuccess] = useState("");
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -37,6 +53,68 @@ const AuthPage = () => {
 
     return () => clearInterval(intervalId);
   }, [secondSectionSliderImages.length]);
+
+  useEffect(() => {
+    setAuthError("");
+    setAuthSuccess("");
+  }, [isLogin]);
+
+  const validateForm = () => {
+    if (!email.trim() || !password.trim()) {
+      return "E-posta ve şifre alanları zorunludur.";
+    }
+    if (!isLogin && !username.trim()) {
+      return "Kullanıcı adı zorunludur.";
+    }
+    if (!isLogin && password !== confirmPassword) {
+      return "Şifreler eşleşmiyor.";
+    }
+    if (password.length < 6) {
+      return "Şifre en az 6 karakter olmalıdır.";
+    }
+    return "";
+  };
+
+  const handleAuthSubmit = async e => {
+    e.preventDefault();
+    setAuthError("");
+    setAuthSuccess("");
+
+    const validationError = validateForm();
+    if (validationError) {
+      setAuthError(validationError);
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const payload = isLogin
+        ? await loginUser({ email: email.trim(), password })
+        : await registerUser({ username: username.trim(), email: email.trim(), password });
+
+      const token = payload?.token;
+      if (token) {
+        localStorage.setItem("token", token);
+      }
+
+      if (payload?.user) {
+        localStorage.setItem("user", JSON.stringify(payload.user));
+      }
+
+      setAuthSuccess(isLogin ? "Giriş başarılı." : "Kayıt başarılı. Giriş yapıldı.");
+      setTimeout(() => {
+        navigate("/TodayMatches");
+      }, 700);
+    } catch (error) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        (isLogin ? "Giriş sırasında hata oluştu." : "Kayıt sırasında hata oluştu.");
+      setAuthError(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const sectionImageSx = {
     width: "100%",
@@ -72,10 +150,10 @@ const AuthPage = () => {
     <Box sx={{ py: { xs: 8, md: 12 } }}>
       <Stack
         direction={{ xs: "column", md: "row" }}
-        spacing={{ xs: 5, md: 8 }}
+        spacing={{ xs: 5, md: imageRightDesktop ? 0 : 8}}
         alignItems="center"
       >
-        <Box sx={{ width: { xs: "100%", md: "50%" }, order: { xs: 1, md: imageRightDesktop ? 2 : 1 } }}>
+        <Box sx={{ width: { xs: "100%", md: "100%" }, order: { xs: 1, md: imageRightDesktop ? 2 : 1 } }}>
           {Array.isArray(imageSliderImages) && imageSliderImages.length > 0 ? (
             <Box sx={{ position: "relative", ...sectionImageSx, overflow: "hidden" }}>
               {imageSliderImages.map((sliderImage, index) => (
@@ -105,7 +183,7 @@ const AuthPage = () => {
             />
           )}
         </Box>
-        <Box sx={{ width: { xs: "100%", md: "50%" }, order: { xs: 2, md: imageRightDesktop ? 1 : 2 } }}>
+        <Box sx={{ width: { xs: "100%", md: "70%" }, order: { xs: 2, md: imageRightDesktop ? 1 : 2 } }}>
           <Typography
             variant="h4"
             fontWeight={800}
@@ -135,7 +213,7 @@ const AuthPage = () => {
         color: "#0f172a",
       }}
     >
-      <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
+      <Container maxWidth="100%" sx={{ py: { xs: 6, md: 6 } }}>
         <SplitSection
           title="VERİYLE BAHİS YAPIN"
           description={"Futbol bahislerinde sezgilere degil, guclu verilere dayali kararlar alin. Platformumuz, gelismis istatistikler, gecmis mac analizleri ve gercek zamanli verilerle farkli bahis seceneklerini detayli sekilde degerlendirmenizi saglar. Akilli filtreleme araclari sayesinde oranlari karsilastirabilir, maclarin olasiliklarini daha net analiz edebilir ve riskleri daha kontrollu bir sekilde yonetebilirsiniz.\n\nBoylece yalnizca tahminlere dayali degil, veriye dayali stratejiler gelistirerek daha bilincli, daha planli ve daha surdurulebilir bahis kararlari alabilirsiniz."}
@@ -220,39 +298,85 @@ const AuthPage = () => {
                 />
               </Box>
             </Box>
-            <Box sx={{ width: { xs: "100%", md: "50%" }, order: { xs: 2, md: 2 } }}>
-              <Typography variant="h4" fontWeight={800} sx={{ mb: 2 }}>
-                CANLI YORUM KANALI / YOUTUBER ICIN TRACKER-PRO
+            <Box
+              id="auth-form"
+              component="form"
+              onSubmit={handleAuthSubmit}
+              sx={{ width: { xs: "100%", md: "50%" }, order: { xs: 2, md: 2 }, p: 3, backgroundColor: "#fff", borderRadius: "24px", boxShadow: "0 14px 34px rgba(15, 23, 42, 0.14)" }}
+            >
+              <Typography variant="h4" fontWeight={800} sx={{ mb: 3, textAlign: "center" }}>
+                {isLogin ? "Giriş Yap" : "Kayıt Ol"}
               </Typography>
-              <Typography variant="body1" color="text.secondary" sx={{ mb: 2.5 }}>
-                Icerik ureticiler icin tasarlanan Tracker-Pro, yayina ozel veri katmanlari
-                ile yorum kalitesini artirir, izleyici etkilesimini guclendirir.
-              </Typography>
-
-              <List sx={{ mb: 3, py: 0 }}>
-                <ListItem disableGutters>
-                  <ListItemIcon sx={{ minWidth: 34 }}>
-                    <CheckCircleRoundedIcon color="error" />
-                  </ListItemIcon>
-                  <ListItemText primary="Cok boyutlu ve derinlemesine istatistikler" />
-                </ListItem>
-                <ListItem disableGutters>
-                  <ListItemIcon sx={{ minWidth: 34 }}>
-                    <CheckCircleRoundedIcon color="error" />
-                  </ListItemIcon>
-                  <ListItemText primary="Ozellestirilmis cozumler" />
-                </ListItem>
-                <ListItem disableGutters>
-                  <ListItemIcon sx={{ minWidth: 34 }}>
-                    <CheckCircleRoundedIcon color="error" />
-                  </ListItemIcon>
-                  <ListItemText primary="Daha uygun maliyetli teklif" />
-                </ListItem>
-              </List>
-
-              <Button variant="contained" color="error" sx={pillButtonSx}>
-                DEVAMINI OKU
-              </Button>
+              {!!authError && <Alert severity="error" sx={{ mb: 2 }}>{authError}</Alert>}
+              {!!authSuccess && <Alert severity="success" sx={{ mb: 2 }}>{authSuccess}</Alert>}
+              <Stack spacing={2}>
+                {!isLogin && (
+                  <TextField
+                    fullWidth
+                    label="Kullanıcı Adı"
+                    value={username}
+                    onChange={e => setUsername(e.target.value)}
+                    sx={{ mb: 2 }}
+                  />
+                )}
+                <TextField
+                  fullWidth
+                  label="E-posta"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  sx={{ mb: 2 }}
+                />
+                <TextField
+                  fullWidth
+                  label="Şifre"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  sx={{ mb: 2 }}
+                />
+                {!isLogin && (
+                  <TextField
+                    fullWidth
+                    label="Şifre Tekrar"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    sx={{ mb: 2 }}
+                  />
+                )}
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="error"
+                  disabled={isSubmitting}
+                  sx={{ ...pillButtonSx, width: "100%" }}
+                >
+                  {isSubmitting ? (
+                    <CircularProgress size={22} sx={{ color: "#fff" }} />
+                  ) : isLogin ? (
+                    "Giriş Yap"
+                  ) : (
+                    "Kayıt Ol"
+                  )}
+                </Button>
+                <Stack direction="row" spacing={1} justifyContent="center">
+                  <Typography variant="body2">
+                    {isLogin ? "Hesabınız yok mu?" : "Zaten hesabınız var mı?"}
+                  </Typography>
+                  <Button
+                    variant="text"
+                    color="error"
+                    onClick={() => {
+                      setIsLogin(!isLogin);
+                      setConfirmPassword("");
+                    }}
+                    sx={{ p: 0, minWidth: "auto" }}
+                  >
+                    {isLogin ? "Kayıt Ol" : "Giriş Yap"}
+                  </Button>
+                </Stack>
+              </Stack>
             </Box>
           </Stack>
         </Box>
@@ -262,4 +386,3 @@ const AuthPage = () => {
 };
 
 export default AuthPage;
-

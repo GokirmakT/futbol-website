@@ -8,13 +8,14 @@ import {
   Menu,
   MenuItem, ListItemIcon, ListItemText
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useRef } from "react";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useData } from "../context/DataContext";
 
 export default function Header() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { setSelectedLeague } = useData();
 
   // DESKTOP lig menüsü
@@ -66,78 +67,100 @@ export default function Header() {
   }
   
   return (
-    <AppBar position="sticky" elevation={1} sx={{ backgroundColor: "#1d1d1d", p: 1 }}>
-      <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-        {/* SOL: ARAMA */}
-        <Box sx={{ width: "40%", minWidth: "220px" }}>
-          <TextField
-            fullWidth
-            size="small"
-            placeholder="Takım, maç veya lig ara..."
-            sx={{
-              backgroundColor: "#fff",
-              borderRadius: 1,
-              input: { color: "black" }
-            }}
-          />
-        </Box>
+    location.pathname === "/auth" ? (
+      <AppBar position="sticky" elevation={1} sx={{ backgroundColor: "#1d1d1d", p: 1 }}>
+        <Toolbar sx={{ display: "flex", justifyContent: "flex-end" }}>
+          <Button variant="contained" color="primary" onClick={() => document.getElementById('auth-form')?.scrollIntoView({ behavior: 'smooth' })}>
+            Giriş/Kayıt Ol
+          </Button>
+        </Toolbar>
+      </AppBar>
+    ) : (
+      <AppBar position="sticky" elevation={1} sx={{ backgroundColor: "#1d1d1d", p: 1 }}>
+        <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+          {/* SOL: ARAMA */}
+          <Box sx={{ width: "40%", minWidth: "220px" }}>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Takım, maç veya lig ara..."
+              sx={{
+                backgroundColor: "#fff",
+                borderRadius: 1,
+                input: { color: "black" }
+              }}
+            />
+          </Box>
 
-        {/* SAĞ: MENÜLER */}
-        <Stack direction="row" spacing={2}>
-          {/* ================= DESKTOP ================= */}
-          {!headerButtons && (
-            <>
-              <Box
-                onMouseEnter={handleOpen}
-                onMouseLeave={() => setAnchorEl(null)}
+          {/* SAĞ: MENÜLER */}
+          <Stack direction="row" spacing={2}>
+            {/* ================= DESKTOP ================= */}
+            {!headerButtons && (
+              <>
+              <Button
+                variant="contained"
+                startIcon={
+                  <img
+                    src="/stream.png"
+                    alt="Bugünün maçları"
+                    style={{ width: 20, height: 20 }}
+                  />
+                }
+                onClick={() => navigate("/TodayMatches")}
               >
-                <Button
-                  variant="outlined"
-                  sx={{ width: isMobile ? "30px" : "70px" }}
-                >
-                  Lig
-                </Button>
-
-                <Menu
-                  anchorEl={anchorEl}
-                  open={Boolean(anchorEl)}
-                  onClose={() => setAnchorEl(null)}
-                  MenuListProps={{
-                    onMouseEnter: () => {
-                      if (closeTimerRef.current) {
-                        clearTimeout(closeTimerRef.current);
-                        closeTimerRef.current = null;
-                      }
-                    },
-                    onMouseLeave: () => setAnchorEl(null)
-                  }}
-                >
-                  {leagues.map((l) => (
-                  <MenuItem key={l.id} onClick={() => handleLeagueClick(l)}>
-                    <ListItemIcon sx={{ minWidth: 36 }}>
-                      <img
-                        src={l.icon}
-                        alt={l.name}
-                        style={{ width: 30, height: 30 }}
-                      />
-                    </ListItemIcon>
-
-                    <ListItemText primary={l.name} />
-                  </MenuItem>
-                ))}
-                </Menu>
-              </Box>
-              <Button variant="contained" onClick={() => navigate("/Cards")}>
+                Bugünün maçları
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={
+                  <img
+                    src="/yellow-card.png"
+                    alt="Kart"
+                    style={{ width: 20, height: 20 }}
+                  />
+                }
+                onClick={() => navigate("/Cards")}
+              >
                 Kart
               </Button>
-              <Button variant="contained" onClick={() => navigate("/Corners")}>
+              <Button
+                variant="contained"
+                startIcon={
+                  <img
+                    src="/corner.png"
+                    alt="Korner"
+                    style={{ width: 20, height: 20 }}
+                  />
+                }
+                onClick={() => navigate("/Corners")}
+              >
                 Korner
               </Button>
-              <Button variant="contained" onClick={() => navigate("/Goals")}>
+              <Button
+                variant="contained"
+                startIcon={
+                  <img
+                    src="/football.png"
+                    alt="Gol"
+                    style={{ width: 20, height: 20 }}
+                  />
+                }
+                onClick={() => navigate("/Goals")}
+              >
                 Gol
               </Button>
-              <Button variant="contained" onClick={() => navigate("/iy-ms")}>
-                iy-ms
+              <Button
+                variant="contained"
+                startIcon={
+                  <img
+                    src="/football.png"
+                    alt="İy-Ms"
+                    style={{ width: 20, height: 20 }}
+                  />
+                }
+                onClick={() => navigate("/iy-ms")}
+              >
+                İy-Ms
               </Button>
             </>
           )}
@@ -288,5 +311,6 @@ export default function Header() {
         </Stack>
       </Toolbar>
     </AppBar>
+    )
   );
 }
