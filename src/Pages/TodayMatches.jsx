@@ -5,6 +5,7 @@ import {
   Typography,
   Paper,
   Divider,
+  Button,
   Table,
   TableBody,
   TableRow,
@@ -26,6 +27,24 @@ function TodayMatches() {
   const { goalStatsByLeague, cornerStatsByLeague, cardStatsByLeague, matches, isLoading, error } = useData();
   const isMobile = useMediaQuery("(max-width: 900px)");
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedLeague, setSelectedLeague] = useState("ALL");
+
+  const leagueIconMap = {
+    "Süper Lig": "/leagues/Super Lig.png",
+    "Premier League": "/leagues/Premier League.png",
+    "EFL Championship": "/leagues/EFL Championship.png",
+    LaLiga: "/leagues/LaLiga.png",
+    "Serie A": "/leagues/Serie A.png",
+    Bundesliga: "/leagues/Bundesliga.png",
+    "Ligue 1": "/leagues/Ligue 1.png",
+    Eredivisie: "/leagues/Eredivisie.png",
+    "UEFA Champions League": "/leagues/UEFA Champions League.png",
+    "UEFA Europa League": "/leagues/UEFA Europa League.png",
+    "UEFA Europa Conference League": "/leagues/UEFA Europa Conference League.png",
+    "Primeira Liga": "/leagues/primeira-liga.webp",
+    "Pro League": "/leagues/pro-league.webp",
+    "Saudi Pro League": "/leagues/saudi-pro-league.png",
+  };
 
     const getBgColor = (percent) => {
     if (percent === "—" || percent == null || (typeof percent === "string" && isNaN(Number(percent)))) return "#e0e0e0";
@@ -88,10 +107,21 @@ function TodayMatches() {
     }, {});
   }, [matches, today]);
 
+  const allLeagues = useMemo(() => {
+    if (!matches?.length) return [];
+    return [...new Set(matches.map(m => m.league).filter(Boolean))].sort((a, b) =>
+      a.localeCompare(b, "tr")
+    );
+  }, [matches]);
+
   if (isLoading) return <Typography textAlign="center">Yükleniyor...</Typography>;
   if (error) return <Typography textAlign="center">Hata oluştu</Typography>;
 
-  const leagues = Object.keys(groupedMatches);/*
+  const leagues = Object.keys(groupedMatches);
+  const visibleLeagues =
+    selectedLeague === "ALL"
+      ? leagues
+      : leagues.filter(league => league === selectedLeague);/*
   if (!leagues.length) return <Typography textAlign="center">Seçilen tarihte maç yok</Typography>;*/
 
   return (
@@ -131,7 +161,59 @@ function TodayMatches() {
         </Stack>
       </Paper>
 
-      {leagues.map(league => (        
+      <Paper sx={{ p: 1.5, mb: 3, backgroundColor: "#fafafa" }}>
+        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+          Lig filtresi:
+        </Typography>
+        <Stack direction="row" flexWrap="wrap" gap={1} useFlexGap>
+          <Button
+            size="small"
+            variant={selectedLeague === "ALL" ? "contained" : "outlined"}
+            onClick={() => setSelectedLeague("ALL")}
+            sx={{
+              borderRadius: 1,
+              whiteSpace: "nowrap",
+              minWidth: 120,
+              height: 68,
+            }}
+          >
+            Tüm Ligler
+          </Button>
+          {allLeagues.map(league => {
+            const hasMatchInSelectedDate = Boolean(groupedMatches?.[league]?.length);
+            const isActive = selectedLeague === league;
+            return (
+              <Button
+                key={league}
+                size="small"
+                disabled={!hasMatchInSelectedDate}
+                variant={isActive ? "contained" : "outlined"}
+                onClick={() => setSelectedLeague(league)}
+                sx={{
+                  borderRadius: 1,
+                  minWidth: 58,
+                  width: 68,
+                  height: 68,
+                  p: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  opacity: hasMatchInSelectedDate ? 1 : 0.5,
+                }}
+                title={league}
+              >
+                <img
+                  src={leagueIconMap[league] || football}
+                  alt={league}
+                  style={{ width: 34, height: 34, objectFit: "contain" }}
+                />
+              </Button>
+            );
+          })}
+        </Stack>
+      </Paper>
+
+      {visibleLeagues.map(league => (        
         <Box key={league} mb={4}>
           <Typography variant="h6" fontWeight="bold" mb={1}>
             {league}
