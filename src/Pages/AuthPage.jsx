@@ -15,7 +15,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
-import { loginUser, registerUser } from "../api/api";
+import { loginUser, registerUser } from "../api/auth";
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -92,13 +92,11 @@ const AuthPage = () => {
         ? await loginUser({ email: email.trim(), password })
         : await registerUser({ username: username.trim(), email: email.trim(), password });
 
-      const token = payload?.token;
-      if (token) {
-        localStorage.setItem("token", token);
-      }
-
-      if (payload?.user) {
-        localStorage.setItem("user", JSON.stringify(payload.user));
+      if (payload?.needsEmailConfirmation) {
+        setAuthSuccess(
+          "Kayıt başarılı. Giriş yapmadan önce e-posta adresinize gelen doğrulama linkine tıklayın."
+        );
+        return;
       }
 
       setAuthSuccess(isLogin ? "Giriş başarılı." : "Kayıt başarılı. Giriş yapıldı.");
@@ -107,7 +105,6 @@ const AuthPage = () => {
       }, 700);
     } catch (error) {
       const message =
-        error?.response?.data?.message ||
         error?.message ||
         (isLogin ? "Giriş sırasında hata oluştu." : "Kayıt sırasında hata oluştu.");
       setAuthError(message);

@@ -12,11 +12,13 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useRef } from "react";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useData } from "../context/DataContext";
+import { useAuth } from "../context/AuthContext";
 
 export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const { setSelectedLeague } = useData();
+  const { user, isAuthenticated, signOut } = useAuth();
 
   // DESKTOP lig menüsü
   const [anchorEl, setAnchorEl] = useState(null);
@@ -69,7 +71,12 @@ export default function Header() {
   return (
     location.pathname === "/auth" ? (
       <AppBar position="sticky" elevation={1} sx={{ backgroundColor: "#1d1d1d", p: 1 }}>
-        <Toolbar sx={{ display: "flex", justifyContent: "flex-end" }}>
+        <Toolbar sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
+          {isAuthenticated && (
+            <Button variant="outlined" color="inherit" onClick={() => navigate("/TodayMatches")}>
+              {user?.username || user?.email}
+            </Button>
+          )}
           <Button variant="contained" color="primary" onClick={() => document.getElementById('auth-form')?.scrollIntoView({ behavior: 'smooth' })}>
             Giriş/Kayıt Ol
           </Button>
@@ -93,7 +100,25 @@ export default function Header() {
           </Box>
 
           {/* SAĞ: MENÜLER */}
-          <Stack direction="row" spacing={2}>
+          <Stack direction="row" spacing={2} alignItems="center">
+            {isAuthenticated && (
+              <>
+                <Button variant="outlined" color="inherit" size="small">
+                  {user?.username || user?.email}
+                </Button>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  size="small"
+                  onClick={async () => {
+                    await signOut();
+                    navigate("/auth");
+                  }}
+                >
+                  Çıkış
+                </Button>
+              </>
+            )}
             {/* ================= DESKTOP ================= */}
             {!headerButtons && (
               <>
