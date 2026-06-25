@@ -56,22 +56,30 @@ function TodayMatches() {
     return "#66ff66";
     };
 
-  // UTC saatini Türkiye saatine çevir (UTC+3)
-  const convertToTurkeyTime = (utcTime) => {
-    if (!utcTime) return "";
+  // UTC saatini ve tarihi Türkiye saatine çevir (UTC+3)
+  const convertToTurkeyTime = (utcDate, utcTime) => {
+    if (!utcTime || !utcDate) return { date: utcDate, time: utcTime };
     const [hours, minutes] = utcTime.split(":").map(Number);
-    if (isNaN(hours) || isNaN(minutes)) return utcTime;
+    if (isNaN(hours) || isNaN(minutes)) return { date: utcDate, time: utcTime };
     
     // 3 saat ekle
     let newHours = hours + 3;
+    let dateDiff = 0;
     
-    // 24 saat formatında tutmak için modulo
+    // 24 saat formatında tutmak için modulo ve gün farkını hesapla
     if (newHours >= 24) {
       newHours = newHours % 24;
+      dateDiff = 1; // Bir gün ileri
     }
     
+    // Tarihi ayarla
+    const utcDateObj = new Date(utcDate + "T00:00:00Z");
+    utcDateObj.setDate(utcDateObj.getDate() + dateDiff);
+    const newDate = utcDateObj.toISOString().split("T")[0];
+    
     // Formatı koru (HH:mm)
-    return `${String(newHours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+    const newTime = `${String(newHours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+    return { date: newDate, time: newTime };
   };
 
   // test için sabit tarih
@@ -82,21 +90,23 @@ function TodayMatches() {
 
     const todayMatches = matches
       .map(m => {
-        if (!m.date) return null;
+        if (!m.date || !m.time) return null;
 
         const [datePart] = m.date.split("T");
+        const { date: turkeyDate, time: turkeyTime } = convertToTurkeyTime(datePart, m.time);
 
         return {
           ...m,
-          datePart,
-          turkeyTime: convertToTurkeyTime(m.time) // Türkiye saati hesapla
+          originalDate: datePart,
+          turkeyDate,
+          turkeyTime
         };
       })
-      .filter(m => m && m.datePart === today);    
+      .filter(m => m && m.turkeyDate === today);    
 
-    // 🔥 SAATİ artık direkt time alanına göre sırala (UTC'ye göre sırala ama TRT göster)
+    // 🔥 SAATİ Türkiye saatine göre sırala
     todayMatches.sort((a, b) =>
-      a.time.localeCompare(b.time)
+      a.turkeyTime.localeCompare(b.turkeyTime)
     );
 
     // Liglere göre grupla

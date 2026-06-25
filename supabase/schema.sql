@@ -11,6 +11,10 @@ create table if not exists public.profiles (
 
 alter table public.profiles enable row level security;
 
+drop policy if exists "Kullanicilar kendi profilini okuyabilir" on public.profiles;
+drop policy if exists "Kullanicilar kendi profilini guncelleyebilir" on public.profiles;
+drop policy if exists "Kullanicilar kendi profilini olusturabilir" on public.profiles;
+
 create policy "Kullanicilar kendi profilini okuyabilir"
   on public.profiles
   for select
