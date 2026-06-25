@@ -6,7 +6,7 @@ import {
   Stack,
   Box,
   Menu,
-  MenuItem, ListItemIcon, ListItemText
+  MenuItem, ListItemIcon, ListItemText, IconButton, Avatar
 } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useRef } from "react";
@@ -31,8 +31,11 @@ export default function Header() {
 
   const closeTimerRef = useRef(null);
 
+  // USER menu
+  const [userMenuAnchor, setUserMenuAnchor] = useState(null);
+
   const isMobile = useMediaQuery("(max-width: 460px)");
-  const headerButtons = useMediaQuery("(max-width: 650px)");
+  const headerButtons = useMediaQuery("(max-width: 1282px)");
 
   const leagues = [
     { id: "superlig", name: "Süper Lig", icon: "/leagues/Super Lig.png" },
@@ -100,25 +103,8 @@ export default function Header() {
           </Box>
 
           {/* SAĞ: MENÜLER */}
-          <Stack direction="row" spacing={2} alignItems="center">
-            {isAuthenticated && (
-              <>
-                <Button variant="outlined" color="inherit" size="small">
-                  {user?.username || user?.email}
-                </Button>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  size="small"
-                  onClick={async () => {
-                    await signOut();
-                    navigate("/auth");
-                  }}
-                >
-                  Çıkış
-                </Button>
-              </>
-            )}
+          <Stack direction="row" spacing={2} paddingLeft={1} alignItems="center">
+           
             {/* ================= DESKTOP ================= */}
             {!headerButtons && (
               <>
@@ -187,6 +173,31 @@ export default function Header() {
               >
                 İy-Ms
               </Button>
+              {isAuthenticated && (
+              <>
+                <IconButton
+                  size="small"
+                  onClick={(e) => setUserMenuAnchor(e.currentTarget)}
+                  sx={{ width: 40, height: 40, p: 0 }}
+                >
+                  <Avatar sx={{ width: 36, height: 36, bgcolor: "secondary.main" }}>
+                    {user?.username ? user.username.charAt(0).toUpperCase() : (user?.email?.charAt(0).toUpperCase())}
+                  </Avatar>
+                </IconButton>
+
+                <Menu
+                  anchorEl={userMenuAnchor}
+                  open={Boolean(userMenuAnchor)}
+                  onClose={() => setUserMenuAnchor(null)}
+                  anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                  transformOrigin={{ vertical: "top", horizontal: "right" }}
+                >
+                  <MenuItem onClick={async () => { setUserMenuAnchor(null); await signOut(); navigate("/auth"); }}>
+                    Çıkış
+                  </MenuItem>
+                </Menu>
+              </>
+            )}
             </>
           )}
 
@@ -216,6 +227,32 @@ export default function Header() {
                   }}
                 />                
               </Button>
+
+              {isAuthenticated && !isMobile && (
+              <>
+                <IconButton
+                  size="small"
+                  onClick={(e) => setUserMenuAnchor(e.currentTarget)}
+                  sx={{ width: 40, height: 40, p: 0 }}
+                >
+                  <Avatar sx={{ width: 36, height: 36, bgcolor: "secondary.main" }}>
+                    {user?.username ? user.username.charAt(0).toUpperCase() : (user?.email?.charAt(0).toUpperCase())}
+                  </Avatar>
+                </IconButton>
+
+                <Menu
+                  anchorEl={userMenuAnchor}
+                  open={Boolean(userMenuAnchor)}
+                  onClose={() => setUserMenuAnchor(null)}
+                  anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                  transformOrigin={{ vertical: "top", horizontal: "right" }}
+                >
+                  <MenuItem onClick={async () => { setUserMenuAnchor(null); await signOut(); navigate("/auth"); }}>
+                    Çıkış
+                  </MenuItem>
+                </Menu>
+              </>
+            )}
 
 
               {/* ANA MOBİL MENÜ */}
@@ -303,6 +340,9 @@ export default function Header() {
                     }}
                   />
                   İstatistikler</MenuItem>
+                  <MenuItem onClick={async () => { setUserMenuAnchor(null); await signOut(); navigate("/auth"); }}>
+                    Çıkış
+                  </MenuItem>
               </Menu>
 
               {/* MOBİL LİGLER SUBMENU */}
