@@ -18,7 +18,7 @@ import { getTeamLogo } from "../Components/teamLogos.js";
 
 function Standings() {
   const { leagueId } = useParams();
-  const {matches, standings, isLoadingStandings, selectedLeague, setSelectedLeague, standingsError } = useData();
+  const { seasonMatches, standings, isLoadingStandings, selectedLeague, setSelectedLeague, standingsError } = useData();
   const isMobile = useMediaQuery("(max-width: 900px)");
 
   // League ID'yi backend lig ismine çevir
@@ -308,7 +308,7 @@ function Standings() {
                         </Stack>
 
                         <Stack direction="row" sx={{ mt: "3px", alignItems: "flex-end"  }} spacing={1}>
-                          {getLast5Form(team.team, matches).map((r, i) => {
+                          {getLast5Form(team.team, seasonMatches).map((r, i) => {
                             const isLastMatch = i === 4;
 
                             return (

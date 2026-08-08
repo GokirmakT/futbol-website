@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { useData } from "../context/DataContext";
 import { useState } from "react";
 
-const TeamFixture = ({ matches, team, league, display }) => {
+const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelectedSeason, availableSeasons = [] }) => {
   const navigate = useNavigate();
   const isTablet = useMediaQuery("(max-width: 800px)");
   const isMobile = useMediaQuery("(max-width: 500px)");
@@ -85,6 +85,19 @@ const TeamFixture = ({ matches, team, league, display }) => {
     <Stack spacing={2} alignItems="center">
       
       <Stack direction="column" spacing={1} justifyContent="flex-end" display={display}>
+
+        <Select
+          size="small"
+          value={selectedSeason ?? ""}
+          displayEmpty
+          onChange={e => setSelectedSeason?.(e.target.value)}
+        >
+          {availableSeasons.map(season => (
+            <MenuItem key={season} value={season}>
+              {season}
+            </MenuItem>
+          ))}
+        </Select>
 
         <Select
           size="small"

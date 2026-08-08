@@ -6,6 +6,7 @@ import { DataContext } from "./DataContext";
 
 const DataProvider = ({ children }) => {
   const [selectedLeague, setSelectedLeague] = useState("Super Lig");
+  const [selectedSeason, setSelectedSeason] = useState("2026-2027");
 
   const {
     data: matches = [],
@@ -16,24 +17,52 @@ const DataProvider = ({ children }) => {
     queryFn: getMatches,
   });
 
+  const seasons = useMemo(() => {
+    if (!Array.isArray(matches) || !matches.length) return [];
+    return [...new Set(matches.map(m => m.season).filter(Boolean))].sort();
+  }, [matches]);
+
+  const defaultSeason = useMemo(() => {
+    if (!seasons.length) return null;
+    const latestWithCompletedMatches = [...seasons]
+      .reverse()
+      .find(season =>
+        matches.some(m => m.season === season && m.winner !== "TBD")
+      );
+    return latestWithCompletedMatches || seasons[seasons.length - 1];
+  }, [matches, seasons]);
+
+  const activeSeason = selectedSeason ?? defaultSeason;
+
+  const seasonMatches = useMemo(() => {
+    if (!activeSeason || !Array.isArray(matches)) return [];
+    return matches.filter(m => m.season === activeSeason);
+  }, [matches, activeSeason]);
+
   const {
     data: standings = [],
     isLoading: isLoadingStandings,
     error: standingsError,
   } = useQuery({
-    queryKey: ["standings"],
-    queryFn: () => getStandings(),
+    queryKey: ["standings", activeSeason],
+    queryFn: () => getStandings(null, activeSeason),
+    enabled: Boolean(activeSeason),
   });
 
-  // Lig listesi (GLOBAL)
+  const filteredStandings = useMemo(() => {
+    if (!activeSeason || !Array.isArray(standings)) return [];
+    return standings.filter(s => (s.season || s.Season) === activeSeason);
+  }, [standings, activeSeason]);
+
+  // Lig listesi (seçili sezon)
   const leagues = useMemo(() => {
-    if (!Array.isArray(matches) || !matches.length) return [];
-    return [...new Set(matches.map(m => m.league))].sort();
-  }, [matches]);
+    if (!Array.isArray(seasonMatches) || !seasonMatches.length) return [];
+    return [...new Set(seasonMatches.map(m => m.league))].sort();
+  }, [seasonMatches]);
 
   // Gol istatistikleri hesaplaması (seçili lig)
   const goalStats = useMemo(() => {
-    if (!selectedLeague || !Array.isArray(matches) || !matches.length) return [];
+    if (!selectedLeague || !Array.isArray(seasonMatches) || !seasonMatches.length) return [];
 
     const hasScoredBothHalves = (minutesStr) => {
       if (!minutesStr) return false;
@@ -49,7 +78,7 @@ const DataProvider = ({ children }) => {
       return scoredFirstHalf && scoredSecondHalf;
     };
 
-    const leagueMatches = matches.filter(m => m.league === selectedLeague && m.winner !== "TBD");
+    const leagueMatches = seasonMatches.filter(m => m.league === selectedLeague && m.winner !== "TBD");
     const teamGoals = {};
 
     leagueMatches.forEach(match => {
@@ -147,13 +176,13 @@ const DataProvider = ({ children }) => {
       awayBothHalvesRate: team.awayMatchCount ? (team.awayBothHalvesScored / team.awayMatchCount) * 100 : 0,
     }));
     return stats.sort((a, b) => b.over25Rate - a.over25Rate).map((t, i) => ({ ...t, rank: i + 1 }));
-  }, [selectedLeague, matches]);
+  }, [selectedLeague, seasonMatches]);
 
   // Tüm ligler için istatistikler (Bugünkü Maçlar – her maç kendi ligine göre)
   const goalStatsByLeague = useMemo(() => {
     const result = {};
     leagues.forEach(leagueName => {
-      const leagueMatches = matches.filter(m => m.league === leagueName && m.winner !== "TBD");
+      const leagueMatches = seasonMatches.filter(m => m.league === leagueName && m.winner !== "TBD");
       const teamGoals = {};
       leagueMatches.forEach(match => {
         const totalGoals = match.goalHome + match.goalAway;
@@ -179,12 +208,12 @@ const DataProvider = ({ children }) => {
       }));
     });
     return result;
-  }, [matches, leagues]);
+  }, [seasonMatches, leagues]);
 
   const cardStatsByLeague = useMemo(() => {
     const result = {};
     leagues.forEach(leagueName => {
-      const leagueMatches = matches.filter(m => m.league === leagueName && m.winner !== "TBD");
+      const leagueMatches = seasonMatches.filter(m => m.league === leagueName && m.winner !== "TBD");
       const teamCards = {};
       leagueMatches.forEach(match => {
         const matchTotalPenaltyScore = (match.yellowHome * 1) + (match.redHome * 2) + (match.yellowAway * 1) + (match.redAway * 2);
@@ -210,12 +239,12 @@ const DataProvider = ({ children }) => {
       }));
     });
     return result;
-  }, [matches, leagues]);
+  }, [seasonMatches, leagues]);
 
   const cornerStatsByLeague = useMemo(() => {
     const result = {};
     leagues.forEach(leagueName => {
-      const leagueMatches = matches.filter(m => m.league === leagueName && m.winner !== "TBD");
+      const leagueMatches = seasonMatches.filter(m => m.league === leagueName && m.winner !== "TBD");
       const teamCorners = {};
       leagueMatches.forEach(match => {
         const matchCorners = match.cornerHome + match.cornerAway;
@@ -243,13 +272,13 @@ const DataProvider = ({ children }) => {
       }));
     });
     return result;
-  }, [matches, leagues]);
+  }, [seasonMatches, leagues]);
 
   // Seçilen lige göre kartların sıralaması
   const cardStats = useMemo(() => {
-    if (!selectedLeague || !Array.isArray(matches) || !matches.length) return [];
+    if (!selectedLeague || !Array.isArray(seasonMatches) || !seasonMatches.length) return [];
 
-    const leagueMatches = matches.filter(m => m.league === selectedLeague && m.winner !== "TBD");
+    const leagueMatches = seasonMatches.filter(m => m.league === selectedLeague && m.winner !== "TBD");
     const teamCards = {};
 
     leagueMatches.forEach(match => {
@@ -400,13 +429,13 @@ const DataProvider = ({ children }) => {
     return statsWithScore
       .sort((a, b) => b.over25Rate - a.over25Rate)
       .map((team, idx) => ({ ...team, rank: idx + 1 }));
-  }, [selectedLeague, matches]);
+  }, [selectedLeague, seasonMatches]);
 
   // Hesaplama
   const cornerStats = useMemo(() => {
-    if (!selectedLeague || !Array.isArray(matches) || !matches.length) return [];
+    if (!selectedLeague || !Array.isArray(seasonMatches) || !seasonMatches.length) return [];
 
-    const leagueMatches = matches.filter(m => m.league === selectedLeague && m.winner !== "TBD");
+    const leagueMatches = seasonMatches.filter(m => m.league === selectedLeague && m.winner !== "TBD");
     const teamCorners = {};
 
     leagueMatches.forEach(match => {
@@ -567,14 +596,18 @@ const DataProvider = ({ children }) => {
       .sort((a, b) => b.over85Rate - a.over85Rate)
       .map((t, i) => ({ ...t, rank: i + 1 }));
 
-  }, [selectedLeague, matches]);
+  }, [selectedLeague, seasonMatches]);
 
   const value = {
     matches,
-    standings,
+    seasonMatches,
+    standings: filteredStandings,
     leagues,
+    seasons,
     selectedLeague,
     setSelectedLeague,
+    selectedSeason: activeSeason,
+    setSelectedSeason,
     isLoading,
     isLoadingStandings,
     error,

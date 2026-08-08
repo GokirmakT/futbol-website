@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Typography, Stack, Divider } from "@mui/material";
 import { useData } from "../context/DataContext";
 import GoalsStats from "../Components/TeamDetail_Goal.jsx";
@@ -10,6 +10,12 @@ import TeamFixture from "../Components/TeamFixture.jsx";
 const TeamDetail = () => {
   const { league, team } = useParams();
   const { matches, goalStats, setSelectedLeague, selectedLeague } = useData();
+  const [selectedSeasonFilter, setSelectedSeasonFilter] = useState("2026-2027");
+
+  const availableSeasons = useMemo(() => {
+    if (!matches?.length) return ["2026-2027"];
+    return [...new Set(matches.map(m => m.season).filter(Boolean))].sort();
+  }, [matches]);
 
   // URL'den gelen lig parametresini selectedLeague'e set et
   useEffect(() => {
@@ -39,14 +45,19 @@ const TeamDetail = () => {
     }
   }, [league, selectedLeague, setSelectedLeague]);
 
-  // ✅ SADECE SEÇİLEN TAKIMIN MAÇLARI
-  const teamMatches = matches.filter(
-    m => (m.homeTeam === team || m.awayTeam === team)
-  );
+  // ✅ SADECE SEÇİLEN TAKIMIN MAÇLARI (sezon filtresi dahil)
+  const teamMatches = useMemo(() => {
+    return matches.filter(
+      m =>
+        (m.homeTeam === team || m.awayTeam === team) &&
+        m.season === selectedSeasonFilter
+    );
+  }, [matches, team, selectedSeasonFilter]);
 
-  const sortedTeamMatches = [...teamMatches].sort(
-    (a, b) => new Date(a.date) - new Date(b.date)
-  );  
+  const sortedTeamMatches = useMemo(
+    () => [...teamMatches].sort((a, b) => new Date(a.date) - new Date(b.date)),
+    [teamMatches]
+  );
 
   return (
     <Stack spacing={3}>
@@ -70,6 +81,9 @@ const TeamDetail = () => {
           team={team}
           league={league}
           display={"block"}
+          selectedSeason={selectedSeasonFilter}
+          setSelectedSeason={setSelectedSeasonFilter}
+          availableSeasons={availableSeasons}
         />
       </Stack>
 

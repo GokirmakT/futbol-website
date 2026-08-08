@@ -23,9 +23,10 @@ import LessGoals45HomeAway from "../Components/Tables/GoalTables/LessGoals45Home
 
 import KgGoalsTable from "../Components/Tables/GoalTables/KgGoalsTable";
 import ScoreBothHalf from "../Components/Tables/GoalTables/ScoreBothHalf";
+import SeasonFilter from "../Components/SeasonFilter.jsx";
 
 function Goals() {
-  const { goalStats, isLoading, selectedLeague, setSelectedLeague, error, leagues } = useData();
+  const { goalStats, isLoading, selectedLeague, setSelectedLeague, error, leagues, seasons, selectedSeason, setSelectedSeason } = useData();
   const isMobile = useMediaQuery("(max-width: 900px)");
   const [statType, setStatType] = useState("over"); // "over" veya "under"
   const inputRef = useRef(null);
@@ -103,6 +104,13 @@ function Goals() {
               </Box>
             </Button>
           </Box>
+
+          <SeasonFilter
+            seasons={seasons}
+            selectedSeason={selectedSeason}
+            setSelectedSeason={setSelectedSeason}
+            sx={{ px: 1.5 }}
+          />
 
           {/* Lig seçim paneli */}
           {isLeaguePanelOpen && (

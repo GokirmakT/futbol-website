@@ -19,6 +19,7 @@ import {
   getIyMsResult,
   aggregateIyMsStats,
 } from "../utils/iyMsUtils";
+import SeasonFilter from "../Components/SeasonFilter.jsx";
 
 const getBgColor = (percent) => {
   if (percent === 0 || percent == null || Number.isNaN(percent)) return "#424242";
@@ -31,7 +32,15 @@ const getBgColor = (percent) => {
 };
 
 const IyMsAnalysis = () => {
-  const { matches, leagues, selectedLeague, setSelectedLeague } = useData();
+  const {
+    seasonMatches,
+    leagues,
+    selectedLeague,
+    setSelectedLeague,
+    seasons,
+    selectedSeason,
+    setSelectedSeason,
+  } = useData();
   const isMobile = useMediaQuery("(max-width: 900px)");
 
   const [selectedTeam, setSelectedTeam] = useState("");

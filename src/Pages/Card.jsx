@@ -10,9 +10,10 @@ import card from "/yellow-card.png";
 import OverYellowCardsTable from '../Components/Tables/CardTables/OverYellowCardsTable';
 import OverRedCardsTable from '../Components/Tables/CardTables/OverRedCardsTable';
 import OverPenaltyScoreTable from '../Components/Tables/CardTables/OverPenaltyScoreTable';
+import SeasonFilter from "../Components/SeasonFilter.jsx";
 
 function Card() {
-  const { cardStats, isLoading, selectedLeague, setSelectedLeague, error, leagues } = useData();
+  const { cardStats, isLoading, selectedLeague, setSelectedLeague, error, leagues, seasons, selectedSeason, setSelectedSeason } = useData();
   const isMobile = useMediaQuery("(max-width: 900px)");
   const inputRef = useRef(null);
   const [isLeaguePanelOpen, setIsLeaguePanelOpen] = useState(false);
@@ -87,6 +88,13 @@ function Card() {
               </Box>
             </Button>
           </Box>
+
+          <SeasonFilter
+            seasons={seasons}
+            selectedSeason={selectedSeason}
+            setSelectedSeason={setSelectedSeason}
+            sx={{ px: 1.5 }}
+          />
 
           {/* Lig seçim paneli */}
           {isLeaguePanelOpen && (

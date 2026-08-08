@@ -14,9 +14,10 @@ import corner from "/corner.png";
 import OverCornersTable from "../Components/Tables/CornerTables/OverCornersTable";
 import OverHomeCornersTable from "../Components/Tables/CornerTables/OverHomeCornersTable";
 import OverHomeCornersTable2 from "../Components/Tables/CornerTables/OverHomeCornersTable2";
+import SeasonFilter from "../Components/SeasonFilter.jsx";
 
 function Corner() {
-  const { cornerStats, isLoading, selectedLeague, setSelectedLeague, error, leagues } = useData();
+  const { cornerStats, isLoading, selectedLeague, setSelectedLeague, error, leagues, seasons, selectedSeason, setSelectedSeason } = useData();
   const isMobile = useMediaQuery("(max-width: 900px)");
   const inputRef = useRef(null);
   const [isLeaguePanelOpen, setIsLeaguePanelOpen] = useState(false);
@@ -93,6 +94,13 @@ function Corner() {
               </Box>
             </Button>
           </Box>
+
+          <SeasonFilter
+            seasons={seasons}
+            selectedSeason={selectedSeason}
+            setSelectedSeason={setSelectedSeason}
+            sx={{ px: 1.5 }}
+          />
 
           {/* Lig seçim paneli */}
           {isLeaguePanelOpen && (
