@@ -4,7 +4,6 @@ import {
   Box,
   Typography,
   Stack,
-  Grid,
   Paper,
   Chip,
   Table,
@@ -95,7 +94,7 @@ const MatchDetail = () => {
     [cardStats, away]
   );
 
-const homeLast5 = useMemo(
+const homeLast10 = useMemo(
   () =>
     [...matches]
       .filter(
@@ -105,14 +104,14 @@ const homeLast5 = useMemo(
       )
       // 1️⃣ önce en yeniye göre sırala
       .sort((a, b) => new Date(b.date) - new Date(a.date))
-      // 2️⃣ son 5 maçı al
-      .slice(0, 5)
-      // 3️⃣ bu 5 maçı kendi içinde eski → yeni sırala
+      // 2️⃣ son 10 maçı al
+      .slice(0, 10)
+      // 3️⃣ bu 10 maçı kendi içinde eski → yeni sırala
       .sort((a, b) => new Date(a.date) - new Date(b.date)),
   [matches, home]
 );
 
-const awayLast5 = useMemo(
+const awayLast10 = useMemo(
   () =>
     [...matches]
       .filter(
@@ -121,14 +120,36 @@ const awayLast5 = useMemo(
           m.winner !== "TBD"
       )
       .sort((a, b) => new Date(b.date) - new Date(a.date))
-      .slice(0, 5)
+      .slice(0, 10)
       .sort((a, b) => new Date(a.date) - new Date(b.date)),
   [matches, away]
 );
 
+  const headToHeadMatches = useMemo(
+    () =>
+      [...matches]
+        .filter(
+          match =>
+            match.winner !== "TBD" &&
+            ((match.homeTeam === home && match.awayTeam === away) ||
+              (match.homeTeam === away && match.awayTeam === home))
+        )
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .slice(0, 10)
+        .sort((a, b) => new Date(a.date) - new Date(b.date)),
+    [matches, home, away]
+  );
+
 
   return (
-    <Box maxWidth="1200px" mx="auto" mt={3} px={2} pb={4}>
+    <Box
+      maxWidth="1200px"
+      mx="auto"
+      mt={3}
+      px={2}
+      pb={4}
+      sx={{ width: "100%", minWidth: 0, boxSizing: "border-box", overflowX: "hidden" }}
+    >
       {/* Başlık */}
       <Stack alignItems="center" spacing={1} mb={3}>
         <Typography variant="h5" fontWeight="bold">
@@ -139,10 +160,15 @@ const awayLast5 = useMemo(
         </Stack>
       </Stack>
 
-      <Grid container spacing={2}>
+      <Stack
+        direction={{ xs: "column", lg: "row" }}
+        spacing={8}
+        alignItems="stretch"
+        sx={{ width: "100%" }}
+      >
         {/* EV SAHİBİ */}
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 2, height: "100%", display: "flex", flexDirection: "column", gap: 2 }}>
+        <Box sx={{ flex: 1, minWidth: 0, pr: 3}}>
+          <Paper sx={{ width: "100%", maxWidth: 600, minWidth: 0, mx: "auto", p: 2, display: "flex", flexDirection: "column", gap: 2 }}>
             <Typography variant="h6" fontWeight="bold">
               {home}
             </Typography>
@@ -376,19 +402,19 @@ const awayLast5 = useMemo(
 
             <Divider sx={{ my: 1 }} />
 
-            {/* Son 5 maç */}
+            {/* Son 10 maç */}
             <Box>
               <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-                Son 5 Maç Analizi
+                Son 10 Maç Analizi
               </Typography>
-              <TeamFixture matches={homeLast5} team={home} league={""} display={"none"}/>
+              <TeamFixture matches={homeLast10} team={home} league={""} display={"none"} matchWidth="100%" />
             </Box>
           </Paper>
-        </Grid>
+        </Box>
 
         {/* DEPLASMAN */}
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 2, height: "100%", display: "flex", flexDirection: "column", gap: 2 }}>
+        <Box sx={{ flex: 1, minWidth: 0, pr: 3 }}>
+          <Paper sx={{ width: "100%", maxWidth: 600, minWidth: 0, mx: "auto", p: 2, display: "flex", flexDirection: "column", gap: 2 }}>
             <Typography variant="h6" fontWeight="bold">
               {away}
             </Typography>
@@ -622,16 +648,39 @@ const awayLast5 = useMemo(
 
             <Divider sx={{ my: 1 }} />
 
-            {/* Son 5 maç */}
+            {/* Son 10 maç */}
             <Box>
               <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-                Son 5 Maç Analizi
+                Son 10 Maç Analizi
               </Typography>
-              <TeamFixture matches={awayLast5} team={away} league={""} display={"none"} />
+              <TeamFixture matches={awayLast10} team={away} league={""} display={"none"} matchWidth="100%" />
             </Box>
           </Paper>
-        </Grid>
-      </Grid>
+        </Box>
+      </Stack>
+
+      <Box sx={{ width: "100%", maxWidth: 600, mx: "auto", mt: 3 }}>
+        <Typography variant="h6" fontWeight="bold" gutterBottom>
+          Karşılıklı Maçlar
+        </Typography>
+        <Typography variant="body2" color="text.secondary" mb={2}>
+          {home} ve {away} takımlarının daha önce oynadığı maçların istatistikleri.
+        </Typography>
+        {headToHeadMatches.length ? (
+          <TeamFixture
+            matches={headToHeadMatches}
+            team={home}
+            league=""
+            display="none"
+            matchWidth="100%"
+            showResultColor={false}
+          />
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            Bu takımlar arasında oynanmış maç bulunamadı.
+          </Typography>
+        )}
+      </Box>
     </Box>
   );
 };

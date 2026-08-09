@@ -39,7 +39,7 @@ function Standings() {
     "saudi-pro-league": "Saudi Pro League"
   };
 
-  const getLast5Form = (teamName, matches) => {
+  const getLast10Form = (teamName, matches) => {
     if (!matches?.length) return [];
   
     return matches
@@ -49,7 +49,7 @@ function Standings() {
           (m.homeTeam === teamName || m.awayTeam === teamName)
       )
       .sort((a, b) => new Date(a.date) - new Date(b.date))
-      .slice(-5)
+      .slice(-10)
       .map(m => {
         if (m.winner === "Draw") return "D";
   
@@ -308,7 +308,7 @@ function Standings() {
                         </Stack>
 
                         <Stack direction="row" sx={{ mt: "3px", alignItems: "flex-end"  }} spacing={1}>
-                          {getLast5Form(team.team, seasonMatches).map((r, i) => {
+                          {getLast10Form(team.team, seasonMatches).map((r, i) => {
                             const isLastMatch = i === 4;
 
                             return (

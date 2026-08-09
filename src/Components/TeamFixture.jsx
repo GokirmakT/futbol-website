@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { useData } from "../context/DataContext";
 import { useState } from "react";
 
-const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelectedSeason, availableSeasons = [] }) => {
+const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelectedSeason, availableSeasons = [], matchWidth = "60%", showResultColor = true }) => {
   const navigate = useNavigate();
   const isTablet = useMediaQuery("(max-width: 800px)");
   const isMobile = useMediaQuery("(max-width: 500px)");
@@ -63,24 +63,16 @@ const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelect
     const isPlayed = m.winner !== "TBD";
     return isPlayed && checkMatchFilters(m, filters);
   });
-    
-  const getBgColor = (team, homeTeam, homeGoal, awayGoal) => {
-    const isHome = team === homeTeam;
-  
-    // BERABERLİK
-    if (homeGoal === awayGoal) {
-      return "#ffd11a"; // sarı
-    }
-  
-    // EV SAHİBİ
-    if (isHome) {
-      return homeGoal > awayGoal ? "#66ff66" : "#ff4d4d";
-    }
-  
-    // DEPLASMAN
-    return awayGoal > homeGoal ? "#66ff66" : "#ff4d4d";
-  };  
 
+  const getScoreColor = match => {
+    if (!showResultColor) return "transparent";
+    if (match.goalHome === match.goalAway) return "#ffd11a";
+
+    const isHome = team === match.homeTeam;
+    const teamWon = isHome ? match.goalHome > match.goalAway : match.goalAway > match.goalHome;
+    return teamWon ? "#66ff66" : "#ff4d4d";
+  };
+    
   return (
     <Stack spacing={2} alignItems="center">
       
@@ -193,7 +185,11 @@ const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelect
                 : "#fdecea",          // 🟥 filtre VAR + koşul sağlanmadı
               px: 1,
               py: 1,
-              width: isTablet ? "95%" : "60%"
+              width: isTablet ? "95%" : matchWidth,
+              maxWidth: "100%",
+              minWidth: 0,
+              boxSizing: "border-box",
+              overflow: "hidden"
             }}
             
           >
@@ -221,6 +217,8 @@ const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelect
             <Box
               sx={{
                 display: "grid",
+                width: "100%",
+                minWidth: 0,
                 gridTemplateColumns: "auto minmax(0,1fr) 48px minmax(0,1fr) auto",
                 alignItems: "center",
                 columnGap: 1
@@ -240,6 +238,9 @@ const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelect
                 fontSize={isMobile ? "14px" : "18px"}
                 noWrap
                 sx={{
+                  minWidth: 0,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
                   cursor: "pointer",
                   "&:hover": {
                     textDecoration: "underline",
@@ -256,7 +257,7 @@ const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelect
               </Typography>
           
               {/* SCORE */}
-              <Stack bgcolor={getBgColor(team, m.homeTeam, m.goalHome, m.goalAway)}>
+              <Stack sx={{ backgroundColor: getScoreColor(m) }}>
                 <Typography
                     fontWeight="bold"
                     fontSize={isMobile ? "14px" : "18px"}
@@ -272,6 +273,9 @@ const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelect
                 fontSize={isMobile ? "14px" : "18px"}
                 noWrap
                 sx={{
+                  minWidth: 0,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
                   cursor: "pointer",
                   "&:hover": {
                     textDecoration: "underline",
