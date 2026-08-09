@@ -43,10 +43,120 @@ const getBgColor = (percent) => {
 };
 
 const formatRateCell = (value) => {
-  if (value == null || Number.isNaN(Number(value))) return { text: "—", bg: "#e0e0e0" };
-  const num = Number(value);
-  return { text: `${num.toFixed(1)}%`, bg: getBgColor(num) };
+  return { text: <SemicircleGauge value={value} />, bg: "transparent" };
 };
+
+const SemicircleGauge = ({ value }) => {
+  const numericValue = Number(value);
+  const percent = Number.isFinite(numericValue)
+    ? Math.min(100, Math.max(0, numericValue))
+    : 0;
+  const color = getBgColor(percent);
+  const sweep = percent === 0 && Number.isFinite(numericValue) ? 8 : percent * 1.8;
+
+  return (
+    <Box
+      sx={{
+        position: "relative",
+        width: 92,
+        height: 52,
+        mx: "auto",
+        overflow: "hidden",
+      }}
+    >
+      <Box
+        sx={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: 92,
+          height: 92,
+          borderRadius: "50%",
+          background: `conic-gradient(from 270deg, ${color} 0deg ${sweep}deg, #c7c7c7 ${sweep}deg 180deg, transparent 180deg)`,
+          WebkitMask: "radial-gradient(farthest-side, transparent calc(100% - 8px), #000 calc(100% - 7px))",
+          mask: "radial-gradient(farthest-side, transparent calc(100% - 8px), #000 calc(100% - 7px))",
+        }}
+      />
+      <Typography
+        sx={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          color,
+          fontWeight: "bold",
+          fontSize: 13,
+          lineHeight: 1,
+          textAlign: "center",
+        }}
+      >
+        {Number.isFinite(numericValue) ? `${numericValue.toFixed(1)}%` : "—"}
+      </Typography>
+    </Box>
+  );
+};
+
+const MetricGauge = ({ label, value, displayValue, isRate = true }) => {
+  const numericValue = Number(value);
+  const hasValue = Number.isFinite(numericValue);
+  const percent = hasValue && isRate ? Math.min(100, Math.max(0, numericValue)) : 0;
+  const color = isRate && hasValue ? getBgColor(percent) : "#8a8a8a";
+  const sweep = percent === 0 && hasValue ? 8 : percent * 1.8;
+
+  return (
+    <Box sx={{ minWidth: 0, textAlign: "center" }}>
+      <Typography
+        variant="caption"
+        sx={{
+          display: "block",
+          minHeight: 32,
+          fontWeight: "bold",
+          color: "text.primary",
+        }}
+      >
+        {label}
+      </Typography>
+      {isRate ? (
+        <Box sx={{ position: "relative", width: 92, height: 58, mx: "auto", overflow: "hidden" }}>
+          <Box
+            sx={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: 92,
+              height: 92,
+              borderRadius: "50%",
+              background: `conic-gradient(from 270deg, ${color} 0deg ${sweep}deg, #c7c7c7 ${sweep}deg 180deg, transparent 180deg)`,
+              WebkitMask: "radial-gradient(farthest-side, transparent calc(100% - 8px), #000 calc(100% - 7px))",
+              mask: "radial-gradient(farthest-side, transparent calc(100% - 8px), #000 calc(100% - 7px))",
+            }}
+          />
+          <Typography sx={{ position: "absolute", bottom: 0, left: 0, right: 0, color, fontWeight: "bold", fontSize: 14, lineHeight: 1 }}>
+            {displayValue ?? (hasValue ? `${numericValue.toFixed(1)}%` : "—")}
+          </Typography>
+        </Box>
+      ) : (
+        <Typography sx={{ color: "#333", fontWeight: "bold", fontSize: 18, lineHeight: "58px" }}>
+          {displayValue ?? (hasValue ? numericValue.toFixed(2) : "—")}
+        </Typography>
+      )}
+    </Box>
+  );
+};
+
+const MetricGaugeGrid = ({ items }) => (
+  <Box
+    sx={{
+      display: "grid",
+      gridTemplateColumns: { xs: "repeat(2, minmax(0, 1fr))", sm: "repeat(4, minmax(0, 1fr))" },
+      gap: 2,
+      alignItems: "end",
+      py: 1,
+    }}
+  >
+    {items.map(item => <MetricGauge key={item.label} {...item} />)}
+  </Box>
+);
 
 const MatchDetail = () => {
   const { league, home, away } = useParams();
@@ -140,6 +250,70 @@ const awayLast10 = useMemo(
     [matches, home, away]
   );
 
+  const headToHeadStats = useMemo(() => {
+    const total = headToHeadMatches.length;
+    if (!total) return null;
+
+    const rate = count => (count / total) * 100;
+    let over15 = 0;
+    let over25 = 0;
+    let over35 = 0;
+    let bothTeamsScored = 0;
+    let over85Corners = 0;
+    let teamOver45Corners = 0;
+    let yellowOver25 = 0;
+    let yellowOver35 = 0;
+    let redOver05 = 0;
+    let penaltyOver25 = 0;
+
+    headToHeadMatches.forEach(match => {
+      const goalHome = Number(match.goalHome) || 0;
+      const goalAway = Number(match.goalAway) || 0;
+      const totalGoals = goalHome + goalAway;
+      const cornerHome = Number(match.cornerHome) || 0;
+      const cornerAway = Number(match.cornerAway) || 0;
+      const totalCorners = cornerHome + cornerAway;
+      const yellowHome = Number(match.yellowHome) || 0;
+      const yellowAway = Number(match.yellowAway) || 0;
+      const redHome = Number(match.redHome) || 0;
+      const redAway = Number(match.redAway) || 0;
+      const totalYellow = yellowHome + yellowAway;
+      const totalRed = redHome + redAway;
+      const penaltyScore = yellowHome + yellowAway + (redHome + redAway) * 2;
+
+      if (totalGoals > 1.5) over15++;
+      if (totalGoals > 2.5) over25++;
+      if (totalGoals > 3.5) over35++;
+      if (goalHome > 0 && goalAway > 0) bothTeamsScored++;
+      if (totalCorners > 8.5) over85Corners++;
+      if (cornerHome > 4.5) teamOver45Corners++;
+      if (cornerAway > 4.5) teamOver45Corners++;
+      if (totalYellow > 2.5) yellowOver25++;
+      if (totalYellow > 3.5) yellowOver35++;
+      if (totalRed > 0.5) redOver05++;
+      if (penaltyScore > 2.5) penaltyOver25++;
+    });
+
+    return {
+      goals: {
+        over15Rate: rate(over15),
+        over25Rate: rate(over25),
+        over35Rate: rate(over35),
+        btsRate: rate(bothTeamsScored),
+      },
+      corners: {
+        over85Rate: rate(over85Corners),
+        team45Rate: (teamOver45Corners / (total * 2)) * 100,
+      },
+      cards: {
+        over25Rate: rate(yellowOver25),
+        over35Rate: rate(yellowOver35),
+        RedOver05Rate: rate(redOver05),
+        penaltyOver25Rate: rate(penaltyOver25),
+      },
+    };
+  }, [headToHeadMatches]);
+
 
   return (
     <Box
@@ -184,12 +358,20 @@ const awayLast10 = useMemo(
               <TableContainer
                 component={Paper}
                 sx={{
-                  backgroundColor: "#2a3b47",
+                  backgroundColor: "#f5f5f5",
                   borderRadius: 1,
                   overflow: "hidden",
                 }}
               >
-                <Table size="small" stickyHeader>
+                <MetricGaugeGrid
+                  items={[
+                    { label: " 1.5 Üst", value: homeGoals?.over15Rate },
+                    { label: " 2.5 Üst", value: homeGoals?.over25Rate },
+                    { label: " 3.5 Üst", value: homeGoals?.over35Rate },
+                    { label: "KG Var", value: homeGoals?.btsRate },
+                  ]}
+                />
+                <Table sx={{ display: "none" }} size="small" stickyHeader>
                   <TableHead sx={{ "& .MuiTableCell-root": { backgroundColor: "#1d1d1d", color: "#fff", fontWeight: "bold" } }}>
                     <TableRow>
                       <TableCell>Metri̇k</TableCell>
@@ -200,7 +382,7 @@ const awayLast10 = useMemo(
                     {homeGoals ? (
                       <>
                         <TableRow>
-                          <TableCell sx={{ color: "#fff" }}>Over 1.5</TableCell>
+                          <TableCell sx={{ color: "#fff" }}>1.5 Üst</TableCell>
                           {(() => {
                             const { text, bg } = formatRateCell(homeGoals.over15Rate);
                             return (
@@ -211,7 +393,7 @@ const awayLast10 = useMemo(
                           })()}
                         </TableRow>
                         <TableRow>
-                          <TableCell sx={{ color: "#fff" }}>Over 2.5</TableCell>
+                          <TableCell sx={{ color: "#fff" }}>2.5 Üst</TableCell>
                           {(() => {
                             const { text, bg } = formatRateCell(homeGoals.over25Rate);
                             return (
@@ -222,7 +404,7 @@ const awayLast10 = useMemo(
                           })()}
                         </TableRow>
                         <TableRow>
-                          <TableCell sx={{ color: "#fff" }}>Over 3.5</TableCell>
+                          <TableCell sx={{ color: "#fff" }}>3.5 Üst</TableCell>
                           {(() => {
                             const { text, bg } = formatRateCell(homeGoals.over35Rate);
                             return (
@@ -264,12 +446,19 @@ const awayLast10 = useMemo(
               <TableContainer
                 component={Paper}
                 sx={{
-                  backgroundColor: "#2a3b47",
+                  backgroundColor: "#f5f5f5",
                   borderRadius: 1,
                   overflow: "hidden",
                 }}
               >
-                <Table size="small" stickyHeader>
+                <MetricGaugeGrid
+                  items={[
+                    { label: "Maç Başı Korner", value: homeCorners?.avgMatchCorners, displayValue: homeCorners?.avgMatchCorners?.toFixed(2), isRate: false },
+                    { label: "Toplam 8.5 Üst", value: homeCorners?.over85Rate },
+                    { label: "Takım 4.5 Üst", value: homeCorners?.team45Rate },
+                  ]}
+                />
+                <Table sx={{ display: "none" }} size="small" stickyHeader>
                   <TableHead sx={{ "& .MuiTableCell-root": { backgroundColor: "#1d1d1d", color: "#fff", fontWeight: "bold" } }}>
                     <TableRow>
                       <TableCell>Metri̇k</TableCell>
@@ -328,12 +517,20 @@ const awayLast10 = useMemo(
               <TableContainer
                 component={Paper}
                 sx={{
-                  backgroundColor: "#2a3b47",
+                  backgroundColor: "#f5f5f5",
                   borderRadius: 1,
                   overflow: "hidden",
                 }}
               >
-                <Table size="small" stickyHeader>
+                <MetricGaugeGrid
+                  items={[
+                    { label: "Sarı Kart 2.5 Üst", value: homeCards?.over25Rate },
+                    { label: "Sarı Kart 3.5 Üst", value: homeCards?.over35Rate },
+                    { label: "Kırmızı Kart 0.5 Üst", value: homeCards?.RedOver05Rate },
+                    { label: "Ceza Skoru 2.5 Üst", value: homeCards?.penaltyOver25Rate },
+                  ]}
+                />
+                <Table sx={{ display: "none" }} size="small" stickyHeader>
                   <TableHead sx={{ "& .MuiTableCell-root": { backgroundColor: "#1d1d1d", color: "#fff", fontWeight: "bold" } }}>
                     <TableRow>
                       <TableCell>Metri̇k</TableCell>
@@ -430,12 +627,20 @@ const awayLast10 = useMemo(
               <TableContainer
                 component={Paper}
                 sx={{
-                  backgroundColor: "#2a3b47",
+                  backgroundColor: "#f5f5f5",
                   borderRadius: 1,
                   overflow: "hidden",
                 }}
               >
-                <Table size="small" stickyHeader>
+                <MetricGaugeGrid
+                  items={[
+                    { label: "1.5 Üst", value: awayGoals?.over15Rate },
+                    { label: "2.5 Üst", value: awayGoals?.over25Rate },
+                    { label: "3.5 Üst", value: awayGoals?.over35Rate },
+                    { label: "KG Var", value: awayGoals?.btsRate },
+                  ]}
+                />
+                <Table sx={{ display: "none" }} size="small" stickyHeader>
                   <TableHead sx={{ "& .MuiTableCell-root": { backgroundColor: "#1d1d1d", color: "#fff", fontWeight: "bold" } }}>
                     <TableRow>
                       <TableCell>Metri̇k</TableCell>
@@ -446,7 +651,7 @@ const awayLast10 = useMemo(
                     {awayGoals ? (
                       <>
                         <TableRow>
-                          <TableCell sx={{ color: "#fff" }}>Over 1.5</TableCell>
+                          <TableCell sx={{ color: "#fff" }}>1.5 Üst</TableCell>
                           {(() => {
                             const { text, bg } = formatRateCell(awayGoals.over15Rate);
                             return (
@@ -457,7 +662,7 @@ const awayLast10 = useMemo(
                           })()}
                         </TableRow>
                         <TableRow>
-                          <TableCell sx={{ color: "#fff" }}>Over 2.5</TableCell>
+                          <TableCell sx={{ color: "#fff" }}> 2.5 Üst</TableCell>
                           {(() => {
                             const { text, bg } = formatRateCell(awayGoals.over25Rate);
                             return (
@@ -468,7 +673,7 @@ const awayLast10 = useMemo(
                           })()}
                         </TableRow>
                         <TableRow>
-                          <TableCell sx={{ color: "#fff" }}>Over 3.5</TableCell>
+                          <TableCell sx={{ color: "#fff" }}> 3.5 Üst</TableCell>
                           {(() => {
                             const { text, bg } = formatRateCell(awayGoals.over35Rate);
                             return (
@@ -510,12 +715,19 @@ const awayLast10 = useMemo(
               <TableContainer
                 component={Paper}
                 sx={{
-                  backgroundColor: "#2a3b47",
+                  backgroundColor: "#f5f5f5",
                   borderRadius: 1,
                   overflow: "hidden",
                 }}
               >
-                <Table size="small" stickyHeader>
+                <MetricGaugeGrid
+                  items={[
+                    { label: "Maç Başı Korner", value: awayCorners?.avgMatchCorners, displayValue: awayCorners?.avgMatchCorners?.toFixed(2), isRate: false },
+                    { label: "Toplam 8.5 Üst", value: awayCorners?.over85Rate },
+                    { label: "Takım 4.5 Üst", value: awayCorners?.team45Rate },
+                  ]}
+                />
+                <Table sx={{ display: "none" }} size="small" stickyHeader>
                   <TableHead sx={{ "& .MuiTableCell-root": { backgroundColor: "#1d1d1d", color: "#fff", fontWeight: "bold" } }}>
                     <TableRow>
                       <TableCell>Metri̇k</TableCell>
@@ -574,12 +786,20 @@ const awayLast10 = useMemo(
               <TableContainer
                 component={Paper}
                 sx={{
-                  backgroundColor: "#2a3b47",
+                  backgroundColor: "#f5f5f5",
                   borderRadius: 1,
                   overflow: "hidden",
                 }}
               >
-                <Table size="small" stickyHeader>
+                <MetricGaugeGrid
+                  items={[
+                    { label: "Sarı Kart 2.5 Üst", value: awayCards?.over25Rate },
+                    { label: "Sarı Kart 3.5 Üst", value: awayCards?.over35Rate },
+                    { label: "Kırmızı Kart 0.5 Üst", value: awayCards?.RedOver05Rate },
+                    { label: "Ceza Skoru 2.5 Üst", value: awayCards?.penaltyOver25Rate },
+                  ]}
+                />
+                <Table sx={{ display: "none" }} size="small" stickyHeader>
                   <TableHead sx={{ "& .MuiTableCell-root": { backgroundColor: "#1d1d1d", color: "#fff", fontWeight: "bold" } }}>
                     <TableRow>
                       <TableCell>Metri̇k</TableCell>
@@ -679,6 +899,47 @@ const awayLast10 = useMemo(
           <Typography variant="body2" color="text.secondary">
             Bu takımlar arasında oynanmış maç bulunamadı.
           </Typography>
+        )}
+        {headToHeadStats && (
+          <Stack spacing={2} mt={3} mb={3}>
+            <Paper sx={{ backgroundColor: "#f5f5f5", p: 1 }}>
+              <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+                Karşılıklı Gol İstatistikleri
+              </Typography>
+              <MetricGaugeGrid
+                items={[
+                  { label: "1.5 Üst", value: headToHeadStats.goals.over15Rate },
+                  { label: "2.5 Üst", value: headToHeadStats.goals.over25Rate },
+                  { label: "3.5 Üst", value: headToHeadStats.goals.over35Rate },
+                  { label: "KG Var", value: headToHeadStats.goals.btsRate },
+                ]}
+              />
+            </Paper>
+            <Paper sx={{ backgroundColor: "#f5f5f5", p: 1 }}>
+              <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+                Karşılıklı Korner İstatistikleri
+              </Typography>
+              <MetricGaugeGrid
+                items={[
+                  { label: "Toplam 8.5 Üst", value: headToHeadStats.corners.over85Rate },
+                  { label: "Takım 4.5 Üst", value: headToHeadStats.corners.team45Rate },
+                ]}
+              />
+            </Paper>
+            <Paper sx={{ backgroundColor: "#f5f5f5", p: 1 }}>
+              <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+                Karşılıklı Kart İstatistikleri
+              </Typography>
+              <MetricGaugeGrid
+                items={[
+                  { label: "Sarı Kart 2.5 Üst", value: headToHeadStats.cards.over25Rate },
+                  { label: "Sarı Kart 3.5 Üst", value: headToHeadStats.cards.over35Rate },
+                  { label: "Kırmızı Kart 0.5 Üst", value: headToHeadStats.cards.RedOver05Rate },
+                  { label: "Ceza Skoru 2.5 Üst", value: headToHeadStats.cards.penaltyOver25Rate },
+                ]}
+              />
+            </Paper>
+          </Stack>
         )}
       </Box>
     </Box>
