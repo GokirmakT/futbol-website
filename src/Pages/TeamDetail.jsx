@@ -29,6 +29,21 @@ const leagueLogos = {
 };
 
 const getLeagueLogo = leagueName => leagueLogos[leagueName] || "/leagues/Super Lig.png";
+const leagueNameMap = {
+  "superlig": "Super Lig",
+  "premier-league": "Premier League",
+  "laliga": "LaLiga",
+  "seriea": "Serie A",
+  "bundesliga": "Bundesliga",
+  "ligue1": "Ligue 1",
+  "eredivisie": "Eredivisie",
+  "champions-league": "UEFA Champions League",
+  "europa-league": "UEFA Europa League",
+  "europa-conference-league": "UEFA Europa Conference League",
+  "primeira-liga": "Primeira Liga",
+  "pro-league": "Pro League",
+  "saudi-pro-league": "Saudi Pro League"
+};
 const normalizeLeague = value => String(value ?? "")
   .toLocaleLowerCase("tr-TR")
   .replace(/[ıİ]/g, "i")
@@ -39,7 +54,7 @@ const TeamDetail = () => {
   const { league, team } = useParams();
   const { matches, goalStats, setSelectedLeague, selectedLeague, selectedSeason } = useData();
   const [selectedSeasonFilter, setSelectedSeasonFilter] = useState(selectedSeason || "2026-2027");
-  const leagueLabel = league === "superlig" ? "Super Lig" : league;
+  const leagueLabel = leagueNameMap[league] || league;
   const [selectedLeagueFilter, setSelectedLeagueFilter] = useState(leagueLabel || "");
 
   const availableSeasons = useMemo(() => {
@@ -52,22 +67,6 @@ const TeamDetail = () => {
     console.log("URL lig parametresi:", league);
     if (league) {
       // URL'deki lig ismini backend formatına çevir
-      const leagueNameMap = {
-        "superlig": "Super Lig",
-        "premier-league": "Premier League",        
-        "laliga": "LaLiga",
-        "seriea": "Serie A",
-        "bundesliga": "Bundesliga",
-        "ligue1": "Ligue 1",
-        "eredivisie": "Eredivisie",
-        "champions-league": "UEFA Champions League",
-        "europa-league": "UEFA Europa League",
-        "europa-conference-league": "UEFA Europa Conference League",
-        "primeira-liga": "Primeira Liga",
-        "pro-league": "Pro League",
-
-      };
-      
       const leagueName = leagueNameMap[league] || league;
       if (leagueName !== selectedLeague) {
         setSelectedLeague(leagueName);
@@ -80,9 +79,10 @@ const TeamDetail = () => {
     return matches.filter(
       m =>
         (m.homeTeam === team || m.awayTeam === team) &&
-        m.season === selectedSeasonFilter
+        m.season === selectedSeasonFilter &&
+        (!selectedLeagueFilter || normalizeLeague(m.league) === normalizeLeague(selectedLeagueFilter))
     );
-  }, [matches, team, selectedSeasonFilter]);
+  }, [matches, team, selectedSeasonFilter, selectedLeagueFilter]);
 
   const sortedTeamMatches = useMemo(
     () => [...teamMatches].sort((a, b) => new Date(a.date) - new Date(b.date)),
@@ -98,54 +98,19 @@ const TeamDetail = () => {
     )];
   }, [matches, team]);
 
-  const matchedLeague = useMemo(
-    () => teamLeagueOptions.find(option => normalizeLeague(option) === normalizeLeague(leagueLabel)),
-    [teamLeagueOptions, leagueLabel]
+  const selectedLeagueValue = teamLeagueOptions.find(
+    option => normalizeLeague(option) === normalizeLeague(selectedLeagueFilter)
+  ) || "";
+
+  const previewMatches = useMemo(
+    () => matches
+      .filter(match => match.homeTeam === team || match.awayTeam === team)
+      .sort((a, b) => new Date(a.date) - new Date(b.date)),
+    [matches, team]
   );
 
-  useEffect(() => {
-    if (matchedLeague && matchedLeague !== selectedLeagueFilter) {
-      setSelectedLeagueFilter(matchedLeague);
-      setSelectedLeague(matchedLeague);
-    }
-  }, [matchedLeague, selectedLeagueFilter, setSelectedLeague]);
-
-  const summaryMatches = useMemo(
-    () => sortedTeamMatches.filter(match => !selectedLeagueFilter || match.league === selectedLeagueFilter),
-    [sortedTeamMatches, selectedLeagueFilter]
-  );
-
-  const selectedSeasonStart = Number.parseInt(selectedSeasonFilter, 10);
-  const previousSeasonMatch = useMemo(() => {
-    const previousSeasonMatches = matches.filter(match => {
-      const belongsToTeam = match.homeTeam === team || match.awayTeam === team;
-      const belongsToLeague = !selectedLeagueFilter || match.league === selectedLeagueFilter;
-      const seasonStart = Number.parseInt(match.season, 10);
-      return belongsToTeam && belongsToLeague && seasonStart < selectedSeasonStart && match.winner !== "TBD";
-    });
-
-    return [...previousSeasonMatches].sort((a, b) => {
-      const seasonDifference = Number.parseInt(b.season, 10) - Number.parseInt(a.season, 10);
-      return seasonDifference || new Date(b.date) - new Date(a.date);
-    })[0];
-  }, [matches, selectedLeagueFilter, selectedSeasonStart, team]);
-
-  const previousMatch = [...summaryMatches].reverse().find(match => match.winner !== "TBD") || previousSeasonMatch;
-  const nextSeasonMatch = useMemo(() => {
-    const futureSeasonMatches = matches.filter(match => {
-      const belongsToTeam = match.homeTeam === team || match.awayTeam === team;
-      const belongsToLeague = !selectedLeagueFilter || match.league === selectedLeagueFilter;
-      const seasonStart = Number.parseInt(match.season, 10);
-      return belongsToTeam && belongsToLeague && seasonStart > selectedSeasonStart && match.winner === "TBD";
-    });
-
-    return [...futureSeasonMatches].sort((a, b) => {
-      const seasonDifference = Number.parseInt(a.season, 10) - Number.parseInt(b.season, 10);
-      return seasonDifference || new Date(a.date) - new Date(b.date);
-    })[0];
-  }, [matches, selectedLeagueFilter, selectedSeasonStart, team]);
-
-  const nextMatch = summaryMatches.find(match => match.winner === "TBD") || nextSeasonMatch;
+  const previousMatch = [...previewMatches].reverse().find(match => match.winner !== "TBD");
+  const nextMatch = previewMatches.find(match => match.winner === "TBD");
 
   const formatMatchDate = match => match
     ? new Date(match.date).toLocaleDateString("tr-TR", { day: "2-digit", month: "2-digit", year: "2-digit" })
@@ -308,9 +273,13 @@ const TeamDetail = () => {
           </Select>
           <Select
             size="small"
-            value={selectedLeagueFilter}
+            value={selectedLeagueValue}
             displayEmpty
-            onChange={event => setSelectedLeagueFilter(event.target.value)}
+            onChange={event => {
+              const nextLeague = event.target.value;
+              setSelectedLeagueFilter(nextLeague);
+              setSelectedLeague(nextLeague);
+            }}
             sx={{
               minWidth: { sm: 220 },
               color: "#fff",
