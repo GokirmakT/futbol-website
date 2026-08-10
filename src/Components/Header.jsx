@@ -6,30 +6,49 @@ import {
   Stack,
   Box,
   Menu,
-  MenuItem, ListItemIcon, ListItemText, IconButton, Avatar
+  MenuItem, IconButton, Avatar, Typography
 } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useState, useRef } from "react";
+import { useMemo, useState } from "react";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useData } from "../context/DataContext";
 import { useAuth } from "../context/AuthContext";
+import { getTeamLogo } from "./teamLogos.js";
+
+const leagueSlugMap = {
+  "Super Lig": "superlig",
+  "Süper Lig": "superlig",
+  "Premier League": "premier-league",
+  "LaLiga": "laliga",
+  "Serie A": "seriea",
+  Bundesliga: "bundesliga",
+  "Ligue 1": "ligue1",
+  Eredivisie: "eredivisie",
+  "UEFA Champions League": "champions-league",
+  "UEFA Europa League": "europa-league",
+  "UEFA Europa Conference League": "europa-conference-league",
+  "Primeira Liga": "primeira-liga",
+  "Pro League": "pro-league",
+  "Saudi Pro League": "saudi-pro-league"
+};
+
+const normalizeSearch = value => String(value ?? "")
+  .trim()
+  .toLocaleLowerCase("tr-TR")
+  .replace(/[ıİ]/g, "i")
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .replace(/ı/g, "i");
 
 export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { setSelectedLeague } = useData();
+  const { matches, setSelectedLeague } = useData();
   const { user, isAuthenticated, signOut } = useAuth();
-
-  // DESKTOP lig menüsü
-  const [anchorEl, setAnchorEl] = useState(null);
+  const [searchValue, setSearchValue] = useState("");
 
   // MOBILE ana menü
   const [menuAnchor, setMenuAnchor] = useState(null);
-
-  // MOBILE lig submenu
-  const [leagueAnchor, setLeagueAnchor] = useState(null);
-
-  const closeTimerRef = useRef(null);
 
   // USER menu
   const [userMenuAnchor, setUserMenuAnchor] = useState(null);
@@ -37,38 +56,61 @@ export default function Header() {
   const isMobile = useMediaQuery("(max-width: 460px)");
   const headerButtons = useMediaQuery("(max-width: 1282px)");
 
-  const leagues = [
-    { id: "superlig", name: "Süper Lig", icon: "/leagues/Super Lig.png" },
-    { id: "premier-league", name: "Premier League", icon: "/leagues/Premier League.png" },
-    { id: "efl-championship" , name: "EFL Championship", icon: "/leagues/EFL Championship.png" },
-    { id: "laliga", name: "LaLiga", icon: "/leagues/LaLiga.png" },
-    { id: "seriea", name: "Serie A", icon: "/leagues/Serie A.png" },
-    { id: "bundesliga", name: "Bundesliga", icon: "/leagues/Bundesliga.png" },
-    { id: "ligue1", name: "Ligue 1", icon: "/leagues/Ligue 1.png" },
-    { id: "eredivisie", name: "Eredivisie", icon: "/leagues/Eredivisie.png" },
-    { id: "champions-league", name: "UEFA Champions League", icon: "/leagues/UEFA Champions League.png" },
-    { id: "europa-league", name: "UEFA Europa League", icon: "/leagues/UEFA Europa League.png" },
-    { id: "europa-conference-league", name: "UEFA Europa Conference League", icon: "/leagues/UEFA Europa Conference League.png" },
-    { id: "primeira-liga", name: "Primeira Liga", icon: "/leagues/primeira-liga.webp" },
-    { id: "pro-league", name: "Pro League", icon: "/leagues/pro-league.webp" },
-    { id: "saudi-pro-league", name: "Saudi Pro League", icon: "/leagues/saudi-pro-league.png" }
-  ];
+  const searchSuggestions = useMemo(() => {
+    const query = normalizeSearch(searchValue);
+    if (!query || !matches?.length) return { teams: [], fixtures: [] };
 
-  // DESKTOP hover açma
-  function handleOpen(e) {
-    if (closeTimerRef.current) {
-      clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = null;
-    }
-    setAnchorEl(e.currentTarget);
+    const teams = new Map();
+    matches.forEach(match => {
+      [match.homeTeam, match.awayTeam].forEach(teamName => {
+        if (!teamName || !normalizeSearch(teamName).includes(query) || teams.has(teamName)) return;
+        teams.set(teamName, { name: teamName, league: match.league });
+      });
+    });
+
+    const fixtures = matches
+      .filter(match => normalizeSearch(`${match.homeTeam} ${match.awayTeam}`).includes(query))
+      .slice(0, 4);
+
+    return {
+      teams: [...teams.values()].slice(0, 5),
+      fixtures
+    };
+  }, [matches, searchValue]);
+
+  const hasSearchSuggestions = searchValue.trim() && (
+    searchSuggestions.teams.length || searchSuggestions.fixtures.length
+  );
+
+  function handleTeamSearch() {
+    const query = normalizeSearch(searchValue);
+    if (!query || !matches?.length) return;
+
+    const teamMatch = matches.find(match =>
+      [match.homeTeam, match.awayTeam].some(teamName => normalizeSearch(teamName) === query)
+    );
+
+    if (!teamMatch) return;
+
+    const teamName = normalizeSearch(teamMatch.homeTeam) === query
+      ? teamMatch.homeTeam
+      : teamMatch.awayTeam;
+    const leagueSlug = leagueSlugMap[teamMatch.league] || teamMatch.league;
+    setSelectedLeague(teamMatch.league);
+    navigate(`/team/${encodeURIComponent(leagueSlug)}/${encodeURIComponent(teamName)}`);
   }
 
-  function handleLeagueClick(league) {
-    setAnchorEl(null);
-    setMenuAnchor(null);
-    setLeagueAnchor(null);
-    // Header'dan seçilen lige navigate et - Standings sayfası URL'den lig bilgisini alacak
-    navigate(`/lig/${league.id}`);
+  function openTeam(teamName, teamLeague) {
+    const leagueSlug = leagueSlugMap[teamLeague] || teamLeague;
+    setSelectedLeague(teamLeague);
+    setSearchValue("");
+    navigate(`/team/${encodeURIComponent(leagueSlug)}/${encodeURIComponent(teamName)}`);
+  }
+
+  function openFixture(match) {
+    const leagueSlug = leagueSlugMap[match.league] || match.league;
+    setSearchValue("");
+    navigate(`/match/${encodeURIComponent(leagueSlug)}/${encodeURIComponent(match.homeTeam)}/${encodeURIComponent(match.awayTeam)}`);
   }
   
   return (
@@ -89,10 +131,15 @@ export default function Header() {
       <AppBar position="sticky" elevation={1} sx={{ backgroundColor: "#1d1d1d", p: 1 }}>
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
           {/* SOL: ARAMA */}
-          <Box sx={{ width: "40%", minWidth: "220px" }}>
+          <Box sx={{ width: "40%", minWidth: "220px", position: "relative" }}>
             <TextField
               fullWidth
               size="small"
+              value={searchValue}
+              onChange={event => setSearchValue(event.target.value)}
+              onKeyDown={event => {
+                if (event.key === "Enter") handleTeamSearch();
+              }}
               placeholder="Takım, maç veya lig ara..."
               sx={{
                 backgroundColor: "#fff",
@@ -100,6 +147,80 @@ export default function Header() {
                 input: { color: "black" }
               }}
             />
+            {hasSearchSuggestions && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: "calc(100% + 4px)",
+                  left: 0,
+                  right: 0,
+                  zIndex: 1400,
+                  overflow: "hidden",
+                  borderRadius: 1,
+                  backgroundColor: "#fff",
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.28)"
+                }}
+              >
+                {searchSuggestions.fixtures.length > 0 && (
+                  <>
+                    <Typography sx={{ px: 1.5, pt: 1, pb: 0.5, color: "#777", fontSize: 12, fontWeight: "bold" }}>
+                      Maçlar
+                    </Typography>
+                    {searchSuggestions.fixtures.map((match, index) => (
+                      <Box
+                        key={`${match.homeTeam}-${match.awayTeam}-${index}`}
+                        onMouseDown={() => openFixture(match)}
+                        sx={{
+                          px: 1.5,
+                          py: 1,
+                          cursor: "pointer",
+                          color: "#222",
+                          borderTop: "1px solid #eee",
+                          "&:hover": { backgroundColor: "#eef5fb" }
+                        }}
+                      >
+                        <Typography variant="body2" fontWeight="bold" noWrap>
+                          {match.homeTeam} - {match.awayTeam}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {match.league} · {new Date(match.date).toLocaleDateString("tr-TR")}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </>
+                )}
+                {searchSuggestions.teams.length > 0 && (
+                  <>
+                    <Typography sx={{ px: 1.5, pt: 1, pb: 0.5, color: "#777", fontSize: 12, fontWeight: "bold" }}>
+                      Takımlar
+                    </Typography>
+                    {searchSuggestions.teams.map(teamItem => (
+                      <Box
+                        key={`${teamItem.name}-${teamItem.league}`}
+                        onMouseDown={() => openTeam(teamItem.name, teamItem.league)}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                          px: 1.5,
+                          py: 1,
+                          cursor: "pointer",
+                          color: "#222",
+                          borderTop: "1px solid #eee",
+                          "&:hover": { backgroundColor: "#eef5fb" }
+                        }}
+                      >
+                        <Box component="img" src={getTeamLogo(teamItem.name)} alt="" sx={{ width: 28, height: 28, objectFit: "contain" }} />
+                        <Box sx={{ minWidth: 0 }}>
+                          <Typography variant="body2" fontWeight="bold" noWrap>{teamItem.name}</Typography>
+                          <Typography variant="caption" color="text.secondary" noWrap>{teamItem.league}</Typography>
+                        </Box>
+                      </Box>
+                    ))}
+                  </>
+                )}
+              </Box>
+            )}
           </Box>
 
           {/* SAĞ: MENÜLER */}
@@ -262,7 +383,6 @@ export default function Header() {
                 open={Boolean(menuAnchor)}
                 onClose={() => {
                   setMenuAnchor(null);
-                  setLeagueAnchor(null);
                 }}
               >
                 <MenuItem onClick={() => {navigate("/TodayMatches"); setMenuAnchor(null);}} sx={{gap: 0.5}}>
@@ -277,19 +397,6 @@ export default function Header() {
                   Bugünün maçları
                 </MenuItem>
 
-                <MenuItem
-                  onMouseEnter={(e) => setLeagueAnchor(e.currentTarget)} sx={{gap: 0.5}}
-                >
-                  <img
-                    src = "/champions.png"
-                    alt="menu"
-                    style={{
-                      width: 24,
-                      height: 24,                     
-                    }}
-                  />
-                  Ligler
-                </MenuItem>
                 <MenuItem onClick={() => {navigate("/Cards"); setMenuAnchor(null);}} sx={{gap: 0.5}}>
                 <img
                     src = "/yellow-card.png"
@@ -343,32 +450,6 @@ export default function Header() {
                   <MenuItem onClick={async () => { setUserMenuAnchor(null); await signOut(); navigate("/auth"); }}>
                     Çıkış
                   </MenuItem>
-              </Menu>
-
-              {/* MOBİL LİGLER SUBMENU */}
-              <Menu
-                sx={{maxHeight: 500, width: 300, ml: "0px", mt: "0px" }}
-                anchorEl={leagueAnchor}
-                open={Boolean(leagueAnchor)}
-                onClose={() => setLeagueAnchor(null)}
-                
-                MenuListProps={{
-                  onMouseLeave: () => setLeagueAnchor(null)
-                }}
-              >
-                {leagues.map((l) => (
-                  <MenuItem key={l.id} onClick={() => handleLeagueClick(l)}>
-                    <ListItemIcon sx={{ minWidth: 36 }}>
-                      <img
-                        src={l.icon}
-                        alt={l.name}
-                        style={{ width: 30, height: 30 }}
-                      />
-                    </ListItemIcon>
-
-                    <ListItemText primary={l.name} />
-                  </MenuItem>
-                ))}
               </Menu>
 
             </>

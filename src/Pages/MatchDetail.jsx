@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -160,6 +160,7 @@ const MetricGaugeGrid = ({ items }) => (
 
 const MatchDetail = () => {
   const { league, home, away } = useParams();
+  const navigate = useNavigate();
   const {
     matches,
     goalStats,
@@ -343,7 +344,12 @@ const awayLast10 = useMemo(
         {/* EV SAHİBİ */}
         <Box sx={{ flex: 1, minWidth: 0, pr: 3}}>
           <Paper sx={{ width: "100%", maxWidth: 600, minWidth: 0, mx: "auto", p: 2, display: "flex", flexDirection: "column", gap: 2 }}>
-            <Typography variant="h6" fontWeight="bold">
+            <Typography
+              variant="h6"
+              fontWeight="bold"
+              onClick={() => navigate(`/team/${league}/${home}`)}
+              sx={{ cursor: "pointer", "&:hover": { textDecoration: "underline", color: "primary.main" } }}
+            >
               {home}
             </Typography>
             <Typography variant="body2" color="text.secondary">
@@ -604,7 +610,7 @@ const awayLast10 = useMemo(
               <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
                 Son 10 Maç Analizi
               </Typography>
-              <TeamFixture matches={homeLast10} team={home} league={""} display={"none"} matchWidth="100%" />
+              <TeamFixture matches={homeLast10} team={home} league={leagueName} display={"none"} matchWidth="100%" />
             </Box>
           </Paper>
         </Box>
@@ -612,7 +618,12 @@ const awayLast10 = useMemo(
         {/* DEPLASMAN */}
         <Box sx={{ flex: 1, minWidth: 0, pr: 3 }}>
           <Paper sx={{ width: "100%", maxWidth: 600, minWidth: 0, mx: "auto", p: 2, display: "flex", flexDirection: "column", gap: 2 }}>
-            <Typography variant="h6" fontWeight="bold">
+            <Typography
+              variant="h6"
+              fontWeight="bold"
+              onClick={() => navigate(`/team/${league}/${away}`)}
+              sx={{ cursor: "pointer", "&:hover": { textDecoration: "underline", color: "primary.main" } }}
+            >
               {away}
             </Typography>
             <Typography variant="body2" color="text.secondary">
@@ -873,7 +884,7 @@ const awayLast10 = useMemo(
               <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
                 Son 10 Maç Analizi
               </Typography>
-              <TeamFixture matches={awayLast10} team={away} league={""} display={"none"} matchWidth="100%" />
+              <TeamFixture matches={awayLast10} team={away} league={leagueName} display={"none"} matchWidth="100%" />
             </Box>
           </Paper>
         </Box>
@@ -890,7 +901,7 @@ const awayLast10 = useMemo(
           <TeamFixture
             matches={headToHeadMatches}
             team={home}
-            league=""
+            league={leagueName}
             display="none"
             matchWidth="100%"
             showResultColor={false}

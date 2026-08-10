@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { useData } from "../context/DataContext";
 import { useState } from "react";
 
-const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelectedSeason, availableSeasons = [], matchWidth = "60%", showResultColor = true }) => {
+const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelectedSeason, availableSeasons = [], matchWidth = "60%", showResultColor = true, leagueFilter, setLeagueFilter, showSeasonFilter = true, showLeagueFilter = true }) => {
   const navigate = useNavigate();
   const isTablet = useMediaQuery("(max-width: 800px)");
   const isMobile = useMediaQuery("(max-width: 500px)");
@@ -34,7 +34,8 @@ const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelect
   
   const filteredMatches = matches.filter(m => {
     if (m.homeTeam !== team && m.awayTeam !== team) return false;
-    if (filters.league && m.league !== filters.league) return false;
+    const activeLeagueFilter = leagueFilter ?? filters.league;
+    if (activeLeagueFilter && m.league !== activeLeagueFilter) return false;
     return true;
   });
 
@@ -78,7 +79,7 @@ const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelect
       
       <Stack direction="column" spacing={1} justifyContent="flex-end" display={display}>
 
-        <Select
+        {showSeasonFilter && <Select
           size="small"
           value={selectedSeason ?? ""}
           displayEmpty
@@ -89,7 +90,7 @@ const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelect
               {season}
             </MenuItem>
           ))}
-        </Select>
+        </Select>}
 
         <Select
           size="small"
@@ -103,12 +104,14 @@ const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelect
           <MenuItem value={11}>11+</MenuItem>
         </Select>
 
-        <Select
+        {showLeagueFilter && <Select
           size="small"
-          value={filters.league}
+          value={leagueFilter ?? filters.league}
           displayEmpty
           onChange={e =>
-            setFilters(f => ({ ...f, league: e.target.value }))
+            setLeagueFilter
+              ? setLeagueFilter(e.target.value)
+              : setFilters(f => ({ ...f, league: e.target.value }))
           }
         >
           <MenuItem value="">Tüm Ligler</MenuItem>
@@ -118,7 +121,7 @@ const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelect
               {lg}
             </MenuItem>
           ))}
-        </Select>
+        </Select>}
 
         <Select
           size="small"
