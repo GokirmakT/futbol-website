@@ -32,6 +32,7 @@ const leagueLogos = {
 };
 
 const getLeagueLogo = leagueName => leagueLogos[leagueName] || "/leagues/Super Lig.png";
+
 const leagueNameMap = {
   "superlig": "Super Lig",
   "premier-league": "Premier League",
@@ -101,11 +102,19 @@ const TeamDetail = () => {
   const teamLeagueOptions = useMemo(() => {
     return [...new Set(
       matches
-        .filter(m => m.homeTeam === team || m.awayTeam === team)
+        .filter(
+          m =>
+            (m.homeTeam === team || m.awayTeam === team) &&
+            m.season === selectedSeasonFilter
+        )
         .map(m => m.league)
         .filter(Boolean)
     )];
-  }, [matches, team]);
+  }, [matches, team, selectedSeasonFilter]);
+
+  useEffect(() => {
+    setSelectedLeagueFilter("");
+  }, [selectedSeasonFilter]);
 
   const selectedLeagueValue = teamLeagueOptions.find(
     option => normalizeLeague(option) === normalizeLeague(selectedLeagueFilter)

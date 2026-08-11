@@ -21,7 +21,7 @@ const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelect
 )];
 
   const [filters, setFilters] = useState({
-    league: league || "",
+    league: leagueFilter ?? "",
     shots: null,
     shotsOnTarget: null,
     corners: null,

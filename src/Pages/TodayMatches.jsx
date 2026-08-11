@@ -33,17 +33,21 @@ function TodayMatches() {
     "Süper Lig": "/leagues/Super Lig.png",
     "Premier League": "/leagues/Premier League.png",
     "EFL Championship": "/leagues/EFL Championship.png",
-    LaLiga: "/leagues/LaLiga.png",
+    "LaLiga": "/leagues/LaLiga.png",
     "Serie A": "/leagues/Serie A.png",
-    Bundesliga: "/leagues/Bundesliga.png",
+    "Bundesliga": "/leagues/Bundesliga.png",
     "Ligue 1": "/leagues/Ligue 1.png",
-    Eredivisie: "/leagues/Eredivisie.png",
+    "Eredivisie": "/leagues/Eredivisie.png",
     "UEFA Champions League": "/leagues/UEFA Champions League.png",
     "UEFA Europa League": "/leagues/UEFA Europa League.png",
     "UEFA Europa Conference League": "/leagues/UEFA Europa Conference League.png",
-    "Primeira Liga": "/leagues/primeira-liga.webp",
-    "Pro League": "/leagues/pro-league.webp",
-    "Saudi Pro League": "/leagues/saudi-pro-league.png",
+    "Primeira Liga": "/leagues/Primeira Liga.png",
+    "Pro League": "/leagues/Pro League.png",
+    "Saudi Pro League": "/leagues/Saudi Pro League.png",
+    "UEFA Champions League Qualifying": "/leagues/UEFA Champions League.png",
+    "UEFA Europa League Qualifying": "/leagues/UEFA Europa League.png",
+    "UEFA Conference League Qualifying": "/leagues/UEFA Europa Conference League.png",
+
   };
 
     const getBgColor = (percent) => {
