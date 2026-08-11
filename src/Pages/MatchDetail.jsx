@@ -28,6 +28,12 @@ const leagueNameMap = {
   "champions-league": "UEFA Champions League",
   "europa-league": "UEFA Europa League",
   "europa-conference-league": "UEFA Europa Conference League",
+  "uefa-champions-league-qualifying": "UEFA Champions League Qualifying",
+  "uefa-europa-league-qualifying": "UEFA Europa League Qualifying",
+  "uefa-conference-league-qualifying": "UEFA Conference League Qualifying",
+  "uefa.champions_qual": "UEFA Champions League Qualifying",
+  "uefa.europa_qual": "UEFA Europa League Qualifying",
+  "uefa.europa.conf_qual": "UEFA Conference League Qualifying",
   "primeira-liga": "Primeira Liga",
   "pro-league": "Pro League",
 };

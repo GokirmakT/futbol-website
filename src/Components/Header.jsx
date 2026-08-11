@@ -29,7 +29,10 @@ const leagueSlugMap = {
   "UEFA Europa Conference League": "europa-conference-league",
   "Primeira Liga": "primeira-liga",
   "Pro League": "pro-league",
-  "Saudi Pro League": "saudi-pro-league"
+  "Saudi Pro League": "saudi-pro-league",
+  "UEFA Champions League Qualifying": "uefa-champions-league-qualifying",
+  "UEFA Europa League Qualifying": "uefa-europa-league-qualifying",
+  "UEFA Conference League Qualifying": "uefa-conference-league-qualifying",
 };
 
 const normalizeSearch = value => String(value ?? "")

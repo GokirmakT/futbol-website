@@ -23,6 +23,9 @@ const leagueLogos = {
   "UEFA Champions League": "/leagues/UEFA Champions League.png",
   "UEFA Europa League": "/leagues/UEFA Europa League.png",
   "UEFA Europa Conference League": "/leagues/UEFA Europa Conference League.png",
+  "UEFA Champions League Qualifying": "/leagues/UEFA Champions League.png",
+  "UEFA Europa League Qualifying": "/leagues/UEFA Europa League.png",
+  "UEFA Conference League Qualifying": "/leagues/UEFA Europa Conference League.png",
   "Primeira Liga": "/leagues/primeira-liga.webp",
   "Pro League": "/leagues/pro-league.webp",
   "Saudi Pro League": "/leagues/saudi-pro-league.png"
@@ -40,6 +43,12 @@ const leagueNameMap = {
   "champions-league": "UEFA Champions League",
   "europa-league": "UEFA Europa League",
   "europa-conference-league": "UEFA Europa Conference League",
+  "uefa-champions-league-qualifying": "UEFA Champions League Qualifying",
+  "uefa-europa-league-qualifying": "UEFA Europa League Qualifying",
+  "uefa-conference-league-qualifying": "UEFA Conference League Qualifying",
+  "uefa.champions_qual": "UEFA Champions League Qualifying",
+  "uefa.europa_qual": "UEFA Europa League Qualifying",
+  "uefa.europa.conf_qual": "UEFA Conference League Qualifying",
   "primeira-liga": "Primeira Liga",
   "pro-league": "Pro League",
   "saudi-pro-league": "Saudi Pro League"
