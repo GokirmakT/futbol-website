@@ -71,9 +71,23 @@ export default function Header() {
       });
     });
 
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
     const fixtures = matches
-      .filter(match => normalizeSearch(`${match.homeTeam} ${match.awayTeam}`).includes(query))
-      .slice(0, 4);
+      .filter(match => {
+        if (!match.date) return false;
+        const matchDate = new Date(match.date);
+        if (Number.isNaN(matchDate.getTime())) return false;
+        if (matchDate < todayStart) return false;
+
+        const teamNames = [match.homeTeam, match.awayTeam];
+        return teamNames.some(teamName =>
+          teamName && normalizeSearch(teamName).includes(query)
+        );
+      })
+      .sort((a, b) => new Date(a.date) - new Date(b.date))
+      .slice(0, 2);
 
     return {
       teams: [...teams.values()].slice(0, 5),
@@ -164,34 +178,6 @@ export default function Header() {
                   boxShadow: "0 8px 24px rgba(0,0,0,0.28)"
                 }}
               >
-                {searchSuggestions.fixtures.length > 0 && (
-                  <>
-                    <Typography sx={{ px: 1.5, pt: 1, pb: 0.5, color: "#777", fontSize: 12, fontWeight: "bold" }}>
-                      Maçlar
-                    </Typography>
-                    {searchSuggestions.fixtures.map((match, index) => (
-                      <Box
-                        key={`${match.homeTeam}-${match.awayTeam}-${index}`}
-                        onMouseDown={() => openFixture(match)}
-                        sx={{
-                          px: 1.5,
-                          py: 1,
-                          cursor: "pointer",
-                          color: "#222",
-                          borderTop: "1px solid #eee",
-                          "&:hover": { backgroundColor: "#eef5fb" }
-                        }}
-                      >
-                        <Typography variant="body2" fontWeight="bold" noWrap>
-                          {match.homeTeam} - {match.awayTeam}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {match.league} · {new Date(match.date).toLocaleDateString("tr-TR")}
-                        </Typography>
-                      </Box>
-                    ))}
-                  </>
-                )}
                 {searchSuggestions.teams.length > 0 && (
                   <>
                     <Typography sx={{ px: 1.5, pt: 1, pb: 0.5, color: "#777", fontSize: 12, fontWeight: "bold" }}>
@@ -218,6 +204,34 @@ export default function Header() {
                           <Typography variant="body2" fontWeight="bold" noWrap>{teamItem.name}</Typography>
                           <Typography variant="caption" color="text.secondary" noWrap>{teamItem.league}</Typography>
                         </Box>
+                      </Box>
+                    ))}
+                  </>
+                )}
+                {searchSuggestions.fixtures.length > 0 && (
+                  <>
+                    <Typography sx={{ px: 1.5, pt: 1, pb: 0.5, color: "#777", fontSize: 12, fontWeight: "bold" }}>
+                      Maçlar
+                    </Typography>
+                    {searchSuggestions.fixtures.map((match, index) => (
+                      <Box
+                        key={`${match.homeTeam}-${match.awayTeam}-${index}`}
+                        onMouseDown={() => openFixture(match)}
+                        sx={{
+                          px: 1.5,
+                          py: 1,
+                          cursor: "pointer",
+                          color: "#222",
+                          borderTop: "1px solid #eee",
+                          "&:hover": { backgroundColor: "#eef5fb" }
+                        }}
+                      >
+                        <Typography variant="body2" fontWeight="bold" noWrap>
+                          {match.homeTeam} - {match.awayTeam}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {match.league} · {new Date(match.date).toLocaleDateString("tr-TR")}
+                        </Typography>
                       </Box>
                     ))}
                   </>

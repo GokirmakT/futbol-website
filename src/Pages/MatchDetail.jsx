@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Box,
@@ -13,9 +13,34 @@ import {
   TableHead,
   TableRow,
   Divider,
+  Button,
 } from "@mui/material";
 import { useData } from "../context/DataContext";
 import TeamFixture from "../Components/TeamFixture.jsx";
+import { getTeamLogo } from "../Components/teamLogos.js";
+
+const leagueLogos = {
+  "Super Lig": "/leagues/Super Lig.png",
+  "Süper Lig": "/leagues/Super Lig.png",
+  "Premier League": "/leagues/Premier League.png",
+  "EFL Championship": "/leagues/EFL Championship.png",
+  LaLiga: "/leagues/LaLiga.png",
+  "Serie A": "/leagues/Serie A.png",
+  Bundesliga: "/leagues/Bundesliga.png",
+  "Ligue 1": "/leagues/Ligue 1.png",
+  Eredivisie: "/leagues/Eredivisie.png",
+  "UEFA Champions League": "/leagues/UEFA Champions League.png",
+  "UEFA Europa League": "/leagues/UEFA Europa League.png",
+  "UEFA Europa Conference League": "/leagues/UEFA Europa Conference League.png",
+  "UEFA Champions League Qualifying": "/leagues/UEFA Champions League.png",
+  "UEFA Europa League Qualifying": "/leagues/UEFA Europa League.png",
+  "UEFA Conference League Qualifying": "/leagues/UEFA Europa Conference League.png",
+  "Primeira Liga": "/leagues/Primeira Liga.png",
+  "Pro League": "/leagues/Pro League.png",
+  "Saudi Pro League": "/leagues/Saudi Pro League.png",
+};
+
+const getLeagueLogo = (leagueName) => leagueLogos[leagueName] || "/leagues/Super Lig.png";
 
 const leagueNameMap = {
   "superlig": "Super Lig",
@@ -36,6 +61,7 @@ const leagueNameMap = {
   "uefa.europa.conf_qual": "UEFA Conference League Qualifying",
   "primeira-liga": "Primeira Liga",
   "pro-league": "Pro League",
+  "saudi-pro-league": "Saudi Pro League",
 };
 
 const getBgColor = (percent) => {
@@ -164,6 +190,123 @@ const MetricGaugeGrid = ({ items }) => (
   </Box>
 );
 
+const getTeamScopeMatches = (matches, teamName, selectedSeason, scope) => {
+  const teamMatches = matches.filter(
+    match =>
+      match.season === selectedSeason &&
+      (match.homeTeam === teamName || match.awayTeam === teamName) &&
+      match.winner !== "TBD"
+  );
+
+  if (!scope || scope === "all") return teamMatches;
+  return teamMatches.filter(match => match.league === scope);
+};
+
+const buildTeamMatchStats = (teamName, scopeMatches) => {
+  if (!scopeMatches.length) {
+    return {
+      goals: {
+        over15Rate: 0,
+        over25Rate: 0,
+        over35Rate: 0,
+        btsRate: 0,
+      },
+      corners: {
+        avgMatchCorners: 0,
+        over85Rate: 0,
+        team45Rate: 0,
+      },
+      cards: {
+        over25Rate: 0,
+        over35Rate: 0,
+        RedOver05Rate: 0,
+        penaltyOver25Rate: 0,
+        penaltyOver35Rate: 0,
+        penaltyOver45Rate: 0,
+      },
+    };
+  }
+
+  let over15 = 0;
+  let over25 = 0;
+  let over35 = 0;
+  let bothTeamsScored = 0;
+  let totalCorners = 0;
+  let over85Corners = 0;
+  let over95Corners = 0;
+  let over105Corners = 0;
+  let teamOver45Corners = 0;
+  let teamOver55Corners = 0;
+  let over25Yellow = 0;
+  let over35Yellow = 0;
+  let redOver05 = 0;
+  let penaltyOver25 = 0;
+  let penaltyOver35 = 0;
+  let penaltyOver45 = 0;
+
+  scopeMatches.forEach(match => {
+    const homeScore = Number(match.goalHome) || 0;
+    const awayScore = Number(match.goalAway) || 0;
+    const totalGoals = homeScore + awayScore;
+    const teamGoals = match.homeTeam === teamName ? homeScore : awayScore;
+    const teamCorners = match.homeTeam === teamName ? Number(match.cornerHome) || 0 : Number(match.cornerAway) || 0;
+    const totalYellow = (Number(match.yellowHome) || 0) + (Number(match.yellowAway) || 0);
+    const totalRed = (Number(match.redHome) || 0) + (Number(match.redAway) || 0);
+    const penaltyScore = (Number(match.yellowHome) || 0) + (Number(match.redHome) || 0) * 2 + (Number(match.yellowAway) || 0) + (Number(match.redAway) || 0) * 2;
+    const totalMatchCorners = (Number(match.cornerHome) || 0) + (Number(match.cornerAway) || 0);
+
+    if (totalGoals > 1.5) over15++;
+    if (totalGoals > 2.5) over25++;
+    if (totalGoals > 3.5) over35++;
+    if (homeScore > 0 && awayScore > 0) bothTeamsScored++;
+
+    totalCorners += totalMatchCorners;
+    if (totalMatchCorners > 8.5) over85Corners++;
+    if (totalMatchCorners > 9.5) over95Corners++;
+    if (totalMatchCorners > 10.5) over105Corners++;
+    if (teamCorners > 4.5) teamOver45Corners++;
+    if (teamCorners > 5.5) teamOver55Corners++;
+
+    if (totalYellow > 2.5) over25Yellow++;
+    if (totalYellow > 3.5) over35Yellow++;
+    if (totalRed > 0.5) redOver05++;
+    if (penaltyScore > 2.5) penaltyOver25++;
+    if (penaltyScore > 3.5) penaltyOver35++;
+    if (penaltyScore > 4.5) penaltyOver45++;
+
+    if (teamGoals > 0 && totalGoals > 0) {
+      // no-op, kept for clarity in future expansions
+    }
+  });
+
+  const totalMatches = scopeMatches.length || 1;
+
+  return {
+    goals: {
+      over15Rate: (over15 / totalMatches) * 100,
+      over25Rate: (over25 / totalMatches) * 100,
+      over35Rate: (over35 / totalMatches) * 100,
+      btsRate: (bothTeamsScored / totalMatches) * 100,
+    },
+    corners: {
+      avgMatchCorners: totalCorners / totalMatches,
+      over85Rate: (over85Corners / totalMatches) * 100,
+      over95Rate: (over95Corners / totalMatches) * 100,
+      over105Rate: (over105Corners / totalMatches) * 100,
+      team45Rate: (teamOver45Corners / totalMatches) * 100,
+      team55Rate: (teamOver55Corners / totalMatches) * 100,
+    },
+    cards: {
+      over25Rate: (over25Yellow / totalMatches) * 100,
+      over35Rate: (over35Yellow / totalMatches) * 100,
+      RedOver05Rate: (redOver05 / totalMatches) * 100,
+      penaltyOver25Rate: (penaltyOver25 / totalMatches) * 100,
+      penaltyOver35Rate: (penaltyOver35 / totalMatches) * 100,
+      penaltyOver45Rate: (penaltyOver45 / totalMatches) * 100,
+    },
+  };
+};
+
 const MatchDetail = () => {
   const { league, home, away } = useParams();
   const navigate = useNavigate();
@@ -174,9 +317,43 @@ const MatchDetail = () => {
     cornerStats,
     setSelectedLeague,
     selectedLeague,
+    selectedSeason,
   } = useData();
 
   const leagueName = leagueNameMap[league] || league;
+  const [homeScope, setHomeScope] = useState("all");
+  const [awayScope, setAwayScope] = useState("all");
+
+  const homeCompetitionOptions = useMemo(() => {
+    const options = [...new Set(
+      matches
+        .filter(match => match.season === selectedSeason && (match.homeTeam === home || match.awayTeam === home) && match.winner !== "TBD")
+        .map(match => match.league)
+        .filter(Boolean)
+    )];
+    return ["all", ...options];
+  }, [matches, selectedSeason, home]);
+
+  const awayCompetitionOptions = useMemo(() => {
+    const options = [...new Set(
+      matches
+        .filter(match => match.season === selectedSeason && (match.homeTeam === away || match.awayTeam === away) && match.winner !== "TBD")
+        .map(match => match.league)
+        .filter(Boolean)
+    )];
+    return ["all", ...options];
+  }, [matches, selectedSeason, away]);
+
+  const getScopeMatchCount = (teamName, scope) => {
+    if (!matches?.length) return 0;
+    const scopedMatches = matches.filter(match =>
+      match.season === selectedSeason &&
+      (match.homeTeam === teamName || match.awayTeam === teamName) &&
+      match.winner !== "TBD" &&
+      (scope === "all" || match.league === scope)
+    );
+    return scopedMatches.length;
+  };
 
   useEffect(() => {
     if (leagueName && leagueName !== selectedLeague) {
@@ -184,31 +361,40 @@ const MatchDetail = () => {
     }
   }, [leagueName, selectedLeague, setSelectedLeague]);
 
+  const homeTeamMatches = useMemo(
+    () => getTeamScopeMatches(matches, home, selectedSeason, homeScope),
+    [matches, home, selectedSeason, homeScope]
+  );
+  const awayTeamMatches = useMemo(
+    () => getTeamScopeMatches(matches, away, selectedSeason, awayScope),
+    [matches, away, selectedSeason, awayScope]
+  );
+
   const homeGoals = useMemo(
-    () => goalStats.find(t => t.team === home),
-    [goalStats, home]
+    () => buildTeamMatchStats(home, homeTeamMatches).goals,
+    [home, homeTeamMatches]
   );
   const awayGoals = useMemo(
-    () => goalStats.find(t => t.team === away),
-    [goalStats, away]
+    () => buildTeamMatchStats(away, awayTeamMatches).goals,
+    [away, awayTeamMatches]
   );
 
   const homeCorners = useMemo(
-    () => cornerStats.find(t => t.team === home),
-    [cornerStats, home]
+    () => buildTeamMatchStats(home, homeTeamMatches).corners,
+    [home, homeTeamMatches]
   );
   const awayCorners = useMemo(
-    () => cornerStats.find(t => t.team === away),
-    [cornerStats, away]
+    () => buildTeamMatchStats(away, awayTeamMatches).corners,
+    [away, awayTeamMatches]
   );
 
   const homeCards = useMemo(
-    () => cardStats.find(t => t.team === home),
-    [cardStats, home]
+    () => buildTeamMatchStats(home, homeTeamMatches).cards,
+    [home, homeTeamMatches]
   );
   const awayCards = useMemo(
-    () => cardStats.find(t => t.team === away),
-    [cardStats, away]
+    () => buildTeamMatchStats(away, awayTeamMatches).cards,
+    [away, awayTeamMatches]
   );
 
 const homeLast10 = useMemo(
@@ -272,6 +458,8 @@ const awayLast10 = useMemo(
     let yellowOver35 = 0;
     let redOver05 = 0;
     let penaltyOver25 = 0;
+    let penaltyOver35 = 0;
+    let penaltyOver45 = 0;
 
     headToHeadMatches.forEach(match => {
       const goalHome = Number(match.goalHome) || 0;
@@ -299,6 +487,8 @@ const awayLast10 = useMemo(
       if (totalYellow > 3.5) yellowOver35++;
       if (totalRed > 0.5) redOver05++;
       if (penaltyScore > 2.5) penaltyOver25++;
+      if (penaltyScore > 3.5) penaltyOver35++;
+      if (penaltyScore > 4.5) penaltyOver45++;
     });
 
     return {
@@ -317,6 +507,8 @@ const awayLast10 = useMemo(
         over35Rate: rate(yellowOver35),
         RedOver05Rate: rate(redOver05),
         penaltyOver25Rate: rate(penaltyOver25),
+        penaltyOver35Rate: rate(penaltyOver35),
+        penaltyOver45Rate: rate(penaltyOver45),
       },
     };
   }, [headToHeadMatches]);
@@ -332,14 +524,116 @@ const awayLast10 = useMemo(
       sx={{ width: "100%", minWidth: 0, boxSizing: "border-box", overflowX: "hidden" }}
     >
       {/* Başlık */}
-      <Stack alignItems="center" spacing={1} mb={3}>
-        <Typography variant="h5" fontWeight="bold">
-          Maç Analizi: {home} - {away}
-        </Typography>
-        <Stack direction="row" spacing={1}>
-          <Chip label={leagueName} size="small" />
+      <Box
+        sx={{
+          position: "relative",
+          overflow: "hidden",
+          px: { xs: 2, sm: 3, md: 4 },
+          py: { xs: 2.5, sm: 3 },
+          mb: 3,
+          borderRadius: 3,
+          color: "#fff",
+          background: "linear-gradient(115deg, #111827 0%, #1f2937 58%, #0f766e 150%)",
+          boxShadow: "0 12px 28px rgba(15, 23, 42, 0.18)",
+          "&::after": {
+            content: '""',
+            position: "absolute",
+            width: 220,
+            height: 220,
+            right: -80,
+            top: -110,
+            borderRadius: "50%",
+            border: "1px solid rgba(255,255,255,0.12)",
+          },
+        }}
+      >
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={{ xs: 2, sm: 3 }}
+          alignItems="center"
+          justifyContent="center"
+          sx={{ position: "relative", zIndex: 1 }}
+        >
+          <Box
+            component="img"
+            src={getTeamLogo(home)}
+            alt={`${home} logosu`}
+            sx={{
+              width: { xs: 72, sm: 92 },
+              height: { xs: 72, sm: 92 },
+              objectFit: "contain",
+              flexShrink: 0,
+              p: 1,
+              borderRadius: "50%",
+              backgroundColor: "rgba(255,255,255,0.96)",
+              border: "4px solid rgba(255,255,255,0.18)",
+            }}
+          />
+
+          <Stack spacing={1} alignItems="center" sx={{ minWidth: 0, textAlign: "center" }}>
+            <Stack direction="row" alignItems="center" spacing={1.5} flexWrap="wrap" justifyContent="center">
+              <Typography variant="h4" component="h1" sx={{ fontWeight: 800, fontSize: { xs: "1.8rem", sm: "2.5rem" }, lineHeight: 1.1 }}>
+                {home}
+              </Typography>
+              <Typography variant="h5" sx={{ fontWeight: 700, opacity: 0.9 }}>
+                -
+              </Typography>
+              <Typography variant="h4" component="h1" sx={{ fontWeight: 800, fontSize: { xs: "1.8rem", sm: "2.5rem" }, lineHeight: 1.1 }}>
+                {away}
+              </Typography>
+            </Stack>
+
+            <Chip
+              icon={
+                <Box
+                  component="img"
+                  src={getLeagueLogo(leagueName)}
+                  alt={leagueName}
+                  sx={{ width: 50, height: 50, objectFit: "contain" }}
+                />
+              }
+              label={leagueName}
+              size="medium"
+              sx={{
+                color: "#fff",
+                backgroundColor: "rgba(255,255,255,0.12)",
+                border: "1px solid rgba(255,255,255,0.2)",
+                fontWeight: 700,
+                fontSize: "0.96rem",
+                height: 34,
+                px: 0.75,
+                borderRadius: 999,
+                "& .MuiChip-icon": {
+                  marginLeft: "10px",
+                  marginRight: "4px",
+                  width: 22,
+                  height: 22,
+                },
+                "& .MuiChip-label": {
+                  px: 0.75,
+                  lineHeight: 1.2,
+                },
+              }}
+            />
+          </Stack>
+
+          <Box
+            component="img"
+            src={getTeamLogo(away)}
+            alt={`${away} logosu`}
+            sx={{
+              width: { xs: 72, sm: 92 },
+              height: { xs: 72, sm: 92 },
+              objectFit: "contain",
+              flexShrink: 0,
+              p: 1,
+              borderRadius: "50%",
+              backgroundColor: "rgba(255,255,255,0.96)",
+              border: "4px solid rgba(255,255,255,0.18)",
+            }}
+          />
         </Stack>
-      </Stack>
+      </Box>
 
       <Stack
         direction={{ xs: "column", lg: "row" }}
@@ -359,8 +653,63 @@ const awayLast10 = useMemo(
               {home}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Ev sahibi takımın gol, korner ve kart profili (lig geneli istatistikler).
+              Ev sahibi takımın gol, korner ve kart profili (seçili sezon ve lig filtresi bazlı).
             </Typography>
+
+            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 0.5 }}>
+              {homeCompetitionOptions.map(option => {
+                const matchCount = getScopeMatchCount(home, option);
+                const isSelected = homeScope === option;
+                return (
+                  <Box key={option} sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.5 }}>
+                    <Button
+                      size="small"
+                      variant={isSelected ? "contained" : "outlined"}
+                      onClick={() => setHomeScope(option)}
+                      sx={{
+                        borderRadius: 999,
+                        textTransform: "none",
+                        fontWeight: 700,
+                        minWidth: 0,
+                        px: option === "all" ? 1.5 : 0.75,
+                        ...(isSelected
+                          ? { backgroundColor: "#0f766e", color: "#fff", borderColor: "#0f766e" }
+                          : { color: "#0f172a", borderColor: "rgba(15, 23, 42, 0.2)" }),
+                      }}
+                    >
+                      {option === "all" ? (
+                        "Tüm Maçlar"
+                      ) : (
+                        <Box
+                          component="img"
+                          src={getLeagueLogo(option)}
+                          alt={option}
+                          sx={{ width: 50, height: 50, objectFit: "contain", display: "block" }}
+                        />
+                      )}
+                    </Button>
+
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: isSelected ? "#0f766e" : "text.secondary",
+                        fontWeight: isSelected ? 700 : 500,
+                        maxWidth: 120,
+                        textAlign: "center",
+                        lineHeight: 1.2,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {`${matchCount} maç`}
+                    </Typography>
+
+                    
+                  </Box>
+                );
+              })}
+            </Stack>
 
             {/* Gol tablosu */}
             <Box>
@@ -467,7 +816,10 @@ const awayLast10 = useMemo(
                   items={[
                     { label: "Maç Başı Korner", value: homeCorners?.avgMatchCorners, displayValue: homeCorners?.avgMatchCorners?.toFixed(2), isRate: false },
                     { label: "Toplam 8.5 Üst", value: homeCorners?.over85Rate },
+                    { label: "Toplam 9.5 Üst", value: homeCorners?.over95Rate },
+                    { label: "Toplam 10.5 Üst", value: homeCorners?.over105Rate },
                     { label: "Takım 4.5 Üst", value: homeCorners?.team45Rate },
+                    { label: "Takım 5.5 Üst", value: homeCorners?.team55Rate },
                   ]}
                 />
                 <Table sx={{ display: "none" }} size="small" stickyHeader>
@@ -498,9 +850,42 @@ const awayLast10 = useMemo(
                           })()}
                         </TableRow>
                         <TableRow>
+                          <TableCell sx={{ color: "#fff" }}>Toplam 9.5 Üst</TableCell>
+                          {(() => {
+                            const { text, bg } = formatRateCell(homeCorners.over95Rate);
+                            return (
+                              <TableCell align="center" sx={{ backgroundColor: bg, color: "#000" }}>
+                                {text}
+                              </TableCell>
+                            );
+                          })()}
+                        </TableRow>
+                        <TableRow>
+                          <TableCell sx={{ color: "#fff" }}>Toplam 10.5 Üst</TableCell>
+                          {(() => {
+                            const { text, bg } = formatRateCell(homeCorners.over105Rate);
+                            return (
+                              <TableCell align="center" sx={{ backgroundColor: bg, color: "#000" }}>
+                                {text}
+                              </TableCell>
+                            );
+                          })()}
+                        </TableRow>
+                        <TableRow>
                           <TableCell sx={{ color: "#fff" }}>Takım 4.5 Üst</TableCell>
                           {(() => {
                             const { text, bg } = formatRateCell(homeCorners.team45Rate);
+                            return (
+                              <TableCell align="center" sx={{ backgroundColor: bg, color: "#000" }}>
+                                {text}
+                              </TableCell>
+                            );
+                          })()}
+                        </TableRow>
+                        <TableRow>
+                          <TableCell sx={{ color: "#fff" }}>Takım 5.5 Üst</TableCell>
+                          {(() => {
+                            const { text, bg } = formatRateCell(homeCorners.team55Rate);
                             return (
                               <TableCell align="center" sx={{ backgroundColor: bg, color: "#000" }}>
                                 {text}
@@ -540,6 +925,8 @@ const awayLast10 = useMemo(
                     { label: "Sarı Kart 3.5 Üst", value: homeCards?.over35Rate },
                     { label: "Kırmızı Kart 0.5 Üst", value: homeCards?.RedOver05Rate },
                     { label: "Ceza Skoru 2.5 Üst", value: homeCards?.penaltyOver25Rate },
+                    { label: "Ceza Skoru 3.5 Üst", value: homeCards?.penaltyOver35Rate },
+                    { label: "Ceza Skoru 4.5 Üst", value: homeCards?.penaltyOver45Rate },
                   ]}
                 />
                 <Table sx={{ display: "none" }} size="small" stickyHeader>
@@ -596,6 +983,28 @@ const awayLast10 = useMemo(
                             );
                           })()}
                         </TableRow>
+                        <TableRow>
+                          <TableCell sx={{ color: "#fff" }}>Ceza Skoru 3.5 Üst</TableCell>
+                          {(() => {
+                            const { text, bg } = formatRateCell(homeCards.penaltyOver35Rate);
+                            return (
+                              <TableCell align="center" sx={{ backgroundColor: bg, color: "#000" }}>
+                                {text}
+                              </TableCell>
+                            );
+                          })()}
+                        </TableRow>
+                        <TableRow>
+                          <TableCell sx={{ color: "#fff" }}>Ceza Skoru 4.5 Üst</TableCell>
+                          {(() => {
+                            const { text, bg } = formatRateCell(homeCards.penaltyOver45Rate);
+                            return (
+                              <TableCell align="center" sx={{ backgroundColor: bg, color: "#000" }}>
+                                {text}
+                              </TableCell>
+                            );
+                          })()}
+                        </TableRow>
                       </>
                     ) : (
                       <TableRow>
@@ -633,8 +1042,61 @@ const awayLast10 = useMemo(
               {away}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Deplasman takımının gol, korner ve kart profili (lig geneli istatistikler).
+              Deplasman takımının gol, korner ve kart profili (seçili sezon ve lig filtresi bazlı).
             </Typography>
+
+            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 0.5 }}>
+              {awayCompetitionOptions.map(option => {
+                const matchCount = getScopeMatchCount(away, option);
+                const isSelected = awayScope === option;
+                return (
+                  <Box key={option} sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.5 }}>
+                    <Button
+                      size="small"
+                      variant={isSelected ? "contained" : "outlined"}
+                      onClick={() => setAwayScope(option)}
+                      sx={{
+                        borderRadius: 999,
+                        textTransform: "none",
+                        fontWeight: 700,
+                        minWidth: 0,
+                        px: option === "all" ? 1.5 : 0.75,
+                        ...(isSelected
+                          ? { backgroundColor: "#0f766e", color: "#fff", borderColor: "#0f766e" }
+                          : { color: "#0f172a", borderColor: "rgba(15, 23, 42, 0.2)" }),
+                      }}
+                    >
+                      {option === "all" ? (
+                        "Tüm Maçlar"
+                      ) : (
+                        <Box
+                          component="img"
+                          src={getLeagueLogo(option)}
+                          alt={option}
+                          sx={{ width: 50, height: 50, objectFit: "contain", display: "block" }}
+                        />
+                      )}
+                    </Button>
+
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: isSelected ? "#0f766e" : "text.secondary",
+                        fontWeight: isSelected ? 700 : 500,
+                        maxWidth: 120,
+                        textAlign: "center",
+                        lineHeight: 1.2,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {`${matchCount} maç`}
+                    </Typography>
+                  </Box>
+                );
+              })}
+            </Stack>
 
             {/* Gol tablosu */}
             <Box>
@@ -741,7 +1203,10 @@ const awayLast10 = useMemo(
                   items={[
                     { label: "Maç Başı Korner", value: awayCorners?.avgMatchCorners, displayValue: awayCorners?.avgMatchCorners?.toFixed(2), isRate: false },
                     { label: "Toplam 8.5 Üst", value: awayCorners?.over85Rate },
+                    { label: "Toplam 9.5 Üst", value: awayCorners?.over95Rate },
+                    { label: "Toplam 10.5 Üst", value: awayCorners?.over105Rate },
                     { label: "Takım 4.5 Üst", value: awayCorners?.team45Rate },
+                    { label: "Takım 5.5 Üst", value: awayCorners?.team55Rate },
                   ]}
                 />
                 <Table sx={{ display: "none" }} size="small" stickyHeader>
@@ -772,9 +1237,42 @@ const awayLast10 = useMemo(
                           })()}
                         </TableRow>
                         <TableRow>
+                          <TableCell sx={{ color: "#fff" }}>Toplam 9.5 Üst</TableCell>
+                          {(() => {
+                            const { text, bg } = formatRateCell(awayCorners.over95Rate);
+                            return (
+                              <TableCell align="center" sx={{ backgroundColor: bg, color: "#000" }}>
+                                {text}
+                              </TableCell>
+                            );
+                          })()}
+                        </TableRow>
+                        <TableRow>
+                          <TableCell sx={{ color: "#fff" }}>Toplam 10.5 Üst</TableCell>
+                          {(() => {
+                            const { text, bg } = formatRateCell(awayCorners.over105Rate);
+                            return (
+                              <TableCell align="center" sx={{ backgroundColor: bg, color: "#000" }}>
+                                {text}
+                              </TableCell>
+                            );
+                          })()}
+                        </TableRow>
+                        <TableRow>
                           <TableCell sx={{ color: "#fff" }}>Takım 4.5 Üst</TableCell>
                           {(() => {
                             const { text, bg } = formatRateCell(awayCorners.team45Rate);
+                            return (
+                              <TableCell align="center" sx={{ backgroundColor: bg, color: "#000" }}>
+                                {text}
+                              </TableCell>
+                            );
+                          })()}
+                        </TableRow>
+                        <TableRow>
+                          <TableCell sx={{ color: "#fff" }}>Takım 5.5 Üst</TableCell>
+                          {(() => {
+                            const { text, bg } = formatRateCell(awayCorners.team55Rate);
                             return (
                               <TableCell align="center" sx={{ backgroundColor: bg, color: "#000" }}>
                                 {text}
@@ -814,6 +1312,8 @@ const awayLast10 = useMemo(
                     { label: "Sarı Kart 3.5 Üst", value: awayCards?.over35Rate },
                     { label: "Kırmızı Kart 0.5 Üst", value: awayCards?.RedOver05Rate },
                     { label: "Ceza Skoru 2.5 Üst", value: awayCards?.penaltyOver25Rate },
+                    { label: "Ceza Skoru 3.5 Üst", value: awayCards?.penaltyOver35Rate },
+                    { label: "Ceza Skoru 4.5 Üst", value: awayCards?.penaltyOver45Rate },
                   ]}
                 />
                 <Table sx={{ display: "none" }} size="small" stickyHeader>
@@ -863,6 +1363,28 @@ const awayLast10 = useMemo(
                           <TableCell sx={{ color: "#fff" }}>Ceza Skoru 2.5 Üst</TableCell>
                           {(() => {
                             const { text, bg } = formatRateCell(awayCards.penaltyOver25Rate);
+                            return (
+                              <TableCell align="center" sx={{ backgroundColor: bg, color: "#000" }}>
+                                {text}
+                              </TableCell>
+                            );
+                          })()}
+                        </TableRow>
+                        <TableRow>
+                          <TableCell sx={{ color: "#fff" }}>Ceza Skoru 3.5 Üst</TableCell>
+                          {(() => {
+                            const { text, bg } = formatRateCell(awayCards.penaltyOver35Rate);
+                            return (
+                              <TableCell align="center" sx={{ backgroundColor: bg, color: "#000" }}>
+                                {text}
+                              </TableCell>
+                            );
+                          })()}
+                        </TableRow>
+                        <TableRow>
+                          <TableCell sx={{ color: "#fff" }}>Ceza Skoru 4.5 Üst</TableCell>
+                          {(() => {
+                            const { text, bg } = formatRateCell(awayCards.penaltyOver45Rate);
                             return (
                               <TableCell align="center" sx={{ backgroundColor: bg, color: "#000" }}>
                                 {text}
@@ -953,6 +1475,8 @@ const awayLast10 = useMemo(
                   { label: "Sarı Kart 3.5 Üst", value: headToHeadStats.cards.over35Rate },
                   { label: "Kırmızı Kart 0.5 Üst", value: headToHeadStats.cards.RedOver05Rate },
                   { label: "Ceza Skoru 2.5 Üst", value: headToHeadStats.cards.penaltyOver25Rate },
+                  { label: "Ceza Skoru 3.5 Üst", value: headToHeadStats.cards.penaltyOver35Rate },
+                  { label: "Ceza Skoru 4.5 Üst", value: headToHeadStats.cards.penaltyOver45Rate },
                 ]}
               />
             </Paper>

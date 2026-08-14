@@ -149,7 +149,15 @@ function TodayMatches() {
           <DatePicker
             label="Tarih Seçin"
             value={selectedDate}
-            onChange={(newValue) => setSelectedDate(newValue)}
+            minDate={new Date(2026, 6, 1)}
+            onChange={(newValue) => {
+              if (!newValue) return;
+              if (newValue < new Date(2026, 6, 1)) {
+                setSelectedDate(new Date(2026, 6, 1));
+                return;
+              }
+              setSelectedDate(newValue);
+            }}
             format="dd/MM/yyyy"
           />
         </Box>
