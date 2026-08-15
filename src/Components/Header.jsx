@@ -134,11 +134,6 @@ export default function Header() {
     location.pathname === "/auth" ? (
       <AppBar position="sticky" elevation={1} sx={{ backgroundColor: "#1d1d1d", p: 1 }}>
         <Toolbar sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
-          {isAuthenticated && (
-            <Button variant="outlined" color="inherit" onClick={() => navigate("/TodayMatches")}>
-              {user?.username || user?.email}
-            </Button>
-          )}
           <Button variant="contained" color="primary" onClick={() => document.getElementById('auth-form')?.scrollIntoView({ behavior: 'smooth' })}>
             Giriş/Kayıt Ol
           </Button>
