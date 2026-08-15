@@ -31,11 +31,15 @@ function TodayMatches() {
 
   const leagueIconMap = {
     "Süper Lig": "/leagues/Super Lig.png",
+    "Super Lig": "/leagues/Super Lig.png",
     "Premier League": "/leagues/Premier League.png",
     "EFL Championship": "/leagues/EFL Championship.png",
     "LaLiga": "/leagues/LaLiga.png",
+    "La Liga": "/leagues/LaLiga.png",
     "Serie A": "/leagues/Serie A.png",
     "Bundesliga": "/leagues/Bundesliga.png",
+    "1. Bundesliga": "/leagues/Bundesliga.png",
+    "Bundesliga 1": "/leagues/Bundesliga.png",
     "Ligue 1": "/leagues/Ligue 1.png",
     "Eredivisie": "/leagues/Eredivisie.png",
     "UEFA Champions League": "/leagues/UEFA Champions League.png",
@@ -47,7 +51,26 @@ function TodayMatches() {
     "UEFA Champions League Qualifying": "/leagues/UEFA Champions League.png",
     "UEFA Europa League Qualifying": "/leagues/UEFA Europa League.png",
     "UEFA Conference League Qualifying": "/leagues/UEFA Europa Conference League.png",
+  };
 
+  const normalizeLeagueName = (value) => String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const getLeagueIcon = (leagueName) => {
+    if (!leagueName) return football;
+
+    const directMatch = leagueIconMap[leagueName];
+    if (directMatch) return directMatch;
+
+    const normalized = normalizeLeagueName(leagueName);
+    const matchedKey = Object.keys(leagueIconMap).find((key) => normalizeLeagueName(key) === normalized);
+    return matchedKey ? leagueIconMap[matchedKey] : football;
   };
 
     const getBgColor = (percent) => {
@@ -225,7 +248,7 @@ function TodayMatches() {
                 title={league}
               >
                 <img
-                  src={leagueIconMap[league] || football}
+                  src={getLeagueIcon(league)}
                   alt={league}
                   style={{ width: 34, height: 34, objectFit: "contain" }}
                 />

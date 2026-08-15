@@ -24,11 +24,15 @@ const leagueLogos = {
   "Süper Lig": "/leagues/Super Lig.png",
   "Premier League": "/leagues/Premier League.png",
   "EFL Championship": "/leagues/EFL Championship.png",
-  LaLiga: "/leagues/LaLiga.png",
+  "LaLiga": "/leagues/LaLiga.png",
+  "La Liga": "/leagues/LaLiga.png",
+  "La Liga 2": "/leagues/LaLiga.png",
   "Serie A": "/leagues/Serie A.png",
-  Bundesliga: "/leagues/Bundesliga.png",
+  "Bundesliga": "/leagues/Bundesliga.png",
+  "1. Bundesliga": "/leagues/Bundesliga.png",
+  "Bundesliga 1": "/leagues/Bundesliga.png",
   "Ligue 1": "/leagues/Ligue 1.png",
-  Eredivisie: "/leagues/Eredivisie.png",
+  "Eredivisie": "/leagues/Eredivisie.png",
   "UEFA Champions League": "/leagues/UEFA Champions League.png",
   "UEFA Europa League": "/leagues/UEFA Europa League.png",
   "UEFA Europa Conference League": "/leagues/UEFA Europa Conference League.png",
@@ -40,7 +44,25 @@ const leagueLogos = {
   "Saudi Pro League": "/leagues/Saudi Pro League.png",
 };
 
-const getLeagueLogo = (leagueName) => leagueLogos[leagueName] || "/leagues/Super Lig.png";
+const normalizeLeagueName = (value) => String(value ?? "")
+  .trim()
+  .toLowerCase()
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .replace(/[^a-z0-9]+/g, " ")
+  .replace(/\s+/g, " ")
+  .trim();
+
+const getLeagueLogo = (leagueName) => {
+  if (!leagueName) return "/leagues/Super Lig.png";
+
+  const directMatch = leagueLogos[leagueName];
+  if (directMatch) return directMatch;
+
+  const normalized = normalizeLeagueName(leagueName);
+  const matchedKey = Object.keys(leagueLogos).find((key) => normalizeLeagueName(key) === normalized);
+  return matchedKey ? leagueLogos[matchedKey] : "/leagues/Super Lig.png";
+};
 
 const leagueNameMap = {
   "superlig": "Super Lig",
