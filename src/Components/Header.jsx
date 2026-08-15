@@ -293,19 +293,7 @@ export default function Header() {
               >
                 Gol
               </Button>
-              <Button
-                variant="contained"
-                startIcon={
-                  <img
-                    src="/football.png"
-                    alt="İy-Ms"
-                    style={{ width: 20, height: 20 }}
-                  />
-                }
-                onClick={() => navigate("/iy-ms")}
-              >
-                İy-Ms
-              </Button>
+              
               {isAuthenticated && (
               <>
                 <IconButton
@@ -439,26 +427,7 @@ export default function Header() {
                     }}
                   />
                   Gol</MenuItem>
-                <MenuItem onClick={() => {navigate("/iy-ms"); setMenuAnchor(null);}} sx={{gap: 0.5}}>
-                <img
-                    src = "/football.png"
-                    alt="menu"
-                    style={{
-                      width: 24,
-                      height: 24,                                          
-                    }}
-                  />
-                  İy-Ms İstatistikleri</MenuItem>
-                <MenuItem onClick={() => {navigate("/Statistics"); setMenuAnchor(null);}} sx={{gap: 0.5}}>
-                <img
-                    src = "/football.png"
-                    alt="menu"
-                    style={{
-                      width: 24,
-                      height: 24,                                          
-                    }}
-                  />
-                  İstatistikler</MenuItem>
+                
                   <MenuItem onClick={async () => { setUserMenuAnchor(null); await signOut(); navigate("/auth"); }}>
                     Çıkış
                   </MenuItem>

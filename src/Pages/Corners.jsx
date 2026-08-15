@@ -247,7 +247,7 @@ function Corner() {
 
         <Stack justifyContent="flex-end" sx={{mt:'20px', display: selectedLeague ? 'block' : 'none', width: isMobile ? '100%' : '70%', backgroundColor: "#1d1d1d" }}>
           <Typography variant="h6" sx={{color: "#fff", fontWeight: "bold", mb: 1}}>
-              {selectedLeague} – Takımların Maç Başına Korner (Üst) İstatistikleri
+              {selectedLeague} – Takımların Maç Başına Kendi Kullandıkları Korner (Üst) İstatistikleri
           </Typography>
         </Stack> 
         
@@ -269,7 +269,7 @@ function Corner() {
               <Stack direction="row" alignItems="center" spacing={1}>
                 <img src={corner} style={{ width: isMobile ? 20 : 20, height: isMobile ? 20 : 20 }} />
                 <Typography sx={{ color: "#fff", fontSize: isMobile ? "11px" : "14px", fontWeight: "bold" }}>
-                  : Ortalama Kullandığı Korner Sayısı
+                  : Kullandıkları Ortalama Kullandığı Korner Sayısı
                 </Typography>
               </Stack>              
             </Stack> 
@@ -278,11 +278,34 @@ function Corner() {
 
         <Stack justifyContent="flex-end" sx={{mt:'20px', display: selectedLeague ? 'block' : 'none', width: isMobile ? '100%' : '70%', backgroundColor: "#1d1d1d" }}>
           <Typography variant="h6" sx={{color: "#fff", fontWeight: "bold", mb: 1}}>
-              {selectedLeague} – Takımların Maç Başına Korner (Üst) İstatistikleri
+              {selectedLeague} – Takımların Maç Başına Kendi Kullandıkları Korner (Üst) İstatistikleri
           </Typography>
         </Stack>     
 
         <OverHomeCornersTable2 cornerStats={cornerStats} selectedLeague={selectedLeague} isMobile={isMobile} getTeamLogo={getTeamLogo} corner={corner} playedMatches={playedMatches} getBgColor={getBgColor}/>        
+        {/* Tablo Altı İkon + Yazı */}
+        {selectedLeague && (
+          <Stack
+              direction="row"
+              alignItems="center" 
+              justifyContent= {isMobile ? "flex-start" : "center"}
+              spacing={3}
+              sx={{             
+                backgroundColor: "#1d1d1d",
+                padding: "10px 0",              
+                width: isMobile ? '100%' : '70%'             
+              }}>
+                
+              {/* 1. ikon + yazı */}
+              <Stack direction="row" alignItems="center" spacing={1}>
+                <img src={corner} style={{ width: isMobile ? 20 : 20, height: isMobile ? 20 : 20 }} />
+                <Typography sx={{ color: "#fff", fontSize: isMobile ? "11px" : "14px", fontWeight: "bold" }}>
+                  : Kullandıkları Ortalama Kullandığı Korner Sayısı
+                </Typography>
+              </Stack>              
+            </Stack> 
+            
+            )}    
       </Stack>
     </Stack>
   );
