@@ -24,10 +24,147 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { Link } from "react-router-dom";
 
 function TodayMatches() {
-  const { goalStatsByLeague, cornerStatsByLeague, cardStatsByLeague, matches, isLoading, error } = useData();
+  const { goalStatsByLeague, cornerStatsByLeague, cardStatsByLeague, matches, seasons, selectedSeason, isLoading, error } = useData();
   const isMobile = useMediaQuery("(max-width: 900px)");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedLeague, setSelectedLeague] = useState("ALL");
+
+  const currentSeason = useMemo(() => {
+    if (!Array.isArray(seasons) || !seasons.length) return null;
+    return [...seasons].sort().at(-1) ?? seasons[seasons.length - 1];
+  }, [seasons]);
+
+  const seasonMatches = useMemo(() => {
+    if (!Array.isArray(matches) || !currentSeason) return [];
+    return matches.filter(match => match.season === currentSeason);
+  }, [matches, currentSeason]);
+
+  const latestSeasonGoalStatsByLeague = useMemo(() => {
+    if (!Array.isArray(seasonMatches) || !seasonMatches.length) return {};
+
+    const leaguesInSeason = [...new Set(seasonMatches.map(m => m.league).filter(Boolean))];
+    const result = {};
+
+    leaguesInSeason.forEach(leagueName => {
+      const leagueMatches = seasonMatches.filter(m => m.league === leagueName && m.winner !== "TBD");
+      const teamGoals = {};
+
+      leagueMatches.forEach(match => {
+        const totalGoals = match.goalHome + match.goalAway;
+
+        if (!teamGoals[match.homeTeam]) {
+          teamGoals[match.homeTeam] = { team: match.homeTeam, matchCount: 0, over15Count: 0, over25Count: 0, over35Count: 0 };
+        }
+        teamGoals[match.homeTeam].matchCount++;
+        if (totalGoals > 1.5) teamGoals[match.homeTeam].over15Count++;
+        if (totalGoals > 2.5) teamGoals[match.homeTeam].over25Count++;
+        if (totalGoals > 3.5) teamGoals[match.homeTeam].over35Count++;
+
+        if (!teamGoals[match.awayTeam]) {
+          teamGoals[match.awayTeam] = { team: match.awayTeam, matchCount: 0, over15Count: 0, over25Count: 0, over35Count: 0 };
+        }
+        teamGoals[match.awayTeam].matchCount++;
+        if (totalGoals > 1.5) teamGoals[match.awayTeam].over15Count++;
+        if (totalGoals > 2.5) teamGoals[match.awayTeam].over25Count++;
+        if (totalGoals > 3.5) teamGoals[match.awayTeam].over35Count++;
+      });
+
+      result[leagueName] = Object.values(teamGoals).map(t => ({
+        team: t.team,
+        over15Rate: (t.over15Count / t.matchCount) * 100,
+        over25Rate: (t.over25Count / t.matchCount) * 100,
+        over35Rate: (t.over35Count / t.matchCount) * 100,
+      }));
+    });
+
+    return result;
+  }, [seasonMatches]);
+
+  const latestSeasonCornerStatsByLeague = useMemo(() => {
+    if (!Array.isArray(seasonMatches) || !seasonMatches.length) return {};
+
+    const leaguesInSeason = [...new Set(seasonMatches.map(m => m.league).filter(Boolean))];
+    const result = {};
+
+    leaguesInSeason.forEach(leagueName => {
+      const leagueMatches = seasonMatches.filter(m => m.league === leagueName && m.winner !== "TBD");
+      const teamCorners = {};
+
+      leagueMatches.forEach(match => {
+        const matchCorners = match.cornerHome + match.cornerAway;
+
+        if (!teamCorners[match.homeTeam]) {
+          teamCorners[match.homeTeam] = { team: match.homeTeam, matchCount: 0, over85Count: 0, over95Count: 0, over105Count: 0 };
+        }
+        teamCorners[match.homeTeam].matchCount++;
+        if (matchCorners > 8.5) teamCorners[match.homeTeam].over85Count++;
+        if (matchCorners > 9.5) teamCorners[match.homeTeam].over95Count++;
+        if (matchCorners > 10.5) teamCorners[match.homeTeam].over105Count++;
+
+        if (!teamCorners[match.awayTeam]) {
+          teamCorners[match.awayTeam] = { team: match.awayTeam, matchCount: 0, over85Count: 0, over95Count: 0, over105Count: 0 };
+        }
+        teamCorners[match.awayTeam].matchCount++;
+        if (matchCorners > 8.5) teamCorners[match.awayTeam].over85Count++;
+        if (matchCorners > 9.5) teamCorners[match.awayTeam].over95Count++;
+        if (matchCorners > 10.5) teamCorners[match.awayTeam].over105Count++;
+      });
+
+      result[leagueName] = Object.values(teamCorners).map(t => ({
+        team: t.team,
+        over85Rate: (t.over85Count / t.matchCount) * 100,
+        over95Rate: (t.over95Count / t.matchCount) * 100,
+        over105Rate: (t.over105Count / t.matchCount) * 100,
+      }));
+    });
+
+    return result;
+  }, [seasonMatches]);
+
+  const latestSeasonCardStatsByLeague = useMemo(() => {
+    if (!Array.isArray(seasonMatches) || !seasonMatches.length) return {};
+
+    const leaguesInSeason = [...new Set(seasonMatches.map(m => m.league).filter(Boolean))];
+    const result = {};
+
+    leaguesInSeason.forEach(leagueName => {
+      const leagueMatches = seasonMatches.filter(m => m.league === leagueName && m.winner !== "TBD");
+      const teamCards = {};
+
+      leagueMatches.forEach(match => {
+        const matchTotalPenaltyScore = (match.yellowHome * 1) + (match.redHome * 2) + (match.yellowAway * 1) + (match.redAway * 2);
+
+        if (!teamCards[match.homeTeam]) {
+          teamCards[match.homeTeam] = { team: match.homeTeam, matchCount: 0, penaltyOver25Count: 0, penaltyOver35Count: 0, penaltyOver45Count: 0 };
+        }
+        teamCards[match.homeTeam].matchCount++;
+        if (matchTotalPenaltyScore > 2.5) teamCards[match.homeTeam].penaltyOver25Count++;
+        if (matchTotalPenaltyScore > 3.5) teamCards[match.homeTeam].penaltyOver35Count++;
+        if (matchTotalPenaltyScore > 4.5) teamCards[match.homeTeam].penaltyOver45Count++;
+
+        if (!teamCards[match.awayTeam]) {
+          teamCards[match.awayTeam] = { team: match.awayTeam, matchCount: 0, penaltyOver25Count: 0, penaltyOver35Count: 0, penaltyOver45Count: 0 };
+        }
+        teamCards[match.awayTeam].matchCount++;
+        if (matchTotalPenaltyScore > 2.5) teamCards[match.awayTeam].penaltyOver25Count++;
+        if (matchTotalPenaltyScore > 3.5) teamCards[match.awayTeam].penaltyOver35Count++;
+        if (matchTotalPenaltyScore > 4.5) teamCards[match.awayTeam].penaltyOver45Count++;
+      });
+
+      result[leagueName] = Object.values(teamCards).map(t => ({
+        team: t.team,
+        penaltyOver25Rate: (t.penaltyOver25Count / t.matchCount) * 100,
+        penaltyOver35Rate: (t.penaltyOver35Count / t.matchCount) * 100,
+        penaltyOver45Rate: (t.penaltyOver45Count / t.matchCount) * 100,
+      }));
+    });
+
+    return result;
+  }, [seasonMatches]);
+
+  const effectiveGoalStatsByLeague = currentSeason === selectedSeason ? goalStatsByLeague : latestSeasonGoalStatsByLeague;
+  const effectiveCornerStatsByLeague = currentSeason === selectedSeason ? cornerStatsByLeague : latestSeasonCornerStatsByLeague;
+  const effectiveCardStatsByLeague = currentSeason === selectedSeason ? cardStatsByLeague : latestSeasonCardStatsByLeague;
 
   const leagueIconMap = {
     "Süper Lig": "/leagues/Super Lig.png",
@@ -113,9 +250,9 @@ function TodayMatches() {
   const today = selectedDate.toISOString().slice(0, 10);
 
   const groupedMatches = useMemo(() => {
-    if (!matches?.length) return {};
+    if (!seasonMatches.length) return {};
 
-    const todayMatches = matches
+    const todayMatches = seasonMatches
       .map(m => {
         if (!m.date || !m.time) return null;
 
@@ -145,11 +282,11 @@ function TodayMatches() {
   }, [matches, today]);
 
   const allLeagues = useMemo(() => {
-    if (!matches?.length) return [];
-    return [...new Set(matches.map(m => m.league).filter(Boolean))].sort((a, b) =>
+    if (!seasonMatches.length) return [];
+    return [...new Set(seasonMatches.map(m => m.league).filter(Boolean))].sort((a, b) =>
       a.localeCompare(b, "tr")
     );
-  }, [matches]);
+  }, [seasonMatches]);
 
   if (isLoading) return <Typography textAlign="center">Yükleniyor...</Typography>;
   if (error) return <Typography textAlign="center">Hata oluştu</Typography>;
@@ -162,13 +299,9 @@ function TodayMatches() {
   if (!leagues.length) return <Typography textAlign="center">Seçilen tarihte maç yok</Typography>;*/
 
   return (
-    <Box maxWidth="800px" mx="auto" mt={3} px={2}>
-      <Typography variant="h5" textAlign="center" mb={1}>
-        Maç Takvimi - {selectedDate.toLocaleDateString('tr-TR')}
-      </Typography>
-      
+    <Box maxWidth="800px" mx="auto" mt={3} px={2}>      
       <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={tr}>
-        <Box display="flex" justifyContent="center" mb={2}>
+        <Box display="flex" justifyContent="center" mb={2} bgcolor="#f5f5f5" p={1} borderRadius={1}>
           <DatePicker
             label="Tarih Seçin"
             value={selectedDate}
@@ -268,9 +401,9 @@ function TodayMatches() {
             {groupedMatches[league].map((match, i) => {
               const isPlayed = match.winner !== "TBD";
 
-              const leagueGoalStats = goalStatsByLeague?.[match.league] ?? [];
-              const leagueCornerStats = cornerStatsByLeague?.[match.league] ?? [];
-              const leagueCardStats = cardStatsByLeague?.[match.league] ?? [];
+              const leagueGoalStats = effectiveGoalStatsByLeague?.[match.league] ?? [];
+              const leagueCornerStats = effectiveCornerStatsByLeague?.[match.league] ?? [];
+              const leagueCardStats = effectiveCardStatsByLeague?.[match.league] ?? [];
 
               const homeGoalStats = leagueGoalStats.find(t => t.team === match.homeTeam);
               const awayGoalStats = leagueGoalStats.find(t => t.team === match.awayTeam);

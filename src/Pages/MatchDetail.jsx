@@ -346,30 +346,46 @@ const MatchDetail = () => {
   const [homeScope, setHomeScope] = useState("all");
   const [awayScope, setAwayScope] = useState("all");
 
+  const detailSeason = useMemo(() => {
+    if (!Array.isArray(matches) || !matches.length) return selectedSeason;
+
+    const relevantMatches = matches.filter(match =>
+      match.league === leagueName &&
+      ((match.homeTeam === home && match.awayTeam === away) ||
+      (match.homeTeam === away && match.awayTeam === home)) &&
+      Boolean(match.season)
+    );
+
+    if (!relevantMatches.length) return selectedSeason;
+
+    const seasons = [...new Set(relevantMatches.map(match => match.season))];
+    return [...seasons].sort().at(-1) ?? seasons[seasons.length - 1];
+  }, [matches, leagueName, home, away, selectedSeason]);
+
   const homeCompetitionOptions = useMemo(() => {
     const options = [...new Set(
       matches
-        .filter(match => match.season === selectedSeason && (match.homeTeam === home || match.awayTeam === home) && match.winner !== "TBD")
+        .filter(match => match.season === detailSeason && (match.homeTeam === home || match.awayTeam === home) && match.winner !== "TBD")
         .map(match => match.league)
         .filter(Boolean)
     )];
     return ["all", ...options];
-  }, [matches, selectedSeason, home]);
+  }, [matches, detailSeason, home]);
 
   const awayCompetitionOptions = useMemo(() => {
     const options = [...new Set(
       matches
-        .filter(match => match.season === selectedSeason && (match.homeTeam === away || match.awayTeam === away) && match.winner !== "TBD")
+        .filter(match => match.season === detailSeason && (match.homeTeam === away || match.awayTeam === away) && match.winner !== "TBD")
         .map(match => match.league)
         .filter(Boolean)
     )];
     return ["all", ...options];
-  }, [matches, selectedSeason, away]);
+  }, [matches, detailSeason, away]);
 
   const getScopeMatchCount = (teamName, scope) => {
     if (!matches?.length) return 0;
     const scopedMatches = matches.filter(match =>
-      match.season === selectedSeason &&
+      match.season === detailSeason &&
       (match.homeTeam === teamName || match.awayTeam === teamName) &&
       match.winner !== "TBD" &&
       (scope === "all" || match.league === scope)
@@ -384,12 +400,12 @@ const MatchDetail = () => {
   }, [leagueName, selectedLeague, setSelectedLeague]);
 
   const homeTeamMatches = useMemo(
-    () => getTeamScopeMatches(matches, home, selectedSeason, homeScope),
-    [matches, home, selectedSeason, homeScope]
+    () => getTeamScopeMatches(matches, home, detailSeason, homeScope),
+    [matches, home, detailSeason, homeScope]
   );
   const awayTeamMatches = useMemo(
-    () => getTeamScopeMatches(matches, away, selectedSeason, awayScope),
-    [matches, away, selectedSeason, awayScope]
+    () => getTeamScopeMatches(matches, away, detailSeason, awayScope),
+    [matches, away, detailSeason, awayScope]
   );
 
   const homeGoals = useMemo(

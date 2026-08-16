@@ -3,6 +3,7 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { getTeamLogo } from "../Components/teamLogos.js";
 import corner from "/corner.png";
 import redCard from "/cards.png";
+import yellowCard from "/cards_y.png";
 import shoot from "/kicking-ball.png";
 import shootOnTarget from "/shoot-on-target.png";
 import { useNavigate } from "react-router-dom";
@@ -332,7 +333,7 @@ const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelect
                             </Stack>  
 
                             <Stack alignItems="center" direction="column" spacing={0.5} flex={1}>
-                                <img src={redCard} alt={corner} width={24} height={24}/>
+                                <img src={yellowCard} alt={corner} width={24} height={24}/>
                                 <Typography fontWeight="bold" fontSize={isMobile ? "14px" : "18px"}>
                                     {m.yellowHome}
                                 </Typography>
@@ -381,7 +382,7 @@ const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelect
                             </Stack>  
 
                             <Stack alignItems="center" direction="column" spacing={0.5} flex={1}>
-                                <img src={redCard} alt={corner} width={24} height={24}/>
+                                <img src={yellowCard} alt={corner} width={24} height={24}/>
                                 <Typography fontWeight="bold" fontSize={isMobile ? "14px" : "18px"}>
                                     {m.yellowAway}
                                 </Typography>
