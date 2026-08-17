@@ -443,12 +443,8 @@ const homeLast10 = useMemo(
           (m.homeTeam === home || m.awayTeam === home) &&
           m.winner !== "TBD"
       )
-      // 1️⃣ önce en yeniye göre sırala
       .sort((a, b) => new Date(b.date) - new Date(a.date))
-      // 2️⃣ son 10 maçı al
-      .slice(0, 10)
-      // 3️⃣ bu 10 maçı kendi içinde eski → yeni sırala
-      .sort((a, b) => new Date(a.date) - new Date(b.date)),
+      .slice(0, 10),
   [matches, home]
 );
 
@@ -461,8 +457,7 @@ const awayLast10 = useMemo(
           m.winner !== "TBD"
       )
       .sort((a, b) => new Date(b.date) - new Date(a.date))
-      .slice(0, 10)
-      .sort((a, b) => new Date(a.date) - new Date(b.date)),
+      .slice(0, 10),
   [matches, away]
 );
 
@@ -476,8 +471,7 @@ const awayLast10 = useMemo(
               (match.homeTeam === away && match.awayTeam === home))
         )
         .sort((a, b) => new Date(b.date) - new Date(a.date))
-        .slice(0, 10)
-        .sort((a, b) => new Date(a.date) - new Date(b.date)),
+        .slice(0, 10),
     [matches, home, away]
   );
 
