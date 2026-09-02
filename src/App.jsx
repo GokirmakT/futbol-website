@@ -25,7 +25,7 @@ function ProtectedRoute({ children }) {
     return <Navigate to="/auth" replace />;
   }
 
-  return <DataProvider>{children}</DataProvider>;
+  return children;
 }
 
 function GuestOnlyRoute({ children }) {
@@ -46,21 +46,31 @@ export default function App() {
   const { isAuthenticated } = useAuth();
 
   return (
-    <>
-      <Header />
-      <Routes>
-        <Route path="/" element={<Navigate to={isAuthenticated ? "/TodayMatches" : "/auth"} replace />} />
-        <Route path="/TodayMatches" element={<ProtectedRoute><TodayMatches /></ProtectedRoute>} />
-        <Route path="/lig/:leagueId" element={<ProtectedRoute><Standings /></ProtectedRoute>} />
-        <Route path="/Cards" element={<ProtectedRoute><Card /></ProtectedRoute>} />
-        <Route path="/Corners" element={<ProtectedRoute><Corners /></ProtectedRoute>} />
-        <Route path="/Goals" element={<ProtectedRoute><Goal /></ProtectedRoute>} />
-        <Route path="/Statistics" element={<ProtectedRoute><Statistics /></ProtectedRoute>} />
-        <Route path="/team/:league/:team" element={<ProtectedRoute><TeamDetail /></ProtectedRoute>} />
-        <Route path="/match/:league/:home/:away" element={<ProtectedRoute><MatchDetail /></ProtectedRoute>} />
-        <Route path="/iy-ms" element={<ProtectedRoute><IyMsAnalysis /></ProtectedRoute>} />
-        <Route path="/auth" element={<GuestOnlyRoute><AuthPage /></GuestOnlyRoute>} />
-      </Routes>
-    </>
+    isAuthenticated ? (
+      <DataProvider>
+        <Header />
+        <Routes>
+          <Route path="/" element={<Navigate to="/TodayMatches" replace />} />
+          <Route path="/TodayMatches" element={<ProtectedRoute><TodayMatches /></ProtectedRoute>} />
+          <Route path="/lig/:leagueId" element={<ProtectedRoute><Standings /></ProtectedRoute>} />
+          <Route path="/Cards" element={<ProtectedRoute><Card /></ProtectedRoute>} />
+          <Route path="/Corners" element={<ProtectedRoute><Corners /></ProtectedRoute>} />
+          <Route path="/Goals" element={<ProtectedRoute><Goal /></ProtectedRoute>} />
+          <Route path="/Statistics" element={<ProtectedRoute><Statistics /></ProtectedRoute>} />
+          <Route path="/team/:league/:team" element={<ProtectedRoute><TeamDetail /></ProtectedRoute>} />
+          <Route path="/match/:league/:home/:away" element={<ProtectedRoute><MatchDetail /></ProtectedRoute>} />
+          <Route path="/iy-ms" element={<ProtectedRoute><IyMsAnalysis /></ProtectedRoute>} />
+          <Route path="/auth" element={<GuestOnlyRoute><AuthPage /></GuestOnlyRoute>} />
+        </Routes>
+      </DataProvider>
+    ) : (
+      <>
+        <Header />
+        <Routes>
+          <Route path="/" element={<Navigate to="/auth" replace />} />
+          <Route path="/auth" element={<GuestOnlyRoute><AuthPage /></GuestOnlyRoute>} />
+        </Routes>
+      </>
+    )
   );
 }
