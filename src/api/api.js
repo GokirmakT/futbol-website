@@ -25,3 +25,27 @@ export const getStandings = async (league = null, season = null) => {
   const res = await api.get(url);
   return res.data;
 };
+
+export const getCardStats = async (season, league) => {
+  const response = await api.get("/statistics/cards", {
+    params: { season, league },
+  });
+
+  return response.data;
+};
+
+export const getGoalStats = async (season, league) => {
+  const response = await api.get("/statistics/goals", {
+    params: { season, league },
+  });
+
+  return response.data;
+};
+
+export const getCornerStats = async (season, league) => {
+  const response = await api.get("/statistics/corners", {
+    params: { season, league },
+  });
+
+  return response.data;
+};

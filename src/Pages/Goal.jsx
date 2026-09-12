@@ -26,7 +26,7 @@ import ScoreBothHalf from "../Components/Tables/GoalTables/ScoreBothHalf";
 import SeasonFilter from "../Components/SeasonFilter.jsx";
 
 function Goals() {
-  const { goalStats, isLoading, selectedLeague, setSelectedLeague, error, leagues, seasons, selectedSeason, setSelectedSeason } = useData();
+  const { goalStats, isLoading, isLoadingGoals, selectedLeague, setSelectedLeague, error, goalsError, leagues, seasons, selectedSeason, setSelectedSeason } = useData();
   const isMobile = useMediaQuery("(max-width: 900px)");
   const [statType, setStatType] = useState("over"); // "over" veya "under"
   const inputRef = useRef(null);
@@ -49,8 +49,8 @@ function Goals() {
     document.body.style.overflow = lock ? "hidden" : "auto";
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error loading matches</div>;
+  if (isLoading || isLoadingGoals) return <div>Loading...</div>;
+  if (error || goalsError) return <div>Error loading goal statistics</div>;
 
   return (
     <Stack sx={{ width: "100%", minHeight: "100vh", background: "#2a3b47"}} spacing={3}>

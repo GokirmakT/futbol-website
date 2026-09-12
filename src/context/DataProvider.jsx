@@ -1,6 +1,12 @@
-import { createContext, useContext, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getMatches, getStandings } from "../api/api";
+import {
+  getMatches,
+  getStandings,
+  getCardStats,
+  getGoalStats,
+  getCornerStats,
+} from "../api/api";
 import PageLoader from "../Components/LoadingPage.jsx";
 import { DataContext } from "./DataContext";
 
@@ -53,6 +59,39 @@ const DataProvider = ({ children }) => {
     if (!activeSeason || !Array.isArray(standings)) return [];
     return standings.filter(s => (s.season || s.Season) === activeSeason);
   }, [standings, activeSeason]);
+  
+  const {
+    data: cardStats = [],
+    isLoading: isLoadingCards,
+    error: cardsError,
+  } = useQuery({
+    queryKey: ["cardStats", activeSeason, selectedLeague],
+    queryFn: () => getCardStats(activeSeason, selectedLeague),
+    enabled: Boolean(activeSeason && selectedLeague),
+    select: data => (Array.isArray(data) ? data : []),
+  });
+
+  const {
+    data: apiGoalStats = [],
+    isLoading: isLoadingGoals,
+    error: goalsError,
+  } = useQuery({
+    queryKey: ["goalStats", activeSeason, selectedLeague],
+    queryFn: () => getGoalStats(activeSeason, selectedLeague),
+    enabled: Boolean(activeSeason && selectedLeague),
+    select: data => (Array.isArray(data) ? data : []),
+  });
+
+  const {
+    data: apiCornerStats = [],
+    isLoading: isLoadingCorners,
+    error: cornersError,
+  } = useQuery({
+    queryKey: ["cornerStats", activeSeason, selectedLeague],
+    queryFn: () => getCornerStats(activeSeason, selectedLeague),
+    enabled: Boolean(activeSeason && selectedLeague),
+    select: data => (Array.isArray(data) ? data : []),
+  });
 
   // Lig listesi (seçili sezon)
   const leagues = useMemo(() => {
@@ -60,8 +99,9 @@ const DataProvider = ({ children }) => {
     return [...new Set(seasonMatches.map(m => m.league))].sort();
   }, [seasonMatches]);
 
+  /*
   // Gol istatistikleri hesaplaması (seçili lig)
-  const goalStats = useMemo(() => {
+  const localGoalStats = useMemo(() => {
     if (!selectedLeague || !Array.isArray(seasonMatches) || !seasonMatches.length) return [];
 
     const hasScoredBothHalves = (minutesStr) => {
@@ -177,6 +217,7 @@ const DataProvider = ({ children }) => {
     }));
     return stats.sort((a, b) => b.over25Rate - a.over25Rate).map((t, i) => ({ ...t, rank: i + 1 }));
   }, [selectedLeague, seasonMatches]);
+  */
 
   // Tüm ligler için istatistikler (Bugünkü Maçlar – her maç kendi ligine göre)
   const goalStatsByLeague = useMemo(() => {
@@ -274,330 +315,6 @@ const DataProvider = ({ children }) => {
     return result;
   }, [seasonMatches, leagues]);
 
-  // Seçilen lige göre kartların sıralaması
-  const cardStats = useMemo(() => {
-    if (!selectedLeague || !Array.isArray(seasonMatches) || !seasonMatches.length) return [];
-
-    const leagueMatches = seasonMatches.filter(m => m.league === selectedLeague && m.winner !== "TBD");
-    const teamCards = {};
-
-    leagueMatches.forEach(match => {
-      const matchTotalYellowCards = match.yellowHome +  match.yellowAway;
-      const matchTotalRedCards = match.redHome + match.redAway;
-
-      const totalPenaltyScore = (match.yellowHome * 1) + (match.redHome * 2) + (match.yellowAway * 1) + (match.redAway * 2);
-
-      
-      // Home team
-      if (!teamCards[match.homeTeam]) {
-        teamCards[match.homeTeam] = { 
-          team: match.homeTeam, 
-          yellowCards: 0,
-          redCards: 0,
-          matchCount: 0,
-          totalMatchCards: 0,
-
-          oppYellow: 0,
-          oppRed: 0,
-          over25Count: 0,
-          over35Count: 0,
-          over45Count: 0,
-          over55Count: 0,
-
-          RedOver05Count: 0,
-          RedOver15Count: 0,
-          RedOver25Count: 0,
-
-          penaltyOver25Count: 0,
-          penaltyOver35Count: 0,
-          penaltyOver45Count: 0,
-          penaltyOver55Count: 0,
-
-        };
-      }
-      teamCards[match.homeTeam].yellowCards += match.yellowHome;
-      teamCards[match.homeTeam].redCards += match.redHome;
-      teamCards[match.homeTeam].matchCount += 1;
-      teamCards[match.homeTeam].totalMatchCards += match.yellowHome;
-      teamCards[match.homeTeam].oppYellow += match.yellowAway;
-      teamCards[match.homeTeam].oppRed += match.redAway;
-
-      if (matchTotalYellowCards > 3.5) teamCards[match.homeTeam].over35Count++;
-      if (matchTotalYellowCards > 4.5) teamCards[match.homeTeam].over45Count++;
-      if (matchTotalYellowCards > 5.5) teamCards[match.homeTeam].over55Count++;
-      if (matchTotalYellowCards > 2.5) teamCards[match.homeTeam].over25Count++;
-
-      if (matchTotalRedCards > 0.5) teamCards[match.homeTeam].RedOver05Count++;
-      if (matchTotalRedCards > 1.5) teamCards[match.homeTeam].RedOver15Count++;
-      if (matchTotalRedCards > 2.5) teamCards[match.homeTeam].RedOver25Count++;
-
-      if (totalPenaltyScore > 3.5) teamCards[match.homeTeam].penaltyOver35Count++;
-      if (totalPenaltyScore > 4.5) teamCards[match.homeTeam].penaltyOver45Count++;
-      if (totalPenaltyScore > 5.5) teamCards[match.homeTeam].penaltyOver55Count++;
-      if (totalPenaltyScore > 2.5) teamCards[match.homeTeam].penaltyOver25Count++;
-
-      // Away team
-      if (!teamCards[match.awayTeam]) {
-        teamCards[match.awayTeam] = { 
-          team: match.awayTeam, 
-          yellowCards: 0,
-          redCards: 0,
-          matchCount: 0,
-          totalMatchCards: 0,
-
-          oppYellow: 0,
-          oppRed: 0,
-          over25Count: 0,
-          over35Count: 0,
-          over45Count: 0,
-          over55Count: 0,
-
-          RedOver05Count: 0,
-          RedOver15Count: 0,
-          RedOver25Count: 0,
-
-          penaltyOver25Count: 0,
-          penaltyOver35Count: 0,
-          penaltyOver45Count: 0,
-          penaltyOver55Count: 0,
-
-        };
-      }
-      teamCards[match.awayTeam].yellowCards += match.yellowAway;
-      teamCards[match.awayTeam].redCards += match.redAway;
-      teamCards[match.awayTeam].matchCount += 1;
-      teamCards[match.awayTeam].totalMatchCards += match.yellowAway;
-      teamCards[match.awayTeam].oppYellow += match.yellowHome;
-      teamCards[match.awayTeam].oppRed += match.redHome;
-
-      if (matchTotalYellowCards > 3.5) teamCards[match.awayTeam].over35Count++;
-      if (matchTotalYellowCards > 4.5) teamCards[match.awayTeam].over45Count++;
-      if (matchTotalYellowCards > 5.5) teamCards[match.awayTeam].over55Count++;
-      if (matchTotalYellowCards > 2.5) teamCards[match.awayTeam].over25Count++;
-
-      if (matchTotalRedCards > 0.5) teamCards[match.awayTeam].RedOver05Count++;
-      if (matchTotalRedCards > 1.5) teamCards[match.awayTeam].RedOver15Count++;
-      if (matchTotalRedCards > 2.5) teamCards[match.awayTeam].RedOver25Count++;
-
-      if (totalPenaltyScore > 3.5) teamCards[match.awayTeam].penaltyOver35Count++;
-      if (totalPenaltyScore > 4.5) teamCards[match.awayTeam].penaltyOver45Count++;
-      if (totalPenaltyScore > 5.5) teamCards[match.awayTeam].penaltyOver55Count++;
-      if (totalPenaltyScore > 2.5) teamCards[match.awayTeam].penaltyOver25Count++;
-
-    });
-
-    // Kart puanı hesapla
-    const statsWithScore = Object.values(teamCards).map(team => {
-
-      const totalCardCount = team.yellowCards + team.redCards + team.oppYellow + team.oppRed;
-      const avgCardCount = totalCardCount / team.matchCount;
-
-      const totalRedCards = team.redCards;
-
-      const avgMatchCards = team.totalMatchCards / team.matchCount;
-      const ownPenalty = (team.yellowCards * 1) + (team.redCards * 2);
-      const oppPenalty = (team.oppYellow * 1) + (team.oppRed * 2);
-
-      return {
-        ...team,
-        cardScore: ownPenalty,
-        avgCardScore: ownPenalty / team.matchCount,
-        totalCardCount,
-        avgCardCount,
-        avgMatchCards,
-        ownPenalty,
-        oppPenalty,
-        totalRedCards,
-
-        over25Rate: (team.over25Count / team.matchCount) * 100,        
-        over35Rate: (team.over35Count / team.matchCount) * 100,        
-        over45Rate: (team.over45Count / team.matchCount) * 100,        
-        over55Rate: (team.over55Count / team.matchCount) * 100,
-
-        RedOver05Rate: (team.RedOver05Count / team.matchCount) * 100,
-        RedOver15Rate: (team.RedOver15Count / team.matchCount) * 100,
-        RedOver25Rate: (team.RedOver25Count / team.matchCount) * 100,
-
-        penaltyOver25Rate: (team.penaltyOver25Count / team.matchCount) * 100,
-        penaltyOver35Rate: (team.penaltyOver35Count / team.matchCount) * 100,
-        penaltyOver45Rate: (team.penaltyOver45Count / team.matchCount) * 100,
-        penaltyOver55Rate: (team.penaltyOver55Count / team.matchCount) * 100,
-      };
-    });
-
-    // Ortalama kart puanına göre sırala
-    return statsWithScore
-      .sort((a, b) => b.over25Rate - a.over25Rate)
-      .map((team, idx) => ({ ...team, rank: idx + 1 }));
-  }, [selectedLeague, seasonMatches]);
-
-  // Hesaplama
-  const cornerStats = useMemo(() => {
-    if (!selectedLeague || !Array.isArray(seasonMatches) || !seasonMatches.length) return [];
-
-    const leagueMatches = seasonMatches.filter(m => m.league === selectedLeague && m.winner !== "TBD");
-    const teamCorners = {};
-
-    leagueMatches.forEach(match => {
-      const matchCorners = match.cornerHome + match.cornerAway;
-
-      // Home team
-      if (!teamCorners[match.homeTeam]) {
-        teamCorners[match.homeTeam] = {
-            team: match.homeTeam,
-            cornersFor: 0,
-            cornersAgainst: 0,
-            homeMatchCount: 0,
-            awayMatchCount: 0,
-            matchCount: 0,
-            totalMatchCorners: 0,
-            over75Count: 0,
-            over85Count: 0,
-            over95Count: 0,
-            over105Count: 0,
-
-            homeOver35Count: 0,
-            awayOver35Count: 0,
-
-            homeOver45Count: 0,
-            awayOver45Count: 0,
-
-            homeOver55Count: 0,
-            awayOver55Count: 0,
-
-            homeOver65Count: 0,
-            awayOver65Count: 0,
-
-            homeOver75Count: 0,
-            awayOver75Count: 0,
-
-            homeOver85Count: 0,
-            awayOver85Count: 0
-        };
-      }
-
-        teamCorners[match.homeTeam].cornersFor += match.cornerHome;
-        teamCorners[match.homeTeam].cornersAgainst += match.cornerAway;
-        teamCorners[match.homeTeam].homeMatchCount++;
-        teamCorners[match.homeTeam].matchCount++;
-        teamCorners[match.homeTeam].totalMatchCorners += matchCorners;
-        if (matchCorners > 7.5) teamCorners[match.homeTeam].over75Count++;
-        if (matchCorners > 8.5) teamCorners[match.homeTeam].over85Count++;
-        if (matchCorners > 9.5) teamCorners[match.homeTeam].over95Count++;
-        if (matchCorners > 10.5) teamCorners[match.homeTeam].over105Count++;
-
-        if (match.cornerHome > 3.5) teamCorners[match.homeTeam].homeOver35Count++;
-        if (match.cornerHome > 4.5) teamCorners[match.homeTeam].homeOver45Count++;
-        if (match.cornerHome > 5.5) teamCorners[match.homeTeam].homeOver55Count++;
-        if (match.cornerHome > 6.5) teamCorners[match.homeTeam].homeOver65Count++;
-        if (match.cornerHome > 7.5) teamCorners[match.homeTeam].homeOver75Count++;
-        if (match.cornerHome > 8.5) teamCorners[match.homeTeam].homeOver85Count++;
-
-
-      // Away team
-      if (!teamCorners[match.awayTeam]) {
-        teamCorners[match.awayTeam] = {
-            team: match.awayTeam,
-            cornersFor: 0,
-            cornersAgainst: 0,
-            homeMatchCount: 0,
-            awayMatchCount: 0,
-            matchCount: 0,
-            totalMatchCorners: 0,
-            over75Count: 0,
-            over85Count: 0,
-            over95Count: 0,
-            over105Count: 0,
-
-            homeOver35Count: 0,
-            awayOver35Count: 0,
-
-            homeOver45Count: 0,
-            awayOver45Count: 0,
-
-            homeOver55Count: 0,
-            awayOver55Count: 0,
-
-            homeOver65Count: 0,
-            awayOver65Count: 0,
-
-            homeOver75Count: 0,
-            awayOver75Count: 0,
-
-            homeOver85Count: 0,
-            awayOver85Count: 0
-            
-        };
-      }
-
-        teamCorners[match.awayTeam].cornersFor += match.cornerHome;
-        teamCorners[match.awayTeam].cornersAgainst += match.cornerAway;
-        teamCorners[match.awayTeam].awayMatchCount++;
-        teamCorners[match.awayTeam].matchCount++;
-        teamCorners[match.awayTeam].totalMatchCorners += matchCorners;
-        if (matchCorners > 7.5) teamCorners[match.awayTeam].over75Count++;
-        if (matchCorners > 8.5) teamCorners[match.awayTeam].over85Count++;
-        if (matchCorners > 9.5) teamCorners[match.awayTeam].over95Count++;
-        if (matchCorners > 10.5) teamCorners[match.awayTeam].over105Count++;  
-        
-        if (match.cornerAway > 3.5) teamCorners[match.awayTeam].awayOver35Count++;
-        if (match.cornerAway > 4.5) teamCorners[match.awayTeam].awayOver45Count++;
-        if (match.cornerAway > 5.5) teamCorners[match.awayTeam].awayOver55Count++;
-        if (match.cornerAway > 6.5) teamCorners[match.awayTeam].awayOver65Count++;
-        if (match.cornerAway > 7.5) teamCorners[match.awayTeam].awayOver75Count++;
-        if (match.cornerAway > 8.5) teamCorners[match.awayTeam].awayOver85Count++;
-
-    });
-
-    const stats = Object.values(teamCorners).map(team => {
-      const cornersUsed = team.cornersFor;
-      const cornersAgainst = team.cornersAgainst;
-      const avgTeamCorners = team.cornersFor / team.matchCount;
-      const avgMatchCorners = team.totalMatchCorners / team.matchCount;
-
-      const over75Rate = (team.over75Count / team.matchCount) * 100;
-      const over85Rate = (team.over85Count / team.matchCount) * 100;
-      const over95Rate = (team.over95Count / team.matchCount) * 100;
-      const over105Rate = (team.over105Count / team.matchCount) * 100;
-
-      const team35Rate = ((team.homeOver35Count + team.awayOver35Count) / team.matchCount) * 100;     
-      const team45Rate = ((team.homeOver45Count + team.awayOver45Count) / team.matchCount) * 100;
-      const team55Rate = ((team.homeOver55Count + team.awayOver55Count) / team.matchCount) * 100; 
-      const team65Rate = ((team.homeOver65Count + team.awayOver65Count) / team.matchCount) * 100;
-      const team75Rate = ((team.homeOver75Count + team.awayOver75Count) / team.matchCount) * 100;
-      const team85Rate = ((team.homeOver85Count + team.awayOver85Count) / team.matchCount) * 100;  
-      
-      const avgCornersUsed = (cornersUsed / team.matchCount).toFixed(2);
-
-      return {
-        ...team,
-        avgTeamCorners,
-        avgMatchCorners,
-        cornersUsed,
-        cornersAgainst,
-
-        over75Rate,
-        over85Rate,
-        over95Rate,
-        over105Rate, 
-
-        team35Rate,
-        team45Rate,
-        team55Rate,
-        team65Rate,
-        team75Rate,
-        team85Rate,
-        
-        avgCornersUsed
-      };
-    });
-
-    return stats
-      .sort((a, b) => b.over85Rate - a.over85Rate)
-      .map((t, i) => ({ ...t, rank: i + 1 }));
-
-  }, [selectedLeague, seasonMatches]);
-
   const value = {
     matches,
     seasonMatches,
@@ -609,12 +326,18 @@ const DataProvider = ({ children }) => {
     selectedSeason: activeSeason,
     setSelectedSeason,
     isLoading,
+    isLoadingCards,
+    isLoadingGoals,
+    isLoadingCorners,
     isLoadingStandings,
     error,
+    cardsError,
+    goalsError,
+    cornersError,
     standingsError,
-    goalStats,
+    goalStats: apiGoalStats,
     cardStats,
-    cornerStats,
+    cornerStats: apiCornerStats,
     goalStatsByLeague,
     cardStatsByLeague,
     cornerStatsByLeague,

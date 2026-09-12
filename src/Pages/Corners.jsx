@@ -17,7 +17,7 @@ import OverHomeCornersTable2 from "../Components/Tables/CornerTables/OverHomeCor
 import SeasonFilter from "../Components/SeasonFilter.jsx";
 
 function Corner() {
-  const { cornerStats, isLoading, selectedLeague, setSelectedLeague, error, leagues, seasons, selectedSeason, setSelectedSeason } = useData();
+  const { cornerStats, isLoading, isLoadingCorners, selectedLeague, setSelectedLeague, error, cornersError, leagues, seasons, selectedSeason, setSelectedSeason } = useData();
   const isMobile = useMediaQuery("(max-width: 900px)");
   const inputRef = useRef(null);
   const [isLeaguePanelOpen, setIsLeaguePanelOpen] = useState(false);
@@ -39,8 +39,8 @@ function Corner() {
   const toggleBodyScroll = (lock) => {
   document.body.style.overflow = lock ? "hidden" : "auto";};
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error loading matches</div>;
+  if (isLoading || isLoadingCorners) return <div>Loading...</div>;
+  if (error || cornersError) return <div>Error loading corner statistics</div>;
 
   return (
     <Stack sx={{ width: "100%", minHeight: "100vh", background: "#2a3b47"}} spacing={3}>

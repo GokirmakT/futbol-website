@@ -13,7 +13,7 @@ import OverPenaltyScoreTable from '../Components/Tables/CardTables/OverPenaltySc
 import SeasonFilter from "../Components/SeasonFilter.jsx";
 
 function Card() {
-  const { cardStats, isLoading, selectedLeague, setSelectedLeague, error, leagues, seasons, selectedSeason, setSelectedSeason } = useData();
+  const { cardStats, isLoading, isLoadingCards, selectedLeague, setSelectedLeague, error, cardsError, leagues, seasons, selectedSeason, setSelectedSeason } = useData();
   const isMobile = useMediaQuery("(max-width: 900px)");
   const inputRef = useRef(null);
   const [isLeaguePanelOpen, setIsLeaguePanelOpen] = useState(false);
@@ -34,8 +34,8 @@ function Card() {
   const toggleBodyScroll = (lock) => {
   document.body.style.overflow = lock ? "hidden" : "auto";};
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error loading matches</div>;
+  if (isLoading || isLoadingCards) return <div>Loading...</div>;
+  if (error || cardsError) return <div>Error loading card statistics</div>;
 
   return (
     <Stack sx={{ width: "100%", minHeight: "100vh", background: "#2a3b47"}} spacing={3}>

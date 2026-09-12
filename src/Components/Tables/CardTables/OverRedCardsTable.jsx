@@ -32,9 +32,7 @@ const OverCards = ({ cardStats, selectedLeague, isMobile, getTeamLogo, card, pla
 
     /* 🎯 SORTABLE HEADER CELL */
     const SortHeader = ({ label, field, abc, align = "center" }) => (
-      <TableCell align={align} 
-          active={orderBy === field}
-          direction={orderBy === field ? order : "asc"}
+        <TableCell align={align}
           onClick={() => handleSort(field)}
           sx={{
             pr: isMobile ? 1 : 2,
@@ -122,9 +120,9 @@ const OverCards = ({ cardStats, selectedLeague, isMobile, getTeamLogo, card, pla
                     </TableCell>
                     <TableCell sx={{ color: "#fff", fontWeight: "bold", pr: isMobile ? 1 : 2, pl: isMobile ? 0 : 2 }} align="center">{row.matchCount}</TableCell>
                     <TableCell sx={{ color: "#ffaaff", fontWeight: "bold", pr: isMobile ? 1 : 2, pl: isMobile ? 0 : 2 }} align="center">{row.totalRedCards}</TableCell>
-                    <TableCell align="center" sx={{color: "#000000ff", fontWeight: "bold", backgroundColor: getBgColor(row.RedOver05Rate), pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{row.RedOver05Rate.toFixed(0)}%</TableCell>
-                    <TableCell align="center" sx={{color: "#000000ff", fontWeight: "bold", backgroundColor: getBgColor(row.RedOver15Rate), pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{row.RedOver15Rate.toFixed(0)}%</TableCell>
-                    <TableCell align="center" sx={{color: "#000000ff", fontWeight: "bold", backgroundColor: getBgColor(row.RedOver25Rate), pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{row.RedOver25Rate.toFixed(0)}%</TableCell>
+                    <TableCell align="center" sx={{color: "#000000ff", fontWeight: "bold", backgroundColor: getBgColor(Number(row.RedOver05Rate ?? 0)), pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{Number(row.RedOver05Rate ?? 0).toFixed(0)}%</TableCell>
+                    <TableCell align="center" sx={{color: "#000000ff", fontWeight: "bold", backgroundColor: getBgColor(Number(row.RedOver15Rate ?? 0)), pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{Number(row.RedOver15Rate ?? 0).toFixed(0)}%</TableCell>
+                    <TableCell align="center" sx={{color: "#000000ff", fontWeight: "bold", backgroundColor: getBgColor(Number(row.RedOver25Rate ?? 0)), pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{Number(row.RedOver25Rate ?? 0).toFixed(0)}%</TableCell>
                     
                   </TableRow>
                 ))}

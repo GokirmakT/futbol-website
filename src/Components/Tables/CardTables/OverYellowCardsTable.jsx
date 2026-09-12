@@ -31,9 +31,7 @@ const OverCards = ({ cardStats, selectedLeague, isMobile, getTeamLogo, card, pla
 
     /* 🎯 SORTABLE HEADER CELL */
     const SortHeader = ({ label, field, abc, align = "center" }) => (
-      <TableCell align={align} 
-          active={orderBy === field}
-          direction={orderBy === field ? order : "asc"}
+        <TableCell align={align}
           onClick={() => handleSort(field)}
           sx={{
             pr: isMobile ? 1 : 2,
@@ -116,10 +114,10 @@ const OverCards = ({ cardStats, selectedLeague, isMobile, getTeamLogo, card, pla
                     </TableCell>
 
                     <TableCell sx={{ color: "#fff", fontWeight: "bold", pr: isMobile ? 1 : 2, pl: isMobile ? 0 : 2 }} align="center">{row.matchCount}</TableCell>
-                    <TableCell align="center" sx={{color: "#000000ff", fontWeight: "bold", backgroundColor: getBgColor(row.over25Rate), pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{row.over25Rate.toFixed(0)}%</TableCell>
-                    <TableCell align="center" sx={{color: "#000000ff", fontWeight: "bold", backgroundColor: getBgColor(row.over35Rate), pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{row.over35Rate.toFixed(0)}%</TableCell>
-                    <TableCell align="center" sx={{color: "#000000ff", fontWeight: "bold", backgroundColor: getBgColor(row.over45Rate), pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{row.over45Rate.toFixed(0)}%</TableCell>
-                    <TableCell align="center" sx={{color: "#000000ff", fontWeight: "bold", backgroundColor: getBgColor(row.over55Rate), pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{row.over55Rate.toFixed(0)}%</TableCell>
+                    <TableCell align="center" sx={{color: "#000000ff", fontWeight: "bold", backgroundColor: getBgColor(Number(row.over25Rate ?? 0)), pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{Number(row.over25Rate ?? 0).toFixed(0)}%</TableCell>
+                    <TableCell align="center" sx={{color: "#000000ff", fontWeight: "bold", backgroundColor: getBgColor(Number(row.over35Rate ?? 0)), pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{Number(row.over35Rate ?? 0).toFixed(0)}%</TableCell>
+                    <TableCell align="center" sx={{color: "#000000ff", fontWeight: "bold", backgroundColor: getBgColor(Number(row.over45Rate ?? 0)), pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{Number(row.over45Rate ?? 0).toFixed(0)}%</TableCell>
+                    <TableCell align="center" sx={{color: "#000000ff", fontWeight: "bold", backgroundColor: getBgColor(Number(row.over55Rate ?? 0)), pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{Number(row.over55Rate ?? 0).toFixed(0)}%</TableCell>
                     
                   </TableRow>
                 ))}
