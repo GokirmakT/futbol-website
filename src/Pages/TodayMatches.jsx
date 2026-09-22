@@ -22,12 +22,14 @@ import card from "/yellow-card.png";
 import corner from "/corner.png";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { Link } from "react-router-dom";
+import CloseIcon from "@mui/icons-material/Close";
 
 function TodayMatches() {
   const { goalStatsByLeague, cornerStatsByLeague, cardStatsByLeague, matches, seasons, selectedSeason, isLoading, error } = useData();
   const isMobile = useMediaQuery("(max-width: 900px)");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedLeague, setSelectedLeague] = useState("ALL");
+  const [isLeaguePanelOpen, setIsLeaguePanelOpen] = useState(false);
 
   const currentSeason = useMemo(() => {
     if (!Array.isArray(seasons) || !seasons.length) return null;
@@ -288,6 +290,15 @@ function TodayMatches() {
     );
   }, [seasonMatches]);
 
+  const leagueOptions = [
+    { label: "Tüm Maçlar", value: "ALL", icon: football },
+    ...allLeagues.map(league => ({
+      label: league,
+      value: league,
+      icon: getLeagueIcon(league),
+    })),
+  ];
+
   if (isLoading) return <Typography textAlign="center">Yükleniyor...</Typography>;
   if (error) return <Typography textAlign="center">Hata oluştu</Typography>;
 
@@ -319,6 +330,141 @@ function TodayMatches() {
         </Box>
       </LocalizationProvider>
 
+      <Paper sx={{ p: 1.5, mb: 3, backgroundColor: "#fafafa" }}>
+        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+          Lig filtresi:
+        </Typography>
+        <Button
+          fullWidth
+          variant="outlined"
+          onClick={() => setIsLeaguePanelOpen(true)}
+          sx={{
+            justifyContent: "flex-start",
+            textTransform: "none",
+            backgroundColor: "#fff",
+            borderColor: "#ccc",
+            borderRadius: 1,
+            py: 1.1,
+            "&:hover": { backgroundColor: "#f5f5f5", borderColor: "#bbb" },
+          }}
+        >
+          <img
+            src={selectedLeague === "ALL" ? football : getLeagueIcon(selectedLeague)}
+            width={32}
+            height={32}
+            style={{ marginRight: 8, objectFit: "contain" }}
+            alt={selectedLeague === "ALL" ? "Tüm Maçlar" : selectedLeague}
+          />
+          <Box sx={{ textAlign: "left" }}>
+            <Typography variant="caption" sx={{ display: "block", color: "#888" }}>
+              Lig Seç
+            </Typography>
+            <Typography variant="body1" sx={{ color: "#222" }}>
+              {selectedLeague === "ALL" ? "Tüm Maçlar" : selectedLeague}
+            </Typography>
+          </Box>
+        </Button>
+      </Paper>
+
+      {isLeaguePanelOpen && (
+        <Box
+          sx={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 1300,
+            backgroundColor: "rgba(0,0,0,0.7)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+          onClick={() => setIsLeaguePanelOpen(false)}
+        >
+          <Paper
+            sx={{
+              maxWidth: 700,
+              width: "92%",
+              maxHeight: "80vh",
+              backgroundColor: "#1d1d1d",
+              color: "#fff",
+              borderRadius: 2,
+              boxShadow: 24,
+              p: 2,
+            }}
+            onClick={event => event.stopPropagation()}
+          >
+            <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+              <Typography variant="h6" fontWeight="bold">Lig Seçimi</Typography>
+              <Button
+                onClick={() => setIsLeaguePanelOpen(false)}
+                sx={{ minWidth: 0, color: "#fff", p: 0.5 }}
+                aria-label="Lig seçim panelini kapat"
+              >
+                <CloseIcon />
+              </Button>
+            </Stack>
+
+            <Typography variant="body2" color="grey.400" mb={2}>
+              Oynamak istediğin ligi seçmek için kartlara tıkla.
+            </Typography>
+
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "repeat(2, 1fr)", sm: "repeat(3, 1fr)", md: "repeat(4, 1fr)" },
+                gap: 1.5,
+                maxHeight: "60vh",
+                overflowY: "auto",
+                pr: 0.5,
+              }}
+            >
+              {leagueOptions.map(option => {
+                const isActive = option.value === selectedLeague;
+                const hasMatchInSelectedDate = option.value === "ALL"
+                  ? leagues.length > 0
+                  : Boolean(groupedMatches?.[option.value]?.length);
+
+                return (
+                  <Paper
+                    key={option.value}
+                    onClick={() => {
+                      if (!hasMatchInSelectedDate && option.value !== "ALL") return;
+                      setSelectedLeague(option.value);
+                      setIsLeaguePanelOpen(false);
+                    }}
+                    sx={{
+                      cursor: hasMatchInSelectedDate || option.value === "ALL" ? "pointer" : "default",
+                      backgroundColor: isActive ? "#ff9800" : "#fff",
+                      color: "#222",
+                      borderRadius: 1.5,
+                      p: 1,
+                      minHeight: 104,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      textAlign: "center",
+                      opacity: hasMatchInSelectedDate || option.value === "ALL" ? 1 : 0.5,
+                      transition: "transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease",
+                      "&:hover": {
+                        transform: "translateY(-2px)",
+                        boxShadow: "0 6px 12px rgba(0,0,0,0.7)",
+                        backgroundColor: isActive ? "#ffa726" : "#344955",
+                        color: "#fff",
+                      },
+                    }}
+                  >
+                    <img src={option.icon} width={64} height={64} alt={option.label} style={{ objectFit: "contain", marginBottom: 6 }} />
+                    <Typography variant="body2" sx={{ fontWeight: isActive ? "bold" : "normal" }}>
+                      {option.label}
+                    </Typography>
+                  </Paper>
+                );
+              })}
+            </Box>
+          </Paper>
+        </Box>
+      )}
+
       <Paper sx={{ p: 1.5, mb: 3, backgroundColor: "#f5f5f5" }}>
         <Typography variant="subtitle2" color="text.secondary" gutterBottom>
           Tablo ikonları:
@@ -336,58 +482,6 @@ function TodayMatches() {
             <img src={card} alt="" style={{ width: 18, height: 18 }} />
             <Typography variant="body2">: 3.5 üst ceza skoru oranı (%)</Typography>
           </Stack>
-        </Stack>
-      </Paper>
-
-      <Paper sx={{ p: 1.5, mb: 3, backgroundColor: "#fafafa" }}>
-        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-          Lig filtresi:
-        </Typography>
-        <Stack direction="row" flexWrap="wrap" gap={1} useFlexGap>
-          <Button
-            size="small"
-            variant={selectedLeague === "ALL" ? "contained" : "outlined"}
-            onClick={() => setSelectedLeague("ALL")}
-            sx={{
-              borderRadius: 1,
-              whiteSpace: "nowrap",
-              minWidth: 120,
-              height: 68,
-            }}
-          >
-            Tüm Ligler
-          </Button>
-          {allLeagues.map(league => {
-            const hasMatchInSelectedDate = Boolean(groupedMatches?.[league]?.length);
-            const isActive = selectedLeague === league;
-            return (
-              <Button
-                key={league}
-                size="small"
-                disabled={!hasMatchInSelectedDate}
-                variant={isActive ? "contained" : "outlined"}
-                onClick={() => setSelectedLeague(league)}
-                sx={{
-                  borderRadius: 1,
-                  minWidth: 58,
-                  width: 68,
-                  height: 68,
-                  p: 0,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  opacity: hasMatchInSelectedDate ? 1 : 0.5,
-                }}
-                title={league}
-              >
-                <img
-                  src={getLeagueIcon(league)}
-                  alt={league}
-                  style={{ width: 34, height: 34, objectFit: "contain" }}
-                />
-              </Button>
-            );
-          })}
         </Stack>
       </Paper>
 
