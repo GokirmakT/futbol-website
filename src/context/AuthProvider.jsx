@@ -3,6 +3,9 @@ import { supabase } from "../lib/supabase";
 import { logoutUser } from "../api/auth";
 import { AuthContext } from "./AuthContext";
 
+const SESSION_DURATION_MS = 60 * 60 * 1000;
+const LAST_ACTIVITY_AT_KEY = "futbol_last_activity_at";
+
 const mapUser = (authUser, profile) => {
   if (!authUser) {
     return null;
@@ -26,6 +29,50 @@ export default function AuthProvider({ children }) {
 
   useEffect(() => {
     let isMounted = true;
+    let sessionTimeout;
+    let currentSession = null;
+
+    const clearSessionTimeout = () => {
+      if (sessionTimeout) {
+        window.clearTimeout(sessionTimeout);
+        sessionTimeout = undefined;
+      }
+    };
+
+    const scheduleSessionExpiry = session => {
+      clearSessionTimeout();
+
+      if (!session) {
+        window.localStorage.removeItem(LAST_ACTIVITY_AT_KEY);
+        return true;
+      }
+
+      let lastActivityAt = Number(window.localStorage.getItem(LAST_ACTIVITY_AT_KEY));
+      if (!lastActivityAt || Number.isNaN(lastActivityAt)) {
+        lastActivityAt = Date.now();
+        window.localStorage.setItem(LAST_ACTIVITY_AT_KEY, String(lastActivityAt));
+      }
+
+      const remainingTime = lastActivityAt + SESSION_DURATION_MS - Date.now();
+      if (remainingTime <= 0) {
+        logoutUser().catch(() => undefined);
+        return false;
+      }
+
+      sessionTimeout = window.setTimeout(() => {
+        logoutUser().catch(() => undefined);
+      }, remainingTime);
+      return true;
+    };
+
+    const recordActivity = () => {
+      if (!isMounted || !currentSession) {
+        return;
+      }
+
+      window.localStorage.setItem(LAST_ACTIVITY_AT_KEY, String(Date.now()));
+      scheduleSessionExpiry(currentSession);
+    };
 
     const syncUser = async authUser => {
       if (!authUser) {
@@ -51,7 +98,14 @@ export default function AuthProvider({ children }) {
         return;
       }
 
-      setSession(data.session);
+      currentSession = data.session;
+      const sessionIsActive = scheduleSessionExpiry(currentSession);
+      setSession(sessionIsActive ? data.session : null);
+      if (!sessionIsActive) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
       syncUser(data.session?.user ?? null).finally(() => {
         if (isMounted) {
           setLoading(false);
@@ -61,14 +115,40 @@ export default function AuthProvider({ children }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      setSession(nextSession);
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      if (event === "SIGNED_IN") {
+        window.localStorage.setItem(LAST_ACTIVITY_AT_KEY, String(Date.now()));
+      }
+
+      currentSession = nextSession;
+      const sessionIsActive = scheduleSessionExpiry(currentSession);
+      setSession(sessionIsActive ? currentSession : null);
+      if (!sessionIsActive) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
       syncUser(nextSession?.user ?? null);
       setLoading(false);
     });
 
+    const activityEvents = [
+      "pointerdown",
+      "keydown",
+      "scroll",
+      "touchstart",
+      "visibilitychange",
+    ];
+    activityEvents.forEach(eventName => {
+      window.addEventListener(eventName, recordActivity, { passive: true });
+    });
+
     return () => {
       isMounted = false;
+      clearSessionTimeout();
+      activityEvents.forEach(eventName => {
+        window.removeEventListener(eventName, recordActivity);
+      });
       subscription.unsubscribe();
     };
   }, []);
