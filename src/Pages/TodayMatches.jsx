@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import {
   Box,
   Stack,
@@ -9,12 +9,17 @@ import {
   Table,
   TableBody,
   TableRow,
-  TableCell, TableHead, TableContainer
+  TableCell,
+  TableHead,
+  TableContainer,
+  Popover,
+  IconButton,
 } from "@mui/material";
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { tr } from 'date-fns/locale';
+import { addDays, format, isSameDay, startOfWeek } from "date-fns";
+import { tr } from "date-fns/locale";
 import { useData } from "../context/DataContext";
 import { getTeamLogo } from "../Components/teamLogos.js";
 import football from "/football.png";
@@ -23,6 +28,7 @@ import corner from "/corner.png";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { Link } from "react-router-dom";
 import CloseIcon from "@mui/icons-material/Close";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 
 function TodayMatches() {
   const { goalStatsByLeague, cornerStatsByLeague, cardStatsByLeague, matches, seasons, selectedSeason, isLoading, error } = useData();
@@ -30,6 +36,7 @@ function TodayMatches() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedLeague, setSelectedLeague] = useState("ALL");
   const [isLeaguePanelOpen, setIsLeaguePanelOpen] = useState(false);
+  const [calendarAnchor, setCalendarAnchor] = useState(null);
 
   const currentSeason = useMemo(() => {
     if (!Array.isArray(seasons) || !seasons.length) return null;
@@ -248,8 +255,17 @@ function TodayMatches() {
     return { date: newDate, time: newTime };
   };
 
-  // test için sabit tarih
-  const today = selectedDate.toISOString().slice(0, 10);
+  const today = format(selectedDate, "yyyy-MM-dd");
+  const weekDays = useMemo(() => {
+    const weekStart = startOfWeek(selectedDate, { weekStartsOn: 0 });
+    return Array.from({ length: 7 }, (_, index) => addDays(weekStart, index));
+  }, [selectedDate]);
+
+  const selectDate = (date) => {
+    if (!date) return;
+    setSelectedDate(date < new Date(2026, 6, 1) ? new Date(2026, 6, 1) : date);
+    setCalendarAnchor(null);
+  };
 
   const groupedMatches = useMemo(() => {
     if (!seasonMatches.length) return {};
@@ -281,7 +297,7 @@ function TodayMatches() {
       acc[match.league].push(match);
       return acc;
     }, {});
-  }, [matches, today]);
+  }, [seasonMatches, today]);
 
   const allLeagues = useMemo(() => {
     if (!seasonMatches.length) return [];
@@ -309,62 +325,163 @@ function TodayMatches() {
       : leagues.filter(league => league === selectedLeague);/*
   if (!leagues.length) return <Typography textAlign="center">Seçilen tarihte maç yok</Typography>;*/
 
+  const dateStripRef = useRef(null);
+  const dateButtonRefs = useRef({});
+
+  useEffect(() => {
+    const selectedKey = format(selectedDate, "yyyy-MM-dd");
+    const selectedButton = dateButtonRefs.current[selectedKey];
+    const strip = dateStripRef.current;
+
+    if (!selectedButton || !strip) return;
+
+    selectedButton.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+  }, [selectedDate]);
+
   return (
     <Box maxWidth="800px" mx="auto" mt={3} px={2}>      
-      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={tr}>
-        <Box display="flex" justifyContent="center" mb={2} bgcolor="#f5f5f5" p={1} borderRadius={1}>
-          <DatePicker
-            label="Tarih Seçin"
-            value={selectedDate}
-            minDate={new Date(2026, 6, 1)}
-            onChange={(newValue) => {
-              if (!newValue) return;
-              if (newValue < new Date(2026, 6, 1)) {
-                setSelectedDate(new Date(2026, 6, 1));
-                return;
-              }
-              setSelectedDate(newValue);
-            }}
-            format="dd/MM/yyyy"
-          />
-        </Box>
-      </LocalizationProvider>
-
-      <Paper sx={{ p: 1.5, mb: 3, backgroundColor: "#fafafa" }}>
-        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-          Lig filtresi:
-        </Typography>
-        <Button
-          fullWidth
-          variant="outlined"
-          onClick={() => setIsLeaguePanelOpen(true)}
+      <Box sx={{ display: "flex", gap: { xs: 0.5, sm: 0.75 }, mb: 2, alignItems: "center" }}>
+        <Paper
           sx={{
-            justifyContent: "flex-start",
-            textTransform: "none",
-            backgroundColor: "#fff",
-            borderColor: "#ccc",
-            borderRadius: 1,
-            py: 1.1,
-            "&:hover": { backgroundColor: "#f5f5f5", borderColor: "#bbb" },
+            flex: { xs: "0 0 64px", sm: "0 0 90px" },
+            height: { xs: 84, sm: 101 },
+            p: 0,
+            overflow: "hidden",
+            backgroundColor: "#fafafa",
           }}
         >
-          <img
-            src={selectedLeague === "ALL" ? football : getLeagueIcon(selectedLeague)}
-            width={32}
-            height={32}
-            style={{ marginRight: 8, objectFit: "contain" }}
-            alt={selectedLeague === "ALL" ? "Tüm Maçlar" : selectedLeague}
-          />
-          <Box sx={{ textAlign: "left" }}>
-            <Typography variant="caption" sx={{ display: "block", color: "#888" }}>
-              Lig Seç
+          <Button
+            fullWidth
+            onClick={() => setIsLeaguePanelOpen(true)}
+            sx={{
+              height: "100%",
+              minWidth: 0,
+              px: 0.5,
+              py: 1,
+              gap: 0.25,
+              flexDirection: "column",
+              justifyContent: "center",
+              textTransform: "none",
+              color: "#656b73",
+              borderRadius: 1,
+              "&:hover": { backgroundColor: "#eef5fb" },
+            }}
+          >
+            <img
+              src={selectedLeague === "ALL" ? football : getLeagueIcon(selectedLeague)}
+              width={28}
+              height={28}
+              style={{ objectFit: "contain" }}
+              alt={selectedLeague === "ALL" ? "Tüm Maçlar" : selectedLeague}
+            />
+            <Typography variant="caption" sx={{ maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {selectedLeague === "ALL" ? "Lig Seç" : selectedLeague}
             </Typography>
-            <Typography variant="body1" sx={{ color: "#222" }}>
-              {selectedLeague === "ALL" ? "Tüm Maçlar" : selectedLeague}
-            </Typography>
+          </Button>
+        </Paper>
+        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={tr}>
+          <Box sx={{ display: "flex", alignItems: "center", flex: 1, minWidth: 0 }}>
+            <Box
+              ref={dateStripRef}
+              sx={{
+                flex: 1,
+                minWidth: 0,
+                height: { xs: 83, sm: 100 },
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "stretch",
+                gap: { xs: 0.25, sm: 1.5 },
+                mb: 0,
+                px: { xs: 0.25, sm: 1 },
+                
+                backgroundColor: "#fff",
+                borderBottom: "1px solid #edf0f2",
+                overflowX: "auto",
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+                "&::-webkit-scrollbar": { display: "none" },
+              }}
+            >
+              {weekDays.map((date) => {
+                const dateKey = format(date, "yyyy-MM-dd");
+                const isSelected = isSameDay(date, selectedDate);
+                const isToday = isSameDay(date, new Date());
+                const dayLabel = isToday ? "Bugün" : format(date, "EEE", { locale: tr });
+
+                return (
+                  <Button
+                    key={dateKey}
+                    ref={(node) => {
+                      if (node) dateButtonRefs.current[dateKey] = node;
+                    }}
+                    onClick={() => selectDate(date)}
+                    sx={{
+                      flex: { xs: "0 0 48px", sm: "1 1 0" },
+                      minWidth: { xs: 48, sm: 0 },
+                      width: { xs: 48, sm: "100%" },
+                      height: { xs: 68, sm: 92 },
+                      px: 0.5,
+                      py: 1,
+                      borderRadius: "18px",
+                      color: isSelected ? "#fff" : "#656b73",
+                      backgroundColor: isSelected ? "#1976d2" : "transparent",
+                      textTransform: "none",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      gap: 0.5,
+                      "&:hover": {
+                        backgroundColor: isSelected ? "#1565c0" : "#eef5fb",
+                      },
+                    }}
+                  >
+                    <Typography sx={{ fontSize: { xs: "0.78rem", sm: "0.95rem" }, lineHeight: 1 }}>
+                      {isToday ? dayLabel : dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1, 3)}
+                    </Typography>
+                    <Typography sx={{ fontSize: { xs: "1.35rem", sm: "1.7rem" }, fontWeight: 700, lineHeight: 1 }}>
+                      {format(date, "d")}
+                    </Typography>
+                    {isToday && !isSelected && (
+                      <Box sx={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: "#1976d2" }} />
+                    )}
+                  </Button>
+                );
+              })}
+            </Box>
+
+            <IconButton
+              aria-label="Takvimi aç"
+              onClick={(event) => setCalendarAnchor(event.currentTarget)}
+              sx={{
+                flex: "0 0 auto",
+                width: { xs: 44, sm: 52 },
+                height: { xs: 44, sm: 52 },
+                ml: { xs: 0.25, sm: 1 },
+                border: "3px solid #1976d2",
+                borderRadius: "18px",
+                color: "#1976d2",
+                "&:hover": { backgroundColor: "#eef5fb" },
+              }}
+            >
+              <CalendarMonthIcon sx={{ fontSize: { xs: 24, sm: 32 } }} />
+            </IconButton>
+            <Popover
+              open={Boolean(calendarAnchor)}
+              anchorEl={calendarAnchor}
+              onClose={() => setCalendarAnchor(null)}
+              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+              transformOrigin={{ vertical: "top", horizontal: "right" }}
+            >
+              <DateCalendar
+                value={selectedDate}
+                minDate={new Date(2026, 6, 1)}
+                onChange={selectDate}
+                sx={{ backgroundColor: "#fff" }}
+              />
+            </Popover>
           </Box>
-        </Button>
-      </Paper>
+        </LocalizationProvider>
+      </Box>
 
       {isLeaguePanelOpen && (
         <Box

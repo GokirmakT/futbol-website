@@ -14,7 +14,9 @@ import {
   TableRow,
   Divider,
   Button,
+  Collapse,
 } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useData } from "../context/DataContext";
 import TeamFixture from "../Components/TeamFixture.jsx";
 import { getTeamLogo } from "../Components/teamLogos.js";
@@ -155,37 +157,44 @@ const MetricGauge = ({ label, value, displayValue, isRate = true }) => {
   const hasValue = Number.isFinite(numericValue);
   const percent = hasValue && isRate ? Math.min(100, Math.max(0, numericValue)) : 0;
   const color = isRate && hasValue ? getBgColor(percent) : "#8a8a8a";
-  const sweep = percent === 0 && hasValue ? 8 : percent * 1.8;
 
   return (
-    <Box sx={{ minWidth: 0, textAlign: "center" }}>
+    <Box sx={{ minWidth: 0, py: 1 }}>
       <Typography
         variant="caption"
         sx={{
           display: "block",
-          minHeight: 32,
           fontWeight: "bold",
-          color: "text.primary",
+          color: "#000",
+          mb: 1,
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
         }}
       >
         {label}
       </Typography>
       {isRate ? (
-        <Box sx={{ position: "relative", width: 92, height: 58, mx: "auto", overflow: "hidden" }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <Box
             sx={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: 92,
-              height: 92,
-              borderRadius: "50%",
-              background: `conic-gradient(from 270deg, ${color} 0deg ${sweep}deg, #c7c7c7 ${sweep}deg 180deg, transparent 180deg)`,
-              WebkitMask: "radial-gradient(farthest-side, transparent calc(100% - 8px), #000 calc(100% - 7px))",
-              mask: "radial-gradient(farthest-side, transparent calc(100% - 8px), #000 calc(100% - 7px))",
+              flex: 1,
+              height: 10,
+              borderRadius: 999,
+              backgroundColor: "#d9ded9",
+              overflow: "hidden",
             }}
-          />
-          <Typography sx={{ position: "absolute", bottom: 0, left: 0, right: 0, color, fontWeight: "bold", fontSize: 14, lineHeight: 1 }}>
+          >
+            <Box
+              sx={{
+                width: `${percent}%`,
+                height: "100%",
+                borderRadius: "inherit",
+                backgroundColor: color,
+              }}
+            />
+          </Box>
+          <Typography sx={{ minWidth: 52, color: "#000", fontWeight: "bold", fontSize: 14, lineHeight: 1, textAlign: "right" }}>
             {displayValue ?? (hasValue ? `${numericValue.toFixed(1)}%` : "—")}
           </Typography>
         </Box>
@@ -202,15 +211,68 @@ const MetricGaugeGrid = ({ items }) => (
   <Box
     sx={{
       display: "grid",
-      gridTemplateColumns: { xs: "repeat(2, minmax(0, 1fr))", sm: "repeat(4, minmax(0, 1fr))" },
-      gap: 2,
-      alignItems: "end",
-      py: 1,
+      gridTemplateColumns: "minmax(0, 1fr)",
+      gap: 1,
+      py: 1.5,
     }}
   >
     {items.map(item => <MetricGauge key={item.label} {...item} />)}
   </Box>
 );
+
+const CollapsibleStatsPanel = ({ title, children, defaultOpen = false }) => {
+  const [open, setOpen] = useState(defaultOpen);
+
+  return (
+    <Paper
+      elevation={0}
+      sx={{
+        border: "1px solid #d7d7d7",
+        borderRadius: 2,
+        overflow: "hidden",
+        backgroundColor: "#fff",
+      }}
+    >
+      <Box
+        component="button"
+        type="button"
+        onClick={() => setOpen(current => !current)}
+        aria-expanded={open}
+        sx={{
+          width: "100%",
+          minHeight: 74,
+          px: { xs: 2, sm: 3 },
+          py: 1.5,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          textAlign: "left",
+          border: 0,
+          backgroundColor: "#fff",
+          color: "#000",
+          cursor: "pointer",
+          font: "inherit",
+          transition: "background-color 180ms ease",
+          "&:hover": { backgroundColor: "#f7f7f7" },
+        }}
+      >
+        <Typography component="span" fontWeight={700} color="#000">
+          {title}
+        </Typography>
+        <ExpandMoreIcon
+          sx={{
+            color: "#000",
+            transition: "transform 220ms ease",
+            transform: open ? "rotate(180deg)" : "rotate(0deg)",
+          }}
+        />
+      </Box>
+      <Collapse in={open} timeout={260} unmountOnExit>
+        <Box sx={{ borderTop: "1px solid #ececec" }}>{children}</Box>
+      </Collapse>
+    </Paper>
+  );
+};
 
 const getTeamScopeMatches = (matches, teamName, selectedSeason, scope) => {
   const teamMatches = matches.filter(
@@ -744,10 +806,7 @@ const awayLast10 = useMemo(
             </Stack>
 
             {/* Gol tablosu */}
-            <Box>
-              <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-                Gol İstatistikleri
-              </Typography>
+            <CollapsibleStatsPanel title="Gol İstatistikleri">
               <TableContainer
                 component={Paper}
                 sx={{
@@ -829,13 +888,10 @@ const awayLast10 = useMemo(
                   </TableBody>
                 </Table>
               </TableContainer>
-            </Box>
+            </CollapsibleStatsPanel>
 
             {/* Korner tablosu */}
-            <Box>
-              <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-                Korner İstatistikleri
-              </Typography>
+            <CollapsibleStatsPanel title="Korner İstatistikleri">
               <TableContainer
                 component={Paper}
                 sx={{
@@ -936,13 +992,10 @@ const awayLast10 = useMemo(
                   </TableBody>
                 </Table>
               </TableContainer>
-            </Box>
+            </CollapsibleStatsPanel>
 
             {/* Kart tablosu */}
-            <Box>
-              <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-                Kart İstatistikleri
-              </Typography>
+            <CollapsibleStatsPanel title="Kart İstatistikleri">
               <TableContainer
                 component={Paper}
                 sx={{
@@ -1048,7 +1101,7 @@ const awayLast10 = useMemo(
                   </TableBody>
                 </Table>
               </TableContainer>
-            </Box>
+            </CollapsibleStatsPanel>
 
             <Divider sx={{ my: 1 }} />
 
@@ -1131,10 +1184,7 @@ const awayLast10 = useMemo(
             </Stack>
 
             {/* Gol tablosu */}
-            <Box>
-              <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-                Gol İstatistikleri
-              </Typography>
+            <CollapsibleStatsPanel title="Gol İstatistikleri">
               <TableContainer
                 component={Paper}
                 sx={{
@@ -1216,13 +1266,10 @@ const awayLast10 = useMemo(
                   </TableBody>
                 </Table>
               </TableContainer>
-            </Box>
+            </CollapsibleStatsPanel>
 
             {/* Korner tablosu */}
-            <Box>
-              <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-                Korner İstatistikleri
-              </Typography>
+            <CollapsibleStatsPanel title="Korner İstatistikleri">
               <TableContainer
                 component={Paper}
                 sx={{
@@ -1323,13 +1370,10 @@ const awayLast10 = useMemo(
                   </TableBody>
                 </Table>
               </TableContainer>
-            </Box>
+            </CollapsibleStatsPanel>
 
             {/* Kart tablosu */}
-            <Box>
-              <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-                Kart İstatistikleri
-              </Typography>
+            <CollapsibleStatsPanel title="Kart İstatistikleri">
               <TableContainer
                 component={Paper}
                 sx={{
@@ -1435,7 +1479,7 @@ const awayLast10 = useMemo(
                   </TableBody>
                 </Table>
               </TableContainer>
-            </Box>
+            </CollapsibleStatsPanel>
 
             <Divider sx={{ my: 1 }} />
 
@@ -1473,10 +1517,7 @@ const awayLast10 = useMemo(
         )}
         {headToHeadStats && (
           <Stack spacing={2} mt={3} mb={3}>
-            <Paper sx={{ backgroundColor: "#f5f5f5", p: 1 }}>
-              <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-                Karşılıklı Gol İstatistikleri
-              </Typography>
+            <CollapsibleStatsPanel title="Karşılıklı Gol İstatistikleri">
               <MetricGaugeGrid
                 items={[
                   { label: "1.5 Üst", value: headToHeadStats.goals.over15Rate },
@@ -1485,22 +1526,16 @@ const awayLast10 = useMemo(
                   { label: "KG Var", value: headToHeadStats.goals.btsRate },
                 ]}
               />
-            </Paper>
-            <Paper sx={{ backgroundColor: "#f5f5f5", p: 1 }}>
-              <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-                Karşılıklı Korner İstatistikleri
-              </Typography>
+            </CollapsibleStatsPanel>
+            <CollapsibleStatsPanel title="Karşılıklı Korner İstatistikleri">
               <MetricGaugeGrid
                 items={[
                   { label: "Toplam 8.5 Üst", value: headToHeadStats.corners.over85Rate },
                   { label: "Takım 4.5 Üst", value: headToHeadStats.corners.team45Rate },
                 ]}
               />
-            </Paper>
-            <Paper sx={{ backgroundColor: "#f5f5f5", p: 1 }}>
-              <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-                Karşılıklı Kart İstatistikleri
-              </Typography>
+            </CollapsibleStatsPanel>
+            <CollapsibleStatsPanel title="Karşılıklı Kart İstatistikleri">
               <MetricGaugeGrid
                 items={[
                   { label: "Sarı Kart 2.5 Üst", value: headToHeadStats.cards.over25Rate },
@@ -1511,7 +1546,7 @@ const awayLast10 = useMemo(
                   { label: "Ceza Skoru 4.5 Üst", value: headToHeadStats.cards.penaltyOver45Rate },
                 ]}
               />
-            </Paper>
+            </CollapsibleStatsPanel>
           </Stack>
         )}
       </Box>
