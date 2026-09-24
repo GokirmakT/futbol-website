@@ -43,7 +43,11 @@ function GuestOnlyRoute({ children }) {
 }
 
 export default function App() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return <PageLoader />;
+  }
 
   return (
     isAuthenticated ? (
@@ -69,6 +73,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/auth" replace />} />
           <Route path="/auth" element={<GuestOnlyRoute><AuthPage /></GuestOnlyRoute>} />
+          <Route path="*" element={<Navigate to="/auth" replace />} />
         </Routes>
       </>
     )
