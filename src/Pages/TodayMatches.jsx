@@ -339,7 +339,14 @@ function TodayMatches() {
   }, [selectedDate]);
 
   return (
-    <Box maxWidth="800px" mx="auto" mt={3} px={2}>      
+    <Box
+      maxWidth="1280px"
+      width="100%"
+      mx="auto"
+      mt={3}
+      px={2}
+      sx={{ boxSizing: "border-box", minWidth: 0 }}
+    >
       <Box sx={{ display: "flex", gap: { xs: 0.5, sm: 0.75 }, mb: 2, alignItems: "center" }}>
         <Paper
           sx={{
@@ -603,12 +610,48 @@ function TodayMatches() {
       </Paper>
 
       {visibleLeagues.map(league => (        
-        <Box key={league} mb={4}>
-          <Typography variant="h6" fontWeight="bold" mb={1}>
-            {league}
-          </Typography>
+        <Box
+          key={league}
+          mb={4}
+          sx={{
+            p: { xs: 1, sm: 1.5 },
+            backgroundColor: "rgba(255, 255, 255, 0.05)",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
+            borderRadius: 2,
+          }}
+        >
+          <Stack direction="row" alignItems="center" spacing={1} mb={1.5}>
+            <img
+              src={getLeagueIcon(league)}
+              alt={`${league} logosu`}
+              style={{ width: 34, height: 34, objectFit: "contain", flex: "0 0 auto" }}
+            />
+            <Typography
+              variant="h6"
+              fontWeight="bold"
+              sx={{
+                color: "#fff",
+                fontSize: { xs: "1rem", sm: "1.25rem" },
+                lineHeight: 1.2,
+                overflowWrap: "anywhere",
+              }}
+            >
+              {league}
+            </Typography>
+          </Stack>
 
-          <Paper>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "minmax(0, 1fr)",
+                sm: "repeat(2, minmax(0, 1fr))",
+                md: "repeat(3, minmax(0, 1fr))",
+              },
+              gap: { xs: 1.25, sm: 1.5 },
+              alignItems: "start",
+            }}
+          >
             {groupedMatches[league].map((match, i) => {
               const isPlayed = match.winner !== "TBD";
 
@@ -679,43 +722,55 @@ function TodayMatches() {
               return (
                 <Box
                   key={i}
-                  mb={2}
                   component={Link}
                   to={`/match/${encodeURIComponent(match.league)}/${encodeURIComponent(
                     match.homeTeam
                   )}/${encodeURIComponent(match.awayTeam)}`}
                   sx={{
                     textDecoration: "none",
-                    color: "inherit",
+                    color: "#f4f5f5",
                     display: "block",
-                    "&:hover": { backgroundColor: "#f0f0f0" },
-                    borderRadius: 1,
-                    transition: "background-color 0.2s ease",
+                    minWidth: 0,
+                    overflow: "hidden",
+                    backgroundColor: "#171b1d",
+                    border: "1px solid #303638",
+                    borderRadius: 2,
+                    boxShadow: "0 3px 12px rgba(0,0,0,0.18)",
+                    transition: "transform 0.18s ease, border-color 0.18s ease",
+                    "&:hover": {
+                      transform: "translateY(-2px)",
+                      borderColor: "#626b6e",
+                    },
                   }}
                 >
                   <Stack
                     direction="row"
-                    justifyContent="space-between"
                     alignItems="center"
-                    px={2}
-                    py={1.5} 
+                    justifyContent="space-between"
+                    gap={0.75}
+                    px={1.25}
+                    py={1.5}
+                    sx={{ minHeight: 100 }}
                   >
-                    {/* ⏰ SAAT */}
-                    <Typography sx={{ minWidth: 60 }}>
-                      {match.turkeyTime || match.time} {/* Türkiye saati (UTC+3) */}
-                    </Typography>
-
-                    {/* ⚽ MAÇ */}
-                    <Stack sx={{ flex: 1 }} direction="row" justifyContent="center" alignItems="center" spacing={1}>
-                      <img src={getTeamLogo(match.homeTeam)} alt={match.homeTeam} style={{ height: 24 }} />
-                      <Box component="span" sx={{ textAlign: "center" }}>
+                    <Stack sx={{ flex: 1, minWidth: 0 }} alignItems="center" spacing={0.5}>
+                      <img src={getTeamLogo(match.homeTeam)} alt={match.homeTeam} style={{ height: 40, maxWidth: 48, objectFit: "contain" }} />
+                      <Typography sx={{ width: "100%", textAlign: "center", fontSize: { xs: "0.78rem", sm: "0.9rem" }, lineHeight: 1.15, overflowWrap: "anywhere" }}>
                         {match.homeTeam}
-                        {isPlayed
-                          ? ` ${match.goalHome} - ${match.goalAway} `
-                          : " vs "}
+                      </Typography>
+                    </Stack>
+                    <Stack alignItems="center" spacing={0.35} sx={{ flex: "0 0 auto", minWidth: 54 }}>
+                      <Typography sx={{ fontSize: { xs: "0.8rem", sm: "0.9rem" }, fontWeight: 700, color: "#f4f5f5" }}>
+                        {match.turkeyTime || match.time}
+                      </Typography>
+                      <Typography sx={{ fontSize: "0.72rem", color: "#aeb6b8", lineHeight: 1 }}>
+                        {isPlayed ? `${match.goalHome} - ${match.goalAway}` : "vs"}
+                      </Typography>
+                    </Stack>
+                    <Stack sx={{ flex: 1, minWidth: 0 }} alignItems="center" spacing={0.5}>
+                      <img src={getTeamLogo(match.awayTeam)} alt={match.awayTeam} style={{ height: 40, maxWidth: 48, objectFit: "contain" }} />
+                      <Typography sx={{ width: "100%", textAlign: "center", fontSize: { xs: "0.78rem", sm: "0.9rem" }, lineHeight: 1.15, overflowWrap: "anywhere" }}>
                         {match.awayTeam}
-                      </Box>
-                      <img src={getTeamLogo(match.awayTeam)} alt={match.awayTeam} style={{ height: 24 }} />
+                      </Typography>
                   </Stack>
                 </Stack>
                 
@@ -724,19 +779,27 @@ function TodayMatches() {
                   sx={{
                     flex: 1,
                     width: "100%",              
-                    backgroundColor: "#e2e2e2",
+                    backgroundColor: "#252a2c",
                     overflow: 'hidden',
-                    borderRadius: 0             
+                    borderRadius: 0,
+                    boxShadow: "none",
                   }}
                 >
-                  <Table size="small" stickyHeader sx={{borderRadius: 0}}>
-                    <TableHead sx={{ "& .MuiTableCell-root": { backgroundColor: "#e2e2e2" } }}>
+                  <Table
+                    size="small"
+                    sx={{
+                      borderRadius: 0,
+                      tableLayout: "fixed",
+                      "& .MuiTableCell-root": { borderBottom: "none" },
+                    }}
+                  >
+                    <TableHead sx={{ "& .MuiTableCell-root": { backgroundColor: "#252a2c", py: 0.75 } }}>
                       <TableRow>
                         <TableCell sx={{ color: "#fff", fontWeight: "bold", pr: isMobile ? 1 : 2, pl: isMobile ? 0 : 2  }} align="center">
                         <Stack alignItems={'center'}>
                           <img
                             src={football}
-                            style={{ width: 20, height: 20, color: "#fff" }}
+                            style={{ width: isMobile ? 28 : 24, height: isMobile ? 28 : 24, objectFit: "contain" }}
                           />    
                           </Stack>
                         </TableCell>
@@ -744,7 +807,7 @@ function TodayMatches() {
                           <Stack alignItems={'center'}>
                           <img
                             src={corner}
-                            style={{ width: 20, height: 20, color: "#fff" }}
+                            style={{ width: isMobile ? 28 : 24, height: isMobile ? 28 : 24, objectFit: "contain" }}
                           />    
                           </Stack>
                         </TableCell>
@@ -752,7 +815,7 @@ function TodayMatches() {
                           <Stack alignItems={'center'}>
                           <img
                             src={card}
-                            style={{ width: 20, height: 20, color: "#fff" }}
+                            style={{ width: isMobile ? 28 : 24, height: isMobile ? 28 : 24, objectFit: "contain" }}
                           />    
                           </Stack>
                         </TableCell>
@@ -765,7 +828,7 @@ function TodayMatches() {
                           <Stack alignItems={'center'}>
                           <img
                             src={football}
-                            style={{ width: 20, height: 20, color: "#fff" }}
+                            style={{ width: isMobile ? 28 : 24, height: isMobile ? 28 : 24, objectFit: "contain" }}
                           />    
                           </Stack>
                         </TableCell>
@@ -773,7 +836,7 @@ function TodayMatches() {
                           <Stack alignItems={'center'}>
                           <img
                             src={corner}
-                            style={{ width: 20, height: 20, color: "#fff" }}
+                            style={{ width: isMobile ? 28 : 24, height: isMobile ? 28 : 24, objectFit: "contain" }}
                           />    
                           </Stack>
                         </TableCell>
@@ -781,7 +844,7 @@ function TodayMatches() {
                           <Stack alignItems={'center'}>
                           <img
                             src={card}
-                            style={{ width: 20, height: 20, color: "#fff" }}
+                            style={{ width: isMobile ? 28 : 24, height: isMobile ? 28 : 24, objectFit: "contain" }}
                           />    
                           </Stack>
                         </TableCell>
@@ -792,27 +855,26 @@ function TodayMatches() {
                       
                         <TableRow>
                         
-                          <TableCell align="center" sx={{color: "#000000ff",backgroundColor: getBgColor(homeGoalOver25), fontWeight: "bold", pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{homeGoalOver25 === "—" ? "—" : `${homeGoalOver25}%`}</TableCell>
-                          <TableCell align="center" sx={{color: "#000000ff",backgroundColor: getBgColor(homeCornerOver85), fontWeight: "bold", pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{homeCornerOver85 === "—" ? "—" : `${homeCornerOver85}%`}</TableCell>
-                          <TableCell align="center" sx={{color: "#000000ff",backgroundColor: getBgColor(homeCardOver35), fontWeight: "bold", pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{homeCardOver35 === "—" ? "—" : `${homeCardOver35}%`}</TableCell>
+                          <TableCell align="center" sx={{color: "#000000ff",backgroundColor: getBgColor(homeGoalOver25), fontWeight: "bold", px: isMobile ? 0.25 : 0.5, py: 0.75, fontSize: isMobile ? "0.8rem" : "0.9rem"}}>{homeGoalOver25 === "—" ? "—" : `${homeGoalOver25}%`}</TableCell>
+                          <TableCell align="center" sx={{color: "#000000ff",backgroundColor: getBgColor(homeCornerOver85), fontWeight: "bold", px: isMobile ? 0.25 : 0.5, py: 0.75, fontSize: isMobile ? "0.8rem" : "0.9rem"}}>{homeCornerOver85 === "—" ? "—" : `${homeCornerOver85}%`}</TableCell>
+                          <TableCell align="center" sx={{color: "#000000ff",backgroundColor: getBgColor(homeCardOver35), fontWeight: "bold", px: isMobile ? 0.25 : 0.5, py: 0.75, fontSize: isMobile ? "0.8rem" : "0.9rem"}}>{homeCardOver35 === "—" ? "—" : `${homeCardOver35}%`}</TableCell>
                           
-                          <TableCell align="center" sx={{color: "#000000ff", fontWeight: "bold", pr: 1, pl: 1}}></TableCell>
+                          <TableCell align="center" sx={{color: "#000000ff", backgroundColor: "#171b1d", fontWeight: "bold", px: 0, py: 0}}></TableCell>
 
-                          <TableCell align="center" sx={{color: "#000000ff",backgroundColor: getBgColor(awayGoalOver25), fontWeight: "bold", pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{awayGoalOver25 === "—" ? "—" : `${awayGoalOver25}%`}</TableCell>
-                          <TableCell align="center" sx={{color: "#000000ff",backgroundColor: getBgColor(awayCornerOver85), fontWeight: "bold", pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{awayCornerOver85 === "—" ? "—" : `${awayCornerOver85}%`}</TableCell>
-                          <TableCell align="center" sx={{color: "#000000ff",backgroundColor: getBgColor(awayCardOver35), fontWeight: "bold", pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{awayCardOver35 === "—" ? "—" : `${awayCardOver35}%`}</TableCell>
+                          <TableCell align="center" sx={{color: "#000000ff",backgroundColor: getBgColor(awayGoalOver25), fontWeight: "bold", px: isMobile ? 0.25 : 0.5, py: 0.75, fontSize: isMobile ? "0.8rem" : "0.9rem"}}>{awayGoalOver25 === "—" ? "—" : `${awayGoalOver25}%`}</TableCell>
+                          <TableCell align="center" sx={{color: "#000000ff",backgroundColor: getBgColor(awayCornerOver85), fontWeight: "bold", px: isMobile ? 0.25 : 0.5, py: 0.75, fontSize: isMobile ? "0.8rem" : "0.9rem"}}>{awayCornerOver85 === "—" ? "—" : `${awayCornerOver85}%`}</TableCell>
+                          <TableCell align="center" sx={{color: "#000000ff",backgroundColor: getBgColor(awayCardOver35), fontWeight: "bold", px: isMobile ? 0.25 : 0.5, py: 0.75, fontSize: isMobile ? "0.8rem" : "0.9rem"}}>{awayCardOver35 === "—" ? "—" : `${awayCardOver35}%`}</TableCell>
                           
                         </TableRow>
                      
                     </TableBody>
                   </Table>
                 </TableContainer>
-                  {i !== groupedMatches[league].length - 1 && <Divider />}
                   
                 </Box>
               );
             })}
-          </Paper>
+          </Box>
         </Box>
       ))}
     </Box>
