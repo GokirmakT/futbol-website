@@ -17,7 +17,7 @@ import OverHomeCornersTable2 from "../Components/Tables/CornerTables/OverHomeCor
 import SeasonFilter from "../Components/SeasonFilter.jsx";
 
 function Corner() {
-  const { cornerStats, isLoading, isLoadingCorners, selectedLeague, setSelectedLeague, error, cornersError, leagues, seasons, selectedSeason, setSelectedSeason } = useData();
+  const { cornerStats, seasonMatches, isLoading, isLoadingCorners, selectedLeague, setSelectedLeague, error, cornersError, leagues, seasons, selectedSeason, setSelectedSeason } = useData();
   const isMobile = useMediaQuery("(max-width: 900px)");
   const inputRef = useRef(null);
   const [isLeaguePanelOpen, setIsLeaguePanelOpen] = useState(false);
@@ -30,6 +30,23 @@ function Corner() {
     if (percent <= 80) return "#b3ff66";      // açık yeşil
     return "#66ff66";                         // yeşil
     };  
+  const avgCornersByTeam = useMemo(() => {
+    const teamCornerTotals = new Map();
+
+    seasonMatches
+      .filter(match => match.league === selectedLeague && match.winner !== "TBD")
+      .forEach(match => {
+        [[match.homeTeam, match.cornerHome], [match.awayTeam, match.cornerAway]].forEach(([team, corners]) => {
+          if (!team) return;
+          const stats = teamCornerTotals.get(team) ?? { total: 0, matches: 0 };
+          stats.total += Number(corners) || 0;
+          stats.matches++;
+          teamCornerTotals.set(team, stats);
+        });
+      });
+
+    return new Map([...teamCornerTotals].map(([team, stats]) => [team, stats.total / stats.matches]));
+  }, [seasonMatches, selectedLeague]);
 
   const leagueOptions = leagues.map(l => ({
     label: l,
@@ -251,7 +268,7 @@ function Corner() {
           </Typography>
         </Stack> 
         
-        <OverHomeCornersTable cornerStats={cornerStats} selectedLeague={selectedLeague} isMobile={isMobile} getTeamLogo={getTeamLogo} corner={corner} playedMatches={playedMatches} getBgColor={getBgColor}/>        
+          <OverHomeCornersTable cornerStats={cornerStats} avgCornersByTeam={avgCornersByTeam} selectedLeague={selectedLeague} isMobile={isMobile} getTeamLogo={getTeamLogo} corner={corner} playedMatches={playedMatches} getBgColor={getBgColor}/>        
         {/* Tablo Altı İkon + Yazı */}
         {selectedLeague && (
           <Stack
@@ -282,7 +299,7 @@ function Corner() {
           </Typography>
         </Stack>     
 
-        <OverHomeCornersTable2 cornerStats={cornerStats} selectedLeague={selectedLeague} isMobile={isMobile} getTeamLogo={getTeamLogo} corner={corner} playedMatches={playedMatches} getBgColor={getBgColor}/>        
+          <OverHomeCornersTable2 cornerStats={cornerStats} avgCornersByTeam={avgCornersByTeam} selectedLeague={selectedLeague} isMobile={isMobile} getTeamLogo={getTeamLogo} corner={corner} playedMatches={playedMatches} getBgColor={getBgColor}/>        
         {/* Tablo Altı İkon + Yazı */}
         {selectedLeague && (
           <Stack

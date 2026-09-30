@@ -6,7 +6,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 
-const OverCards = ({ cardStats, selectedLeague, isMobile, getTeamLogo, card, playedMatches, getBgColor }) => {  
+const OverCards = ({ cardStats, seasonMatches, selectedLeague, isMobile, getTeamLogo, card, playedMatches, getBgColor }) => {  
 
     const navigate = useNavigate();
 
@@ -21,14 +21,43 @@ const OverCards = ({ cardStats, selectedLeague, isMobile, getTeamLogo, card, pla
       setOrderBy(property);
     };
 
+    const redRatesByTeam = useMemo(() => {
+      const teamStats = new Map();
+
+      seasonMatches
+        .filter(match => match.league === selectedLeague && match.winner !== "TBD")
+        .forEach(match => {
+          const totalRedCards = (Number(match.redHome) || 0) + (Number(match.redAway) || 0);
+
+          [match.homeTeam, match.awayTeam].forEach(team => {
+            if (!team) return;
+            if (!teamStats.has(team)) {
+              teamStats.set(team, { matches: 0, over05: 0, over15: 0, over25: 0 });
+            }
+
+            const stats = teamStats.get(team);
+            stats.matches++;
+            if (totalRedCards > 0.5) stats.over05++;
+            if (totalRedCards > 1.5) stats.over15++;
+            if (totalRedCards > 2.5) stats.over25++;
+          });
+        });
+
+      return new Map([...teamStats].map(([team, stats]) => [team, {
+        RedOver05Rate: (stats.over05 / stats.matches) * 100,
+        RedOver15Rate: (stats.over15 / stats.matches) * 100,
+        RedOver25Rate: (stats.over25 / stats.matches) * 100,
+      }]));
+    }, [seasonMatches, selectedLeague]);
+
     /* 🧠 SORTED DATA */
     const sortedRows = useMemo(() => {
-      return [...cardStats].sort((a, b) => {
+      return cardStats.map(row => ({ ...row, ...redRatesByTeam.get(row.team) })).sort((a, b) => {
         if (a[orderBy] < b[orderBy]) return order === "asc" ? -1 : 1;
         if (a[orderBy] > b[orderBy]) return order === "asc" ? 1 : -1;
         return 0;
       });
-    }, [cardStats, order, orderBy]);
+    }, [cardStats, redRatesByTeam, order, orderBy]);
 
     /* 🎯 SORTABLE HEADER CELL */
     const SortHeader = ({ label, field, abc, align = "center" }) => (

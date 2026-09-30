@@ -12,7 +12,7 @@ import { DataContext } from "./DataContext";
 
 const DataProvider = ({ children }) => {
   const [selectedLeague, setSelectedLeague] = useState("Super Lig");
-  const [selectedSeason, setSelectedSeason] = useState("2026-2027");
+  const [selectedSeason, setSelectedSeason] = useState(null);
 
   const {
     data: matches = [],

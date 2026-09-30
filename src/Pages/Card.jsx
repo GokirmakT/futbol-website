@@ -13,7 +13,7 @@ import OverPenaltyScoreTable from '../Components/Tables/CardTables/OverPenaltySc
 import SeasonFilter from "../Components/SeasonFilter.jsx";
 
 function Card() {
-  const { cardStats, isLoading, isLoadingCards, selectedLeague, setSelectedLeague, error, cardsError, leagues, seasons, selectedSeason, setSelectedSeason } = useData();
+  const { cardStats, seasonMatches, isLoading, isLoadingCards, selectedLeague, setSelectedLeague, error, cardsError, leagues, seasons, selectedSeason, setSelectedSeason } = useData();
   const isMobile = useMediaQuery("(max-width: 900px)");
   const inputRef = useRef(null);
   const [isLeaguePanelOpen, setIsLeaguePanelOpen] = useState(false);
@@ -245,7 +245,7 @@ function Card() {
           </Typography>
         </Stack>      
 
-        <OverRedCardsTable cardStats={cardStats} selectedLeague={selectedLeague} isMobile={isMobile} getTeamLogo={getTeamLogo} card={card} playedMatches={playedMatches} getBgColor={getBgColor}/>        
+        <OverRedCardsTable cardStats={cardStats} seasonMatches={seasonMatches} selectedLeague={selectedLeague} isMobile={isMobile} getTeamLogo={getTeamLogo} card={card} playedMatches={playedMatches} getBgColor={getBgColor}/>        
         
         {selectedLeague && (
           <Stack

@@ -6,7 +6,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 
-const OverCorners = ({ cornerStats, selectedLeague, isMobile, getTeamLogo, corner, playedMatches, getBgColor }) => {  
+const OverCorners = ({ cornerStats, avgCornersByTeam, selectedLeague, isMobile, getTeamLogo, corner, playedMatches, getBgColor }) => {  
 
     const navigate = useNavigate();
 
@@ -124,7 +124,7 @@ const OverCorners = ({ cornerStats, selectedLeague, isMobile, getTeamLogo, corne
                               </Stack>
                             </TableCell>
                             <TableCell sx={{ color: "#fff", fontWeight: "bold", pr: isMobile ? 1 : 2, pl: isMobile ? 0 : 2 }} align="center">{row.matchCount}</TableCell>
-                            <TableCell align="center" sx={{color: "#ffaaff", fontWeight: "bold", pr: isMobile ? 1 : 2, pl: isMobile ? 1 : 2}}>{row.avgCornersUsed}</TableCell>
+                            <TableCell align="center" sx={{color: "#ffaaff", fontWeight: "bold", pr: isMobile ? 1 : 2, pl: isMobile ? 1 : 2}}>{Number(avgCornersByTeam?.get(row.team) ?? row.avgCornersUsed ?? 0).toFixed(1)}</TableCell>
                             <TableCell align="center" sx={{color: "#000000ff", fontWeight: "bold", backgroundColor: getBgColor(row.team35Rate), pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{row.team35Rate.toFixed(0)}%</TableCell>
                             <TableCell align="center" sx={{color: "#000000ff", fontWeight: "bold", backgroundColor: getBgColor(row.team45Rate), pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{row.team45Rate.toFixed(0)}%</TableCell>
                             <TableCell align="center" sx={{color: "#000000ff", fontWeight: "bold", backgroundColor: getBgColor(row.team55Rate), pr: isMobile ? 0 : 2, pl: isMobile ? 0 : 2}}>{row.team55Rate.toFixed(0)}%</TableCell>
