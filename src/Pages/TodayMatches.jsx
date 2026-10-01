@@ -38,6 +38,20 @@ function TodayMatches() {
   const [isLeaguePanelOpen, setIsLeaguePanelOpen] = useState(false);
   const [calendarAnchor, setCalendarAnchor] = useState(null);
 
+  useEffect(() => {
+    if (!isLeaguePanelOpen) return undefined;
+
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousRootOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousRootOverflow;
+    };
+  }, [isLeaguePanelOpen]);
+
   const currentSeason = useMemo(() => {
     if (!Array.isArray(seasons) || !seasons.length) return null;
     return [...seasons].sort().at(-1) ?? seasons[seasons.length - 1];
@@ -189,6 +203,7 @@ function TodayMatches() {
     "Ligue 1": "/leagues/Ligue 1.png",
     "Eredivisie": "/leagues/Eredivisie.png",
     "UEFA Champions League": "/leagues/UEFA Champions League.png",
+    "UEFA Nations League": "/leagues/UEFA Nations League.png",
     "UEFA Europa League": "/leagues/UEFA Europa League.png",
     "UEFA Europa Conference League": "/leagues/UEFA Europa Conference League.png",
     "Primeira Liga": "/leagues/Primeira Liga.png",
@@ -807,7 +822,7 @@ function TodayMatches() {
                           <Stack alignItems={'center'}>
                           <img
                             src={corner}
-                            style={{ width: isMobile ? 28 : 24, height: isMobile ? 28 : 24, objectFit: "contain" }}
+                            style={{ width: isMobile ? 28 : 24, height: isMobile ? 28 : 24, objectFit: "contain", filter: "brightness(0) invert(1)" }}
                           />    
                           </Stack>
                         </TableCell>
@@ -815,7 +830,7 @@ function TodayMatches() {
                           <Stack alignItems={'center'}>
                           <img
                             src={card}
-                            style={{ width: isMobile ? 28 : 24, height: isMobile ? 28 : 24, objectFit: "contain" }}
+                            style={{ width: isMobile ? 28 : 24, height: isMobile ? 28 : 24, objectFit: "contain", filter: "brightness(0) invert(1)" }}
                           />    
                           </Stack>
                         </TableCell>
@@ -836,7 +851,7 @@ function TodayMatches() {
                           <Stack alignItems={'center'}>
                           <img
                             src={corner}
-                            style={{ width: isMobile ? 28 : 24, height: isMobile ? 28 : 24, objectFit: "contain" }}
+                            style={{ width: isMobile ? 28 : 24, height: isMobile ? 28 : 24, objectFit: "contain", filter: "brightness(0) invert(1)" }}
                           />    
                           </Stack>
                         </TableCell>
@@ -844,7 +859,7 @@ function TodayMatches() {
                           <Stack alignItems={'center'}>
                           <img
                             src={card}
-                            style={{ width: isMobile ? 28 : 24, height: isMobile ? 28 : 24, objectFit: "contain" }}
+                            style={{ width: isMobile ? 28 : 24, height: isMobile ? 28 : 24, objectFit: "contain", filter: "brightness(0) invert(1)" }}
                           />    
                           </Stack>
                         </TableCell>

@@ -36,6 +36,7 @@ const leagueLogos = {
   "Ligue 1": "/leagues/Ligue 1.png",
   "Eredivisie": "/leagues/Eredivisie.png",
   "UEFA Champions League": "/leagues/UEFA Champions League.png",
+  "UEFA Nations League": "/leagues/UEFA Nations League.png",
   "UEFA Europa League": "/leagues/UEFA Europa League.png",
   "UEFA Europa Conference League": "/leagues/UEFA Europa Conference League.png",
   "UEFA Champions League Qualifying": "/leagues/UEFA Champions League.png",
@@ -165,7 +166,7 @@ const MetricGauge = ({ label, value, displayValue, isRate = true }) => {
         sx={{
           display: "block",
           fontWeight: "bold",
-          color: "#000",
+          color: "#f4f5f5",
           mb: 1,
           whiteSpace: "nowrap",
           overflow: "hidden",
@@ -181,7 +182,7 @@ const MetricGauge = ({ label, value, displayValue, isRate = true }) => {
               flex: 1,
               height: 10,
               borderRadius: 999,
-              backgroundColor: "#d9ded9",
+              backgroundColor: "#42494b",
               overflow: "hidden",
             }}
           >
@@ -194,12 +195,12 @@ const MetricGauge = ({ label, value, displayValue, isRate = true }) => {
               }}
             />
           </Box>
-          <Typography sx={{ minWidth: 52, color: "#000", fontWeight: "bold", fontSize: 14, lineHeight: 1, textAlign: "right" }}>
+          <Typography sx={{ minWidth: 52, color: "#f4f5f5", fontWeight: "bold", fontSize: 14, lineHeight: 1, textAlign: "right" }}>
             {displayValue ?? (hasValue ? `${numericValue.toFixed(1)}%` : "—")}
           </Typography>
         </Box>
       ) : (
-        <Typography sx={{ color: "#333", fontWeight: "bold", fontSize: 18, lineHeight: "58px" }}>
+        <Typography sx={{ color: "#f4f5f5", fontWeight: "bold", fontSize: 18, lineHeight: "58px" }}>
           {displayValue ?? (hasValue ? numericValue.toFixed(2) : "—")}
         </Typography>
       )}
@@ -213,6 +214,7 @@ const MetricGaugeGrid = ({ items }) => (
       display: "grid",
       gridTemplateColumns: "minmax(0, 1fr)",
       gap: 1,
+      px: 2,
       py: 1.5,
     }}
   >
@@ -227,10 +229,10 @@ const CollapsibleStatsPanel = ({ title, children, defaultOpen = false }) => {
     <Paper
       elevation={0}
       sx={{
-        border: "1px solid #d7d7d7",
+        border: "1px solid #303638",
         borderRadius: 2,
         overflow: "hidden",
-        backgroundColor: "#fff",
+        backgroundColor: "#171b1d",
       }}
     >
       <Box
@@ -248,27 +250,34 @@ const CollapsibleStatsPanel = ({ title, children, defaultOpen = false }) => {
           justifyContent: "space-between",
           textAlign: "left",
           border: 0,
-          backgroundColor: "#fff",
-          color: "#000",
+          backgroundColor: "#252a2c",
+          color: "#fff",
           cursor: "pointer",
           font: "inherit",
           transition: "background-color 180ms ease",
-          "&:hover": { backgroundColor: "#f7f7f7" },
+          "&:hover": { backgroundColor: "#303638" },
         }}
       >
-        <Typography component="span" fontWeight={700} color="#000">
+        <Typography component="span" fontWeight={700} color="#fff">
           {title}
         </Typography>
         <ExpandMoreIcon
           sx={{
-            color: "#000",
+            color: "#fff",
             transition: "transform 220ms ease",
             transform: open ? "rotate(180deg)" : "rotate(0deg)",
           }}
         />
       </Box>
       <Collapse in={open} timeout={260} unmountOnExit>
-        <Box sx={{ borderTop: "1px solid #ececec" }}>{children}</Box>
+        <Box
+          sx={{
+            borderTop: "1px solid #42494b",
+            "& .MuiTableContainer-root": { backgroundColor: "#252a2c", color: "#f4f5f5" },
+          }}
+        >
+          {children}
+        </Box>
       </Collapse>
     </Paper>
   );
@@ -737,7 +746,7 @@ const awayLast10 = useMemo(
       >
         {/* EV SAHİBİ */}
         <Box sx={{ flex: 1, minWidth: 0, pr: 3}}>
-          <Paper sx={{ width: "100%", maxWidth: 600, minWidth: 0, mx: "auto", p: 2, display: "flex", flexDirection: "column", gap: 2 }}>
+          <Paper sx={{ width: "100%", maxWidth: 600, minWidth: 0, mx: "auto", p: 2, display: "flex", flexDirection: "column", gap: 2, backgroundColor: "#36454f", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 2, color: "#f4f5f5" }}>
             <Typography
               variant="h6"
               fontWeight="bold"
@@ -746,7 +755,7 @@ const awayLast10 = useMemo(
             >
               {home}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.72)" }}>
               Ev sahibi takımın gol, korner ve kart profili (seçili sezon ve lig filtresi bazlı).
             </Typography>
 
@@ -768,7 +777,7 @@ const awayLast10 = useMemo(
                         px: option === "all" ? 1.5 : 0.75,
                         ...(isSelected
                           ? { backgroundColor: "#0f766e", color: "#fff", borderColor: "#0f766e" }
-                          : { color: "#0f172a", borderColor: "rgba(15, 23, 42, 0.2)" }),
+                          : { color: "#f4f5f5", borderColor: "rgba(255,255,255,0.28)" }),
                       }}
                     >
                       {option === "all" ? (
@@ -786,7 +795,7 @@ const awayLast10 = useMemo(
                     <Typography
                       variant="caption"
                       sx={{
-                        color: isSelected ? "#0f766e" : "text.secondary",
+                        color: isSelected ? "#5eead4" : "rgba(255,255,255,0.72)",
                         fontWeight: isSelected ? 700 : 500,
                         maxWidth: 120,
                         textAlign: "center",
@@ -1110,14 +1119,14 @@ const awayLast10 = useMemo(
               <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
                 Son 10 Maç Analizi
               </Typography>
-              <TeamFixture matches={homeLast10} team={home} league={leagueName} display={"none"} matchWidth="100%" />
+              <TeamFixture matches={homeLast10} team={home} league={leagueName} display={"none"} matchWidth="100%" darkTheme />
             </Box>
           </Paper>
         </Box>
 
         {/* DEPLASMAN */}
         <Box sx={{ flex: 1, minWidth: 0, pr: 3 }}>
-          <Paper sx={{ width: "100%", maxWidth: 600, minWidth: 0, mx: "auto", p: 2, display: "flex", flexDirection: "column", gap: 2 }}>
+          <Paper sx={{ width: "100%", maxWidth: 600, minWidth: 0, mx: "auto", p: 2, display: "flex", flexDirection: "column", gap: 2, backgroundColor: "#36454f", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 2, color: "#f4f5f5" }}>
             <Typography
               variant="h6"
               fontWeight="bold"
@@ -1126,7 +1135,7 @@ const awayLast10 = useMemo(
             >
               {away}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.72)" }}>
               Deplasman takımının gol, korner ve kart profili (seçili sezon ve lig filtresi bazlı).
             </Typography>
 
@@ -1148,7 +1157,7 @@ const awayLast10 = useMemo(
                         px: option === "all" ? 1.5 : 0.75,
                         ...(isSelected
                           ? { backgroundColor: "#0f766e", color: "#fff", borderColor: "#0f766e" }
-                          : { color: "#0f172a", borderColor: "rgba(15, 23, 42, 0.2)" }),
+                          : { color: "#f4f5f5", borderColor: "rgba(255,255,255,0.28)" }),
                       }}
                     >
                       {option === "all" ? (
@@ -1166,7 +1175,7 @@ const awayLast10 = useMemo(
                     <Typography
                       variant="caption"
                       sx={{
-                        color: isSelected ? "#0f766e" : "text.secondary",
+                        color: isSelected ? "#5eead4" : "rgba(255,255,255,0.72)",
                         fontWeight: isSelected ? 700 : 500,
                         maxWidth: 120,
                         textAlign: "center",
@@ -1488,7 +1497,7 @@ const awayLast10 = useMemo(
               <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
                 Son 10 Maç Analizi
               </Typography>
-              <TeamFixture matches={awayLast10} team={away} league={leagueName} display={"none"} matchWidth="100%" />
+              <TeamFixture matches={awayLast10} team={away} league={leagueName} display={"none"} matchWidth="100%" darkTheme />
             </Box>
           </Paper>
         </Box>
@@ -1509,6 +1518,7 @@ const awayLast10 = useMemo(
             display="none"
             matchWidth="100%"
             showResultColor={false}
+            darkTheme
           />
         ) : (
           <Typography variant="body2" color="text.secondary">

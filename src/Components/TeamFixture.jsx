@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { useData } from "../context/DataContext";
 import { useState } from "react";
 
-const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelectedSeason, availableSeasons = [], matchWidth = "60%", showResultColor = true, leagueFilter, setLeagueFilter, showSeasonFilter = true, showLeagueFilter = true }) => {
+const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelectedSeason, availableSeasons = [], matchWidth = "60%", showResultColor = true, leagueFilter, setLeagueFilter, showSeasonFilter = true, showLeagueFilter = true, darkTheme = false }) => {
   const navigate = useNavigate();
   const isTablet = useMediaQuery("(max-width: 800px)");
   const isMobile = useMediaQuery("(max-width: 500px)");
@@ -68,11 +68,15 @@ const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelect
 
   const getScoreColor = match => {
     if (!showResultColor) return "transparent";
-    if (match.goalHome === match.goalAway) return "#ffd11a";
+    if (match.goalHome === match.goalAway) {
+      return darkTheme ? "rgba(255, 209, 26, 0.28)" : "#ffd11a";
+    }
 
     const isHome = team === match.homeTeam;
     const teamWon = isHome ? match.goalHome > match.goalAway : match.goalAway > match.goalHome;
-    return teamWon ? "#66ff66" : "#ff4d4d";
+    if (!darkTheme) return teamWon ? "#66ff66" : "#ff4d4d";
+
+    return teamWon ? "rgba(102, 255, 102, 0.28)" : "rgba(255, 77, 77, 0.28)";
   };
     
   return (
@@ -180,19 +184,28 @@ const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelect
             key={i}
             sx={{
               borderRadius: 2,
-              backgroundColor: !isPlayed
-                ? "#e3f2fd"           // oynanmamış maç
-                : isVisualFilterEmpty
-                ? "#f5f5f5"           // 🟦 filtre YOKSA (normal renk)
-                : passes
-                ? "#a7faa7"           // 🟩 filtre VAR + koşul sağlandı
-                : "#fdecea",          // 🟥 filtre VAR + koşul sağlanmadı
+              backgroundColor: darkTheme
+                ? !isPlayed
+                  ? "#263945"
+                  : isVisualFilterEmpty
+                    ? "#252a2c"
+                    : passes
+                      ? "#244a31"
+                      : "#4a292b"
+                : !isPlayed
+                  ? "#e3f2fd"
+                  : isVisualFilterEmpty
+                    ? "#f5f5f5"
+                    : passes
+                      ? "#a7faa7"
+                      : "#fdecea",
               px: 1,
               py: 1,
               width: isTablet ? "95%" : matchWidth,
               maxWidth: "100%",
               minWidth: 0,
               boxSizing: "border-box",
+              border: darkTheme ? "1px solid rgba(255,255,255,0.1)" : undefined,
               overflow: "hidden"
             }}
             
@@ -201,16 +214,16 @@ const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelect
             <Stack width="100%" direction="row" justifyContent="space-between">
                 <Typography
                     variant="caption"
-                    color="text.secondary"
                     textAlign="right"
+                  sx={{ color: darkTheme ? "rgba(255,255,255,0.68)" : "text.secondary" }}
                  >
                     {m.league}
                  </Typography>
 
                  <Typography
                     variant="caption"
-                    color="text.secondary"
                     textAlign="right"
+                    sx={{ color: darkTheme ? "rgba(255,255,255,0.68)" : "text.secondary" }}
                  >
                     {new Date(m.date).toLocaleDateString("tr-TR")}
                  </Typography>
@@ -246,9 +259,10 @@ const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelect
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   cursor: "pointer",
+                  color: darkTheme ? "#f4f5f5" : undefined,
                   "&:hover": {
                     textDecoration: "underline",
-                    color: "primary.main"
+                    color: darkTheme ? "#5eead4" : "primary.main"
                   }
                 }}
                 title={m.homeTeam}
@@ -261,7 +275,7 @@ const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelect
               </Typography>
           
               {/* SCORE */}
-              <Stack sx={{ backgroundColor: getScoreColor(m) }}>
+              <Stack sx={{ backgroundColor: getScoreColor(m), color: darkTheme ? "#f4f5f5" : undefined }}>
                 <Typography
                     fontWeight="bold"
                     fontSize={isMobile ? "14px" : "18px"}
@@ -281,9 +295,10 @@ const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelect
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   cursor: "pointer",
+                  color: darkTheme ? "#f4f5f5" : undefined,
                   "&:hover": {
                     textDecoration: "underline",
-                    color: "primary.main"
+                    color: darkTheme ? "#5eead4" : "primary.main"
                   }
                 }}                
                 title={m.awayTeam}
@@ -306,7 +321,18 @@ const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelect
 
             {/* İSTATİSTİKLER */}
             {isPlayed && (
-                <Stack direction="row" justifyContent="space-between" spacing={4} mt={2}>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  spacing={4}
+                  mt={2}
+                  sx={darkTheme ? {
+                    color: "#f4f5f5",
+                    "& img[src='/kicking-ball.png'], & img[src='/shoot-on-target.png'], & img[src='/corner.png']": {
+                      filter: "brightness(0) invert(1)",
+                    },
+                  } : undefined}
+                >
 
                     <Stack alignItems="center" direction="row" spacing={1} flex={1}>
                         <Stack alignItems="center" direction="row" spacing={0.5} flex={1}>
@@ -352,7 +378,7 @@ const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelect
                             flexItem
                             sx={{
                                 mx: isMobile ? 1 : 2,   // 👉 sağ-sol boşluk
-                                borderColor: "#ccc",
+                                borderColor: darkTheme ? "rgba(255,255,255,0.28)" : "#ccc",
                                 opacity: 1
                             }}
                             />

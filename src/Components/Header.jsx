@@ -133,17 +133,20 @@ export default function Header() {
   return (
     location.pathname === "/auth" ? (
       <AppBar position="sticky" elevation={1} sx={{ backgroundColor: "#1d1d1d", p: 1 }}>
-        <Toolbar sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
-          <Button variant="contained" color="primary" onClick={() => document.getElementById('auth-form')?.scrollIntoView({ behavior: 'smooth' })}>
-            Giriş/Kayıt Ol
-          </Button>
-        </Toolbar>
+        <Toolbar />
       </AppBar>
     ) : (
       <AppBar position="sticky" elevation={1} sx={{ backgroundColor: "#1d1d1d", p: 1 }}>
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
           {/* SOL: ARAMA */}
-          <Box sx={{ width: "40%", minWidth: "220px", position: "relative" }}>
+          <Box
+            sx={{
+              width: { xs: "auto", sm: "40%" },
+              flex: { xs: "1 1 0", sm: "0 1 40%" },
+              minWidth: { xs: 0, sm: "220px" },
+              position: "relative",
+            }}
+          >
             <TextField
               fullWidth
               size="small"
@@ -293,6 +296,16 @@ export default function Header() {
               >
                 Gol
               </Button>
+
+              {!isAuthenticated && (
+                <Button
+                  variant="contained"
+                  onClick={() => navigate("/auth")}
+                  sx={{ backgroundColor: "#2e7d32", "&:hover": { backgroundColor: "#1b5e20" } }}
+                >
+                  Giriş yap
+                </Button>
+              )}
               
               {isAuthenticated && (
               <>
@@ -313,7 +326,7 @@ export default function Header() {
                   anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                   transformOrigin={{ vertical: "top", horizontal: "right" }}
                 >
-                  <MenuItem onClick={async () => { setUserMenuAnchor(null); await signOut(); navigate("/auth"); }}>
+                  <MenuItem onClick={async () => { setUserMenuAnchor(null); await signOut(); navigate("/TodayMatches"); }}>
                     Çıkış
                   </MenuItem>
                 </Menu>
@@ -325,6 +338,21 @@ export default function Header() {
           {/* ================= MOBILE ================= */}
           {headerButtons && (
             <>
+              {!isAuthenticated && (
+                <Button
+                  variant="contained"
+                  onClick={() => navigate("/auth")}
+                  sx={{
+                    minWidth: 0,
+                    px: isMobile ? 1 : 2,
+                    whiteSpace: "nowrap",
+                    backgroundColor: "#2e7d32",
+                    "&:hover": { backgroundColor: "#1b5e20" },
+                  }}
+                >
+                  Giriş yap
+                </Button>
+              )}
               <Button
                 variant="contained"
                 sx={{
@@ -368,7 +396,7 @@ export default function Header() {
                   anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                   transformOrigin={{ vertical: "top", horizontal: "right" }}
                 >
-                  <MenuItem onClick={async () => { setUserMenuAnchor(null); await signOut(); navigate("/auth"); }}>
+                  <MenuItem onClick={async () => { setUserMenuAnchor(null); await signOut(); navigate("/TodayMatches"); }}>
                     Çıkış
                   </MenuItem>
                 </Menu>
@@ -428,7 +456,7 @@ export default function Header() {
                   />
                   Gol</MenuItem>
                 
-                  <MenuItem onClick={async () => { setUserMenuAnchor(null); await signOut(); navigate("/auth"); }}>
+                  <MenuItem onClick={async () => { setUserMenuAnchor(null); await signOut(); navigate("/TodayMatches"); }}>
                     Çıkış
                   </MenuItem>
               </Menu>

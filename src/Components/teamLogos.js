@@ -1,4 +1,5 @@
-// src/data/teamLogos.js
+import { teamLogoAssetPaths } from "./teamLogoAssets.js";
+
 export const teamLogos = {
 
     //SuperLig Teams
@@ -32,6 +33,13 @@ export const teamLogos = {
     Genclerbirligi: "/logos/genclerbirliği.webp",
     Goztepe: "/logos/göztepe.webp",
     "Gaziantep FK": "/logos/gaziantep.png",  
+    "Amed SFK": "/logos/Türkiye - Süper Lig/Amed SK.png",
+    "Amed SK": "/logos/Türkiye - Süper Lig/Amed SK.png",
+    Amedspor: "/logos/Türkiye - Süper Lig/Amed SK.png",
+    Erzurum: "/logos/Türkiye - Süper Lig/Erzurum BB.png",
+    "Erzurumspor FK": "/logos/Türkiye - Süper Lig/Erzurum BB.png",
+    "BB Erzurumspor": "/logos/Türkiye - Süper Lig/Erzurum BB.png",
+    "Erzurum BB": "/logos/Türkiye - Süper Lig/Erzurum BB.png",
 
     //Serie A Teams
     "Atalanta" : "/logos/atalanta.png",
@@ -80,14 +88,14 @@ export const teamLogos = {
     //bundesliga league teams
     "FC Augsburg" : "/logos/augsburg.png",
     "1. FC Union Berlin" : "/logos/union_berlin.png",
-    "Köln" : "/logos/fc_koln.png",
+    "FC Cologne" : "/logos/1.FC_Köln.png",
     "Werder Bremen" : "/logos/werder_bremen.png",
     "Borussia Dortmund" : "/logos/borussia_dortmund.png",
     "Eintracht Frankfurt" : "/logos/eintracht_frankfurt.png",
     "SC Freiburg" : "/logos/sc_freiburg.png",
     "1. FC Heidenheim 1846" : "/logos/fc_heidenheim.png",
     "TSG Hoffenheim" : "/logos/tsg_hoffenheim.png",
-    "Hamburg SV" : "/logos/hamburg_sv.png",
+    "Hamburg SV" : "/logos/Hamburger SV.png",
     "RB Leipzig" : "/logos/rb_leipzig.png",
     "Bayer Leverkusen" : "/logos/bayer_leverkusen.png",
     "Mainz" : "/logos/mainz_05.png",
@@ -117,13 +125,96 @@ export const teamLogos = {
     "Valencia" : "/logos/valencia.png",
     "Villarreal" : "/logos/villarreal.png",
     "Mallorca" : "/logos/real_mallorca.png",
-    "Osasuna" : "/logos/osasuna.png"
+    "Osasuna" : "/logos/osasuna.png",
+
+    //Ligue 1 teams
+    "Angers" : "/logos/angers.png",
+    "Auxerre" : "/logos/auxerre.png",
+    "Brest" : "/logos/Stade Brestois 29.png",
+
+    //Premeira Liga teams
+    "C.D. Nacional" : "/logos/CD Nacional.png",
+
+    //Pro League teams
+    "Racing Genk" : "/logos/KRC Genk.png",
+    "Union St.-Gilloise" : "/logos/union_saint-gilloise.png",
+    "Waasland-Beveren" : "/logos/SK Beveren.png",
+    "OH Leuven" : "/logos/Oud-Heverlee Leuven.png",
+    "Cercle Brugge KSV" : "/logos/Cercle Brugge.png",
 };
 
 export const DEFAULT_TEAM_LOGO = "/logos/disabled.png";
 
-export function getTeamLogo(teamName) {
-   
-  return teamLogos[teamName] || DEFAULT_TEAM_LOGO;
+const organizationWords = new Set([
+  "ac", "afc", "as", "bc", "bk", "bsc", "ca", "cd", "cf", "cfc", "club",
+  "de", "del", "fc", "fcv", "fk", "fsv", "jk", "krc", "kvc", "kv", "la",
+  "rc", "rcd", "sc", "sk", "ss", "ssc", "sv", "tsg", "ud", "us",
+]);
+
+const normalizeLogoName = value => String(value ?? "")
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .toLowerCase()
+  .replace(/ı/g, "i")
+  .replace(/[^a-z0-9]+/g, " ")
+  .trim();
+
+const normalizeCoreName = value => normalizeLogoName(value)
+  .split(" ")
+  .filter(token => token && !organizationWords.has(token) && !/^\d+$/.test(token))
+  .join(" ");
+
+const logoAssets = teamLogoAssetPaths.map(path => {
+  const filename = path.split("/").at(-1).replace(/\.[^.]+$/, "");
+
+  return {
+    path,
+    name: normalizeLogoName(filename),
+    coreName: normalizeCoreName(filename),
+    coreTokens: normalizeCoreName(filename).split(" "),
+    league: normalizeLogoName(path.split("/")[2] ?? ""),
+  };
+});
+
+function findLogo(teamName, leagueName) {
+  const name = normalizeLogoName(teamName);
+  const coreName = normalizeCoreName(teamName);
+  if (!name) return null;
+
+  const normalizedLeague = normalizeLogoName(leagueName);
+  const leagueAssets = normalizedLeague
+    ? logoAssets.filter(asset => asset.league.includes(normalizedLeague))
+    : [];
+  const assets = leagueAssets.length ? leagueAssets : logoAssets;
+
+  const exactMatch = assets.find(asset => asset.name === name);
+  if (exactMatch) return exactMatch.path;
+
+  const coreMatches = assets.filter(asset => asset.coreName === coreName);
+  if (coreMatches.length === 1) return coreMatches[0].path;
+  if (coreMatches.length > 1) return coreMatches[0].path;
+
+  const tokens = coreName.split(" ").filter(Boolean);
+  if (!tokens.length) return null;
+
+  const partialMatches = assets
+    .filter(asset => tokens.every(token => asset.coreTokens.includes(token)))
+    .sort((left, right) => left.coreTokens.length - right.coreTokens.length);
+
+  if (!partialMatches.length) return null;
+  if (partialMatches.length > 1 && partialMatches[0].coreTokens.length === partialMatches[1].coreTokens.length) return null;
+  return partialMatches[0].path;
+}
+
+export function getTeamLogo(teamName, leagueName) {
+  const mappedPath = teamLogos[teamName];
+  if (mappedPath && teamLogoAssetPaths.includes(mappedPath)) return mappedPath;
+
+  const matchedLogo = findLogo(teamName, leagueName);
+  if (matchedLogo) return matchedLogo;
+
+  const legacyPath = mappedPath;
+  const legacyName = legacyPath?.split("/").at(-1).replace(/\.[^.]+$/, "");
+  return findLogo(legacyName, leagueName) || DEFAULT_TEAM_LOGO;
 }
 
