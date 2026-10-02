@@ -131,12 +131,8 @@ export default function Header() {
   }
   
   return (
-    location.pathname === "/auth" ? (
-      <AppBar position="sticky" elevation={1} sx={{ backgroundColor: "#1d1d1d", p: 1 }}>
-        <Toolbar />
-      </AppBar>
-    ) : (
-      <AppBar position="sticky" elevation={1} sx={{ backgroundColor: "#1d1d1d", p: 1 }}>
+    location.pathname === "/auth" ? null : (
+      <AppBar position="sticky" elevation={1} sx={{ backgroundColor: "#171b1d", p: 1 }}>
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
           {/* SOL: ARAMA */}
           <Box

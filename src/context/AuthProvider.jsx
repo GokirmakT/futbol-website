@@ -26,6 +26,7 @@ export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -55,11 +56,13 @@ export default function AuthProvider({ children }) {
 
       const remainingTime = lastActivityAt + SESSION_DURATION_MS - Date.now();
       if (remainingTime <= 0) {
+        setSessionExpired(true);
         logoutUser().catch(() => undefined);
         return false;
       }
 
       sessionTimeout = window.setTimeout(() => {
+        setSessionExpired(true);
         logoutUser().catch(() => undefined);
       }, remainingTime);
       return true;
@@ -117,6 +120,7 @@ export default function AuthProvider({ children }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, nextSession) => {
       if (event === "SIGNED_IN") {
+        setSessionExpired(false);
         window.localStorage.setItem(LAST_ACTIVITY_AT_KEY, String(Date.now()));
       }
 
@@ -155,6 +159,7 @@ export default function AuthProvider({ children }) {
 
   const signOut = async () => {
     await logoutUser();
+    setSessionExpired(false);
     setUser(null);
     setSession(null);
   };
@@ -164,10 +169,11 @@ export default function AuthProvider({ children }) {
       user,
       session,
       loading,
+      sessionExpired,
       isAuthenticated: Boolean(session),
       signOut,
     }),
-    [user, session, loading]
+    [user, session, loading, sessionExpired]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

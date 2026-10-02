@@ -1,82 +1,56 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Box,
-  Stack,
-  Button,
-  Container,
-  Typography,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  TextField,
   Alert,
+  Box,
+  Button,
   CircularProgress,
+  IconButton,
+  InputAdornment,
+  Stack,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
 } from "@mui/material";
-import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
+import AlternateEmailRoundedIcon from "@mui/icons-material/AlternateEmailRounded";
+import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import PersonOutlineRoundedIcon from "@mui/icons-material/PersonOutlineRounded";
+import SportsSoccerRoundedIcon from "@mui/icons-material/SportsSoccerRounded";
+import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
+import VisibilityOffRoundedIcon from "@mui/icons-material/VisibilityOffRounded";
 import { loginUser, registerUser } from "../api/auth";
 
 const AuthPage = () => {
   const navigate = useNavigate();
-  const heroSliderImages = ["/slider1.PNG", "/slider1-2.PNG"];
-  const secondSectionSliderImages = ["/slider2.PNG", "/slider2-2.PNG"];
-  const [heroSlideIndex, setHeroSlideIndex] = useState(0);
-  const [secondSlideIndex, setSecondSlideIndex] = useState(0);
-
-  // Form states
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [authError, setAuthError] = useState("");
   const [authSuccess, setAuthSuccess] = useState("");
 
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      setHeroSlideIndex(prev =>
-        prev === heroSliderImages.length - 1 ? 0 : prev + 1
-      );
-    }, 4200);
-
-    return () => clearInterval(intervalId);
-  }, [heroSliderImages.length]);
-
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      setSecondSlideIndex(prev =>
-        prev === secondSectionSliderImages.length - 1 ? 0 : prev + 1
-      );
-    }, 4200);
-
-    return () => clearInterval(intervalId);
-  }, [secondSectionSliderImages.length]);
-
-  useEffect(() => {
+  const changeMode = mode => {
+    if (!mode) return;
+    setIsLogin(mode === "login");
     setAuthError("");
     setAuthSuccess("");
-  }, [isLogin]);
+  };
 
   const validateForm = () => {
-    if (!email.trim() || !password.trim()) {
-      return "E-posta ve şifre alanları zorunludur.";
-    }
-    if (!isLogin && !username.trim()) {
-      return "Kullanıcı adı zorunludur.";
-    }
-    if (!isLogin && password !== confirmPassword) {
-      return "Şifreler eşleşmiyor.";
-    }
-    if (password.length < 6) {
-      return "Şifre en az 6 karakter olmalıdır.";
-    }
+    if (!email.trim() || !password.trim()) return "E-posta ve şifre alanları zorunludur.";
+    if (!isLogin && !username.trim()) return "Kullanıcı adı zorunludur.";
+    if (!isLogin && password !== confirmPassword) return "Şifreler eşleşmiyor.";
+    if (password.length < 6) return "Şifre en az 6 karakter olmalıdır.";
     return "";
   };
 
-  const handleAuthSubmit = async e => {
-    e.preventDefault();
+  const handleAuthSubmit = async event => {
+    event.preventDefault();
     setAuthError("");
     setAuthSuccess("");
 
@@ -93,291 +67,184 @@ const AuthPage = () => {
         : await registerUser({ username: username.trim(), email: email.trim(), password });
 
       if (payload?.needsEmailConfirmation) {
-        setAuthSuccess(
-          "Kayıt başarılı. Giriş yapmadan önce e-posta adresinize gelen doğrulama linkine tıklayın."
-        );
+        setAuthSuccess("Kayıt başarılı. Giriş yapmadan önce e-posta adresinize gelen doğrulama linkine tıklayın.");
         return;
       }
 
       setAuthSuccess(isLogin ? "Giriş başarılı." : "Kayıt başarılı. Giriş yapıldı.");
-      setTimeout(() => {
-        navigate("/TodayMatches");
-      }, 700);
+      setTimeout(() => navigate("/TodayMatches"), 700);
     } catch (error) {
-      const message =
-        error?.message ||
-        (isLogin ? "Giriş sırasında hata oluştu." : "Kayıt sırasında hata oluştu.");
-      setAuthError(message);
+      setAuthError(error?.message || (isLogin ? "Giriş sırasında hata oluştu." : "Kayıt sırasında hata oluştu."));
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const sectionImageSx = {
-    width: "100%",
-    height: { xs: 320, md: 430 },
-    objectFit: "cover",
-    borderRadius: "24px",
-    boxShadow: "0 14px 34px rgba(15, 23, 42, 0.14)",
-  };
-
-  const pillButtonSx = {
-    borderRadius: "999px",
-    px: 3,
-    py: 1.15,
-    fontWeight: 700,
-    textTransform: "none",
-    transition: "all 0.25s ease",
-    "&:hover": {
-      transform: "translateY(-2px)",
-      boxShadow: "0 12px 22px rgba(99, 102, 241, 0.2)",
+  const fieldSx = {
+    "& .MuiOutlinedInput-root": {
+      minHeight: 56,
+      borderRadius: "8px",
+      backgroundColor: "#fff",
+      "& fieldset": { borderColor: "#d8ded8" },
+      "&:hover fieldset": { borderColor: "#77887c" },
+      "&.Mui-focused fieldset": { borderColor: "#183b2e", borderWidth: 1.5 },
     },
+    "& .MuiInputLabel-root.Mui-focused": { color: "#183b2e" },
   };
-
-  const SplitSection = ({
-    title,
-    description,
-    image,
-    imageSliderImages,
-    activeSlideIndex = 0,
-    imageAlt,
-    imageRightDesktop = false,
-    actions,
-  }) => (
-    <Box sx={{ py: { xs: 8, md: 12 } }}>
-      <Stack
-        direction={{ xs: "column", md: "row" }}
-        spacing={{ xs: 5, md: imageRightDesktop ? 0 : 8}}
-        alignItems="center"
-      >
-        <Box sx={{ width: { xs: "100%", md: "100%" }, order: { xs: 1, md: imageRightDesktop ? 2 : 1 } }}>
-          {Array.isArray(imageSliderImages) && imageSliderImages.length > 0 ? (
-            <Box sx={{ position: "relative", ...sectionImageSx, overflow: "hidden" }}>
-              {imageSliderImages.map((sliderImage, index) => (
-                <Box
-                  key={sliderImage}
-                  component="img"
-                  src={sliderImage}
-                  alt={`${imageAlt} ${index + 1}`}
-                  sx={{
-                    position: "absolute",
-                    inset: 0,
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "fill",
-                    opacity: activeSlideIndex === index ? 1 : 0,
-                    transition: "opacity 900ms ease-in-out",
-                  }}
-                />
-              ))}
-            </Box>
-          ) : (
-            <Box
-              component="img"
-              src={image}
-              alt={imageAlt}
-              sx={sectionImageSx}
-            />
-          )}
-        </Box>
-        <Box sx={{ width: { xs: "100%", md: "70%" }, order: { xs: 2, md: imageRightDesktop ? 1 : 2 } }}>
-          <Typography
-            variant="h4"
-            fontWeight={800}
-            sx={{ mb: 2, letterSpacing: "0.02em" }}
-          >
-            {title}
-          </Typography>
-          <Typography
-            variant="body1"
-            color="text.secondary"
-            sx={{ mb: 3.5, whiteSpace: "pre-line" }}
-          >
-            {description}
-          </Typography>
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5 }}>
-            {actions}
-          </Box>
-        </Box>
-      </Stack>
-    </Box>
-  );
 
   return (
     <Box
+      component="main"
       sx={{
-        backgroundColor: "#f8fafc",
-        color: "#0f172a",
+        boxSizing: "border-box",
+        minHeight: "100svh",
+        display: "grid",
+        gridTemplateColumns: { xs: "1fr", md: "minmax(0, 1.04fr) minmax(420px, 0.96fr)" },
+        backgroundColor: "#f4f5f0",
+        color: "#17231c",
+        fontFamily: "'DM Sans', sans-serif",
+        "& > section": { boxSizing: "border-box" },
       }}
     >
-      <Container maxWidth="100%" sx={{ py: { xs: 6, md: 6 } }}>
-        <SplitSection
-          title="VERİYLE BAHİS YAPIN"
-          description={"Futbol bahislerinde sezgilere degil, guclu verilere dayali kararlar alin. Platformumuz, gelismis istatistikler, gecmis mac analizleri ve gercek zamanli verilerle farkli bahis seceneklerini detayli sekilde degerlendirmenizi saglar. Akilli filtreleme araclari sayesinde oranlari karsilastirabilir, maclarin olasiliklarini daha net analiz edebilir ve riskleri daha kontrollu bir sekilde yonetebilirsiniz.\n\nBoylece yalnizca tahminlere dayali degil, veriye dayali stratejiler gelistirerek daha bilincli, daha planli ve daha surdurulebilir bahis kararlari alabilirsiniz."}
-          image={heroSliderImages[heroSlideIndex]}
-          imageSliderImages={heroSliderImages}
-          activeSlideIndex={heroSlideIndex}
-          imageAlt="Futbol sahasi gorunumu"
-          actions={
-            <>
-              <Button
-                variant="contained"
-                color="error"
-                sx={{ ...pillButtonSx, boxShadow: "0 10px 20px rgba(220, 38, 38, 0.24)" }}
-              >
-                VERI AKISLARI
-              </Button>
-              <Button variant="outlined" color="error" sx={pillButtonSx}>
-                CANLI TAKIPCI
-              </Button>
-              <Button variant="outlined" color="error" sx={pillButtonSx}>
-                WIDGETS
-              </Button>
-            </>
-          }
-        />
+      <Box
+        component="section"
+        aria-label="Futbol analiz"
+        sx={{
+          position: "relative",
+          isolation: "isolate",
+          minHeight: { xs: 230, md: "100svh" },
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          overflow: "hidden",
+          px: { xs: 3, sm: 5, md: 7, lg: 9 },
+          py: { xs: 2.5, md: 5 },
+          color: "#f5f6ef",
+          backgroundColor: "#13261e",
+          backgroundImage: "linear-gradient(90deg, rgba(9,24,17,.88), rgba(9,24,17,.55) 60%, rgba(9,24,17,.28)), linear-gradient(0deg, rgba(9,24,17,.72), transparent 55%), url('https://images.unsplash.com/photo-1577223625816-7546f13df25d?auto=format&fit=crop&w=1800&q=85')",
+          backgroundPosition: "center",
+          backgroundSize: "cover",
+          "&::after": {
+            content: '""',
+            position: "absolute",
+            zIndex: -1,
+            inset: 0,
+            backgroundImage: "linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px)",
+            backgroundSize: "72px 72px",
+            maskImage: "linear-gradient(transparent 8%, #000 100%)",
+          },
+        }}
+      >
+        <Stack direction="row" spacing={1.2} alignItems="center" sx={{ position: "relative" }}>
+          <Box sx={{ width: 38, height: 38, display: "grid", placeItems: "center", border: "1px solid rgba(245,246,239,.45)", borderRadius: "50%", color: "#d9f36a" }}>
+            <SportsSoccerRoundedIcon sx={{ fontSize: 21 }} />
+          </Box>
+          <Typography sx={{ fontSize: 14, fontWeight: 800, letterSpacing: ".12em" }}>
+            FUTBOL<span style={{ color: "#d9f36a" }}>.</span>
+          </Typography>
+        </Stack>
 
-        <SplitSection
-          title="EN GENIS KAPSAM"
-          description="Ligdeki tum maclari, canli olasilik hareketlerini ve derin mac istatistiklerini tek bir akisla izleyin. Veri odakli kararlar icin hizli ve guvenilir altyapi."
-          image={secondSectionSliderImages[secondSlideIndex]}
-          imageSliderImages={secondSectionSliderImages}
-          activeSlideIndex={secondSlideIndex}
-          imageAlt="Stadyum ve taraftarlar"
-          imageRightDesktop
-          actions={
-            <Button variant="contained" color="error" sx={pillButtonSx}>
-              KAPSAMI GOR
-            </Button>
-          }
-        />
-
-        <Box sx={{ py: { xs: 8, md: 12 } }}>
-          <Stack
-            direction={{ xs: "column", md: "row" }}
-            spacing={{ xs: 5, md: 8 }}
-            alignItems="center"
-          >
-            <Box sx={{ width: { xs: "100%", md: "50%" }, order: { xs: 1, md: 1 } }}>
-              <Box
-                sx={{
-                  position: "relative",
-                  minHeight: { xs: 340, md: 400 },
-                }}
-              >
-                <Box
-                  component="img"
-                  src="https://images.unsplash.com/photo-1577223625816-7546f13df25d?auto=format&fit=crop&w=900&q=80"
-                  alt="YouTube canli yayin paneli"
-                  sx={{
-                    width: { xs: "85%", md: "82%" },
-                    height: { xs: 260, md: 300 },
-                    objectFit: "cover",
-                    borderRadius: "24px",
-                    boxShadow: "0 18px 34px rgba(15, 23, 42, 0.2)",
-                  }}
-                />
-                <Box
-                  component="img"
-                  src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=900&q=80"
-                  alt="Dashboard analiz ekrani"
-                  sx={{
-                    position: "absolute",
-                    right: { xs: 0, md: 14 },
-                    bottom: 0,
-                    width: { xs: "62%", md: "58%" },
-                    height: { xs: 190, md: 210 },
-                    objectFit: "cover",
-                    borderRadius: "22px",
-                    border: "6px solid #f8fafc",
-                    boxShadow: "0 16px 32px rgba(15, 23, 42, 0.22)",
-                  }}
-                />
-              </Box>
-            </Box>
-            <Box
-              id="auth-form"
-              component="form"
-              onSubmit={handleAuthSubmit}
-              sx={{ width: { xs: "100%", md: "50%" }, order: { xs: 2, md: 2 }, p: 3, backgroundColor: "#fff", borderRadius: "24px", boxShadow: "0 14px 34px rgba(15, 23, 42, 0.14)" }}
-            >
-              <Typography variant="h4" fontWeight={800} sx={{ mb: 3, textAlign: "center" }}>
-                {isLogin ? "Giriş Yap" : "Kayıt Ol"}
-              </Typography>
-              {!!authError && <Alert severity="error" sx={{ mb: 2 }}>{authError}</Alert>}
-              {!!authSuccess && <Alert severity="success" sx={{ mb: 2 }}>{authSuccess}</Alert>}
-              <Stack spacing={2}>
-                {!isLogin && (
-                  <TextField
-                    fullWidth
-                    label="Kullanıcı Adı"
-                    value={username}
-                    onChange={e => setUsername(e.target.value)}
-                    sx={{ mb: 2 }}
-                  />
-                )}
-                <TextField
-                  fullWidth
-                  label="E-posta"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  fullWidth
-                  label="Şifre"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  sx={{ mb: 2 }}
-                />
-                {!isLogin && (
-                  <TextField
-                    fullWidth
-                    label="Şifre Tekrar"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    sx={{ mb: 2 }}
-                  />
-                )}
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="error"
-                  disabled={isSubmitting}
-                  sx={{ ...pillButtonSx, width: "100%" }}
-                >
-                  {isSubmitting ? (
-                    <CircularProgress size={22} sx={{ color: "#fff" }} />
-                  ) : isLogin ? (
-                    "Giriş Yap"
-                  ) : (
-                    "Kayıt Ol"
-                  )}
-                </Button>
-                <Stack direction="row" spacing={1} justifyContent="center">
-                  <Typography variant="body2">
-                    {isLogin ? "Hesabınız yok mu?" : "Zaten hesabınız var mı?"}
-                  </Typography>
-                  <Button
-                    variant="text"
-                    color="error"
-                    onClick={() => {
-                      setIsLogin(!isLogin);
-                      setConfirmPassword("");
-                    }}
-                    sx={{ p: 0, minWidth: "auto" }}
-                  >
-                    {isLogin ? "Kayıt Ol" : "Giriş Yap"}
-                  </Button>
-                </Stack>
-              </Stack>
-            </Box>
-          </Stack>
+        <Box sx={{ position: "relative", maxWidth: 620, py: { xs: 2, md: 0 }, animation: "auth-rise .7s ease-out both" }}>
+          <Typography sx={{ mb: 2, color: "#d9f36a", fontSize: 11, fontWeight: 800, letterSpacing: ".18em", textTransform: "uppercase" }}>
+            Futbol, başka bir açıdan
+          </Typography>
+            <Typography component="h1" sx={{ maxWidth: 600, fontFamily: "'Barlow Condensed', sans-serif", fontSize: { xs: 38, md: 68, lg: 78 }, fontWeight: 700, lineHeight: 0.96, letterSpacing: 0, textTransform: "uppercase" }}>
+            Oyunu sadece izleme.
+            <Box component="span" sx={{ display: "block", color: "#d9f36a" }}>Oku.</Box>
+          </Typography>
+          <Typography sx={{ mt: 2.5, maxWidth: 380, color: "rgba(245,246,239,.78)", fontSize: 15, lineHeight: 1.7 }}>
+            Her maçın içinde, skordan fazlası var.
+          </Typography>
         </Box>
-      </Container>
+
+        <Stack direction="row" alignItems="center" spacing={1.4} sx={{ position: "relative", pt: 2, borderTop: "1px solid rgba(245,246,239,.28)" }}>
+          <Box sx={{ width: 7, height: 7, borderRadius: "50%", backgroundColor: "#d9f36a" }} />
+          <Typography sx={{ color: "rgba(245,246,239,.76)", fontSize: 11, fontWeight: 700, letterSpacing: ".12em" }}>
+            FUTBOLUN HER DETAYI, TEK YERDE
+          </Typography>
+        </Stack>
+      </Box>
+
+      <Box
+        component="section"
+        sx={{ minHeight: { xs: 0, md: "100svh" }, display: "flex", alignItems: "center", justifyContent: "center", px: { xs: 2.5, sm: 5, md: 6, lg: 9 }, py: { xs: 3, md: 7 } }}
+      >
+        <Box sx={{ width: "100%", maxWidth: 430, animation: "auth-rise .7s .08s ease-out both", "@keyframes auth-rise": { from: { opacity: 0, transform: "translateY(14px)" }, to: { opacity: 1, transform: "translateY(0)" } } }}>
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 4, color: "#647268" }}>
+            <LockOutlinedIcon sx={{ fontSize: 16 }} />
+            <Typography sx={{ fontSize: 12, fontWeight: 600 }}>Güvenli oturum</Typography>
+          </Stack>
+
+          <Typography component="h2" sx={{ fontSize: 32, fontWeight: 750, letterSpacing: 0, lineHeight: 1.15 }}>
+            {isLogin ? "Tekrar hoş geldin." : "Aramıza katıl."}
+          </Typography>
+          <Typography sx={{ mt: 1, mb: 3.5, color: "#66736b", fontSize: 14, lineHeight: 1.6 }}>
+            {isLogin ? "Hesabına giriş yap ve kaldığın yerden devam et." : "Hesabını oluştur, maçın detaylarına yaklaş."}
+          </Typography>
+
+          <ToggleButtonGroup
+            exclusive
+            value={isLogin ? "login" : "register"}
+            onChange={(_, mode) => changeMode(mode)}
+            aria-label="Giriş veya kayıt seçimi"
+            fullWidth
+            sx={{
+              mb: 3,
+              p: 0.5,
+              border: "1px solid #dce1da",
+              borderRadius: "9px",
+              backgroundColor: "#e9ece6",
+              "& .MuiToggleButtonGroup-grouped": { border: 0, borderRadius: "6px !important" },
+              "& .MuiToggleButton-root": { minHeight: 42, color: "#657168", fontSize: 13, fontWeight: 700, textTransform: "none" },
+              "& .Mui-selected": { color: "#17231c !important", backgroundColor: "#fff !important", boxShadow: "0 1px 4px rgba(20,35,27,.12)" },
+            }}
+          >
+            <ToggleButton value="login">Giriş yap</ToggleButton>
+            <ToggleButton value="register">Kayıt ol</ToggleButton>
+          </ToggleButtonGroup>
+
+          <Box component="form" onSubmit={handleAuthSubmit} noValidate>
+            <Stack spacing={1.8}>
+              {!isLogin && (
+                <TextField fullWidth label="Kullanıcı adı" value={username} onChange={event => setUsername(event.target.value)} autoComplete="username" sx={fieldSx}
+                  InputProps={{ startAdornment: <InputAdornment position="start"><PersonOutlineRoundedIcon sx={{ color: "#7b887e", fontSize: 20 }} /></InputAdornment> }}
+                />
+              )}
+              <TextField fullWidth label="E-posta adresi" type="email" value={email} onChange={event => setEmail(event.target.value)} autoComplete="email" sx={fieldSx}
+                InputProps={{ startAdornment: <InputAdornment position="start"><AlternateEmailRoundedIcon sx={{ color: "#7b887e", fontSize: 20 }} /></InputAdornment> }}
+              />
+              <TextField fullWidth label="Şifre" type={showPassword ? "text" : "password"} value={password} onChange={event => setPassword(event.target.value)} autoComplete={isLogin ? "current-password" : "new-password"} sx={fieldSx}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start"><LockOutlinedIcon sx={{ color: "#7b887e", fontSize: 19 }} /></InputAdornment>,
+                  endAdornment: <InputAdornment position="end"><IconButton aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"} onClick={() => setShowPassword(value => !value)} edge="end" size="small">{showPassword ? <VisibilityOffRoundedIcon fontSize="small" /> : <VisibilityRoundedIcon fontSize="small" />}</IconButton></InputAdornment>,
+                }}
+              />
+              {!isLogin && (
+                <TextField fullWidth label="Şifreyi tekrar gir" type={showPassword ? "text" : "password"} value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} autoComplete="new-password" sx={fieldSx}
+                  InputProps={{ startAdornment: <InputAdornment position="start"><LockOutlinedIcon sx={{ color: "#7b887e", fontSize: 19 }} /></InputAdornment> }}
+                />
+              )}
+
+              {!!authError && <Alert severity="error" sx={{ borderRadius: "8px" }}>{authError}</Alert>}
+              {!!authSuccess && <Alert severity="success" sx={{ borderRadius: "8px" }}>{authSuccess}</Alert>}
+
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={isSubmitting}
+                endIcon={!isSubmitting && <ArrowForwardRoundedIcon />}
+                sx={{ minHeight: 54, mt: 0.5, borderRadius: "8px", backgroundColor: "#d9f36a", color: "#17231c", fontSize: 14, fontWeight: 800, textTransform: "none", boxShadow: "none", "&:hover": { backgroundColor: "#c9e752", boxShadow: "0 8px 18px rgba(23,35,28,.12)" }, "&.Mui-disabled": { backgroundColor: "#cbd2c7", color: "#68736a" } }}
+              >
+                {isSubmitting ? <CircularProgress size={21} sx={{ color: "#17231c" }} /> : isLogin ? "Giriş yap" : "Hesabını oluştur"}
+              </Button>
+            </Stack>
+          </Box>
+
+          <Typography sx={{ mt: 3, color: "#7a857d", fontSize: 11, lineHeight: 1.6, textAlign: "center" }}>
+            Devam ederek hesabına güvenli biçimde erişirsin.
+          </Typography>
+        </Box>
+      </Box>
     </Box>
   );
 };

@@ -75,13 +75,14 @@ function Goals() {
               sx={{
                 justifyContent: "flex-start",
                 textTransform: "none",
-                backgroundColor: "#fff",
-                borderColor: "#ccc",
-                borderRadius: 1,
+                backgroundColor: "#171b1d",
+                borderColor: "#303638",
+                borderRadius: "8px",
+                color: "#f4f5f5",
                 py: 1.1,
                 "&:hover": {
-                  backgroundColor: "#f5f5f5",
-                  borderColor: "#bbb",
+                  backgroundColor: "#222729",
+                  borderColor: "#626b6e",
                 },
               }}
             >
@@ -95,10 +96,10 @@ function Goals() {
                 />
               )}
               <Box sx={{ textAlign: "left" }}>
-                <Typography variant="caption" sx={{ display: "block", color: "#888" }}>
+                <Typography variant="caption" sx={{ display: "block", color: "#aeb6b8" }}>
                   Lig Seç
                 </Typography>
-                <Typography variant="body1" sx={{ color: "#222" }}>
+                <Typography variant="body1" sx={{ color: "#f4f5f5" }}>
                   {selectedLeague || "Lig seçmek için tıklayın"}
                 </Typography>
               </Box>
@@ -134,9 +135,10 @@ function Goals() {
                   maxWidth: 700,
                   width: "92%",
                   maxHeight: "80vh",
-                  backgroundColor: "#1d1d1d",
-                  color: "#fff",
-                  borderRadius: 2,
+                  backgroundColor: "#171b1d",
+                  color: "#f4f5f5",
+                  border: "1px solid #303638",
+                  borderRadius: "8px",
                   boxShadow: 24,
                   p: 2,
                 }}
@@ -182,9 +184,11 @@ function Goals() {
                       }}
                       sx={{
                         cursor: "pointer",
-                        backgroundColor:
-                          option.label === selectedLeague ? "#ff9800" : "#ffffff",
-                        borderRadius: 1.5,
+                        backgroundColor: option.label === selectedLeague ? "#1976d2" : "#fff",
+                        color: option.label === selectedLeague ? "#fff" : "#263238",
+                        border: "1px solid",
+                        borderColor: option.label === selectedLeague ? "#1976d2" : "#e1e5e7",
+                        borderRadius: "8px",
                         p: 1,
                         display: "flex",
                         flexDirection: "column",
@@ -194,9 +198,10 @@ function Goals() {
                         transition: "transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease",
                         "&:hover": {
                           transform: "translateY(-2px)",
-                          boxShadow: "0 6px 12px rgba(0,0,0,0.7)",
-                          backgroundColor:
-                            option.label === selectedLeague ? "#ffa726" : "#344955",
+                          boxShadow: "0 6px 12px rgba(0,0,0,0.25)",
+                          borderColor: option.label === selectedLeague ? "#1976d2" : "#c6ced1",
+                          backgroundColor: option.label === selectedLeague ? "#1565c0" : "#f1f4f5",
+                          color: option.label === selectedLeague ? "#fff" : "#263238",
                         },
                       }}
                     >
@@ -211,6 +216,7 @@ function Goals() {
                         variant="body2"
                         sx={{
                           fontWeight: option.label === selectedLeague ? "bold" : "normal",
+                          color: "inherit",
                         }}
                       >
                         {option.label}

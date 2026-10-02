@@ -18,7 +18,7 @@ import {
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { addDays, format, isSameDay, startOfWeek } from "date-fns";
+import { addDays, format, isSameDay } from "date-fns";
 import { tr } from "date-fns/locale";
 import { useData } from "../context/DataContext";
 import { getTeamLogo } from "../Components/teamLogos.js";
@@ -29,6 +29,10 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { Link } from "react-router-dom";
 import CloseIcon from "@mui/icons-material/Close";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import ChevronLeftRoundedIcon from "@mui/icons-material/ChevronLeftRounded";
+import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
+
+const DATE_ACCENT = "#1976d2";
 
 function TodayMatches() {
   const { goalStatsByLeague, cornerStatsByLeague, cardStatsByLeague, matches, seasons, selectedSeason, isLoading, error } = useData();
@@ -37,6 +41,8 @@ function TodayMatches() {
   const [selectedLeague, setSelectedLeague] = useState("ALL");
   const [isLeaguePanelOpen, setIsLeaguePanelOpen] = useState(false);
   const [calendarAnchor, setCalendarAnchor] = useState(null);
+  const dateStripRef = useRef(null);
+  const dateButtonRefs = useRef({});
 
   useEffect(() => {
     if (!isLeaguePanelOpen) return undefined;
@@ -271,16 +277,34 @@ function TodayMatches() {
   };
 
   const today = format(selectedDate, "yyyy-MM-dd");
+  const dateWindowSize = isMobile ? 61 : 7;
   const weekDays = useMemo(() => {
-    const weekStart = startOfWeek(selectedDate, { weekStartsOn: 0 });
-    return Array.from({ length: 7 }, (_, index) => addDays(weekStart, index));
-  }, [selectedDate]);
+    const midpoint = Math.floor(dateWindowSize / 2);
+    return Array.from({ length: dateWindowSize }, (_, index) => addDays(selectedDate, index - midpoint));
+  }, [selectedDate, dateWindowSize]);
 
   const selectDate = (date) => {
     if (!date) return;
     setSelectedDate(date < new Date(2026, 6, 1) ? new Date(2026, 6, 1) : date);
     setCalendarAnchor(null);
   };
+
+  const shiftSelectedDate = days => selectDate(addDays(selectedDate, days));
+
+  useEffect(() => {
+    const selectedKey = format(selectedDate, "yyyy-MM-dd");
+    const selectedButton = dateButtonRefs.current[selectedKey];
+    const strip = dateStripRef.current;
+
+    if (!selectedButton || !strip) return;
+
+    const stripRect = strip.getBoundingClientRect();
+    const buttonRect = selectedButton.getBoundingClientRect();
+    const targetScrollLeft =
+      strip.scrollLeft + buttonRect.left - stripRect.left - (strip.clientWidth - buttonRect.width) / 2;
+
+    strip.scrollTo({ left: Math.max(0, targetScrollLeft), behavior: "smooth" });
+  }, [selectedDate, isLoading, isMobile]);
 
   const groupedMatches = useMemo(() => {
     if (!seasonMatches.length) return {};
@@ -340,19 +364,6 @@ function TodayMatches() {
       : leagues.filter(league => league === selectedLeague);/*
   if (!leagues.length) return <Typography textAlign="center">Seçilen tarihte maç yok</Typography>;*/
 
-  const dateStripRef = useRef(null);
-  const dateButtonRefs = useRef({});
-
-  useEffect(() => {
-    const selectedKey = format(selectedDate, "yyyy-MM-dd");
-    const selectedButton = dateButtonRefs.current[selectedKey];
-    const strip = dateStripRef.current;
-
-    if (!selectedButton || !strip) return;
-
-    selectedButton.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
-  }, [selectedDate]);
-
   return (
     <Box
       maxWidth="1280px"
@@ -369,7 +380,10 @@ function TodayMatches() {
             height: { xs: 84, sm: 101 },
             p: 0,
             overflow: "hidden",
-            backgroundColor: "#fafafa",
+            backgroundColor: "#171b1d",
+            border: "1px solid #303638",
+            borderRadius: "8px",
+            boxShadow: "0 3px 12px rgba(0,0,0,0.18)",
           }}
         >
           <Button
@@ -384,9 +398,9 @@ function TodayMatches() {
               flexDirection: "column",
               justifyContent: "center",
               textTransform: "none",
-              color: "#656b73",
-              borderRadius: 1,
-              "&:hover": { backgroundColor: "#eef5fb" },
+              color: "#f4f5f5",
+              borderRadius: "7px",
+              "&:hover": { backgroundColor: "#222729" },
             }}
           >
             <img
@@ -402,23 +416,38 @@ function TodayMatches() {
           </Button>
         </Paper>
         <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={tr}>
-          <Box sx={{ display: "flex", alignItems: "center", flex: 1, minWidth: 0 }}>
+          <Box sx={{ display: "flex", alignItems: "center", flex: 1, minWidth: 0, backgroundColor: "#171b1d", border: "1px solid #303638", borderRadius: "8px", boxShadow: "0 3px 12px rgba(0,0,0,0.18)" }}>
+            {!isMobile && (
+              <IconButton
+                aria-label="Bir gün geri git"
+                onClick={() => shiftSelectedDate(-1)}
+                disabled={isSameDay(selectedDate, new Date(2026, 6, 1)) || selectedDate < new Date(2026, 6, 1)}
+                sx={{ flex: "0 0 auto", mr: 0.5, color: DATE_ACCENT }}
+              >
+                <ChevronLeftRoundedIcon />
+              </IconButton>
+            )}
             <Box
               ref={dateStripRef}
+              aria-label="Gün seçici"
               sx={{
                 flex: 1,
                 minWidth: 0,
                 height: { xs: 83, sm: 100 },
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "stretch",
+                justifyContent: "flex-start",
                 gap: { xs: 0.25, sm: 1.5 },
                 mb: 0,
                 px: { xs: 0.25, sm: 1 },
                 
-                backgroundColor: "#fff",
-                borderBottom: "1px solid #edf0f2",
+                backgroundColor: "#171b1d",
+                borderBottom: "1px solid #303638",
                 overflowX: "auto",
+                overflowY: "hidden",
+                touchAction: "pan-x",
+                WebkitOverflowScrolling: "touch",
+                scrollBehavior: "smooth",
                 scrollbarWidth: "none",
                 msOverflowStyle: "none",
                 "&::-webkit-scrollbar": { display: "none" },
@@ -433,27 +462,30 @@ function TodayMatches() {
                 return (
                   <Button
                     key={dateKey}
+                    aria-label={format(date, "EEEE d MMMM", { locale: tr })}
+                    aria-pressed={isSelected}
                     ref={(node) => {
                       if (node) dateButtonRefs.current[dateKey] = node;
+                      else delete dateButtonRefs.current[dateKey];
                     }}
                     onClick={() => selectDate(date)}
                     sx={{
-                      flex: { xs: "0 0 48px", sm: "1 1 0" },
-                      minWidth: { xs: 48, sm: 0 },
-                      width: { xs: 48, sm: "100%" },
+                      flex: isMobile ? "0 0 48px" : "1 1 0",
+                      minWidth: isMobile ? 48 : 0,
+                      width: isMobile ? 48 : "100%",
                       height: { xs: 68, sm: 92 },
                       px: 0.5,
                       py: 1,
                       borderRadius: "18px",
-                      color: isSelected ? "#fff" : "#656b73",
-                      backgroundColor: isSelected ? "#1976d2" : "transparent",
+                      color: "#f4f5f5",
+                      backgroundColor: isSelected ? DATE_ACCENT : "transparent",
                       textTransform: "none",
                       flexDirection: "column",
                       justifyContent: "center",
                       alignItems: "center",
                       gap: 0.5,
                       "&:hover": {
-                        backgroundColor: isSelected ? "#1565c0" : "#eef5fb",
+                        backgroundColor: isSelected ? "#1565c0" : "#222729",
                       },
                     }}
                   >
@@ -464,12 +496,22 @@ function TodayMatches() {
                       {format(date, "d")}
                     </Typography>
                     {isToday && !isSelected && (
-                      <Box sx={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: "#1976d2" }} />
+                      <Box sx={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: DATE_ACCENT }} />
                     )}
                   </Button>
                 );
               })}
             </Box>
+
+            {!isMobile && (
+              <IconButton
+                aria-label="Bir gün ileri git"
+                onClick={() => shiftSelectedDate(1)}
+                sx={{ flex: "0 0 auto", ml: 0.5, color: DATE_ACCENT }}
+              >
+                <ChevronRightRoundedIcon />
+              </IconButton>
+            )}
 
             <IconButton
               aria-label="Takvimi aç"
@@ -479,10 +521,11 @@ function TodayMatches() {
                 width: { xs: 44, sm: 52 },
                 height: { xs: 44, sm: 52 },
                 ml: { xs: 0.25, sm: 1 },
-                border: "3px solid #1976d2",
+                backgroundColor: "#171b1d",
+                border: `3px solid ${DATE_ACCENT}`,
                 borderRadius: "18px",
-                color: "#1976d2",
-                "&:hover": { backgroundColor: "#eef5fb" },
+                color: DATE_ACCENT,
+                "&:hover": { backgroundColor: "#222729" },
               }}
             >
               <CalendarMonthIcon sx={{ fontSize: { xs: 24, sm: 32 } }} />
@@ -498,7 +541,20 @@ function TodayMatches() {
                 value={selectedDate}
                 minDate={new Date(2026, 6, 1)}
                 onChange={selectDate}
-                sx={{ backgroundColor: "#fff" }}
+                sx={{
+                  color: "#f4f5f5",
+                  backgroundColor: "#171b1d",
+                  border: "1px solid #303638",
+                  borderRadius: "8px",
+                  "& .MuiPickersCalendarHeader-label, & .MuiPickersCalendarHeader-switchViewButton, & .MuiPickersArrowSwitcher-button": { color: "#f4f5f5" },
+                  "& .MuiDayCalendar-weekDayLabel": { color: "#aeb6b8" },
+                  "& .MuiPickersDay-root": { color: "#f4f5f5" },
+                  "& .MuiPickersDay-root:hover": { backgroundColor: "#303638" },
+                  "& .MuiPickersDay-root.Mui-selected": { color: "#fff", backgroundColor: DATE_ACCENT },
+                  "& .MuiPickersDay-root.Mui-selected:hover": { backgroundColor: "#1565c0" },
+                  "& .MuiPickersDay-root.MuiPickersDay-today:not(.Mui-selected)": { borderColor: DATE_ACCENT },
+                  "& .MuiPickersDay-root.Mui-disabled": { color: "#687174" },
+                }}
               />
             </Popover>
           </Box>
@@ -523,9 +579,10 @@ function TodayMatches() {
               maxWidth: 700,
               width: "92%",
               maxHeight: "80vh",
-              backgroundColor: "#1d1d1d",
-              color: "#fff",
-              borderRadius: 2,
+              backgroundColor: "#171b1d",
+              color: "#f4f5f5",
+              border: "1px solid #303638",
+              borderRadius: "8px",
               boxShadow: 24,
               p: 2,
             }}
@@ -572,9 +629,12 @@ function TodayMatches() {
                     }}
                     sx={{
                       cursor: hasMatchInSelectedDate || option.value === "ALL" ? "pointer" : "default",
-                      backgroundColor: isActive ? "#ff9800" : "#fff",
-                      color: "#222",
-                      borderRadius: 1.5,
+                      backgroundColor: isActive ? DATE_ACCENT : "#fff",
+                      color: isActive ? "#fff" : "#263238",
+                      border: "1px solid",
+                      borderColor: isActive ? DATE_ACCENT : "#e1e5e7",
+                      borderRadius: "8px",
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
                       p: 1,
                       minHeight: 104,
                       display: "flex",
@@ -582,18 +642,36 @@ function TodayMatches() {
                       alignItems: "center",
                       justifyContent: "center",
                       textAlign: "center",
-                      opacity: hasMatchInSelectedDate || option.value === "ALL" ? 1 : 0.5,
+                      opacity: 1,
                       transition: "transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease",
                       "&:hover": {
                         transform: "translateY(-2px)",
-                        boxShadow: "0 6px 12px rgba(0,0,0,0.7)",
-                        backgroundColor: isActive ? "#ffa726" : "#344955",
-                        color: "#fff",
+                        boxShadow: "0 6px 12px rgba(0,0,0,0.35)",
+                        borderColor: isActive ? "#1976d2" : "#c6ced1",
+                        backgroundColor: isActive ? "#1565c0" : "#f1f4f5",
+                        color: isActive ? "#fff" : "#263238",
                       },
                     }}
                   >
-                    <img src={option.icon} width={64} height={64} alt={option.label} style={{ objectFit: "contain", marginBottom: 6 }} />
-                    <Typography variant="body2" sx={{ fontWeight: isActive ? "bold" : "normal" }}>
+                    <img
+                      src={option.icon}
+                      width={64}
+                      height={64}
+                      alt={option.label}
+                      style={{
+                        objectFit: "contain",
+                        marginBottom: 6,
+                        opacity: hasMatchInSelectedDate || option.value === "ALL" ? 1 : 0.55,
+                        filter: hasMatchInSelectedDate || option.value === "ALL" ? "none" : "grayscale(1)",
+                      }}
+                    />
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontWeight: isActive ? "bold" : "normal",
+                        color: isActive ? "#fff" : hasMatchInSelectedDate ? "#263238" : "#7b858a",
+                      }}
+                    >
                       {option.label}
                     </Typography>
                   </Paper>
@@ -604,8 +682,8 @@ function TodayMatches() {
         </Box>
       )}
 
-      <Paper sx={{ p: 1.5, mb: 3, backgroundColor: "#f5f5f5" }}>
-        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+      <Paper sx={{ p: 1.5, mb: 3, color: "#f4f5f5", backgroundColor: "#171b1d", border: "1px solid #303638", borderRadius: "8px", boxShadow: "0 3px 12px rgba(0,0,0,0.18)" }}>
+        <Typography variant="subtitle2" sx={{ color: "#aeb6b8" }} gutterBottom>
           Tablo ikonları:
         </Typography>
         <Stack direction="row" flexWrap="wrap" gap={2} useFlexGap>
@@ -614,12 +692,12 @@ function TodayMatches() {
             <Typography variant="body2">: 2.5 üst gol oranı (%)</Typography>
           </Stack>
           <Stack direction="row" alignItems="center" spacing={0.5}>
-            <img src={corner} alt="" style={{ width: 18, height: 18 }} />
-            <Typography variant="body2">: 8.5 üst korner oranı (%)</Typography>
+            <img src={corner} alt="" style={{ width: 18, height: 18, filter: "brightness(0) invert(1)" }} />
+            <Typography variant="body2" sx={{ color: "#f4f5f5" }}>: 8.5 üst korner oranı (%)</Typography>
           </Stack>
           <Stack direction="row" alignItems="center" spacing={0.5}>
-            <img src={card} alt="" style={{ width: 18, height: 18 }} />
-            <Typography variant="body2">: 3.5 üst ceza skoru oranı (%)</Typography>
+            <img src={card} alt="" style={{ width: 18, height: 18, filter: "brightness(0) invert(1)" }} />
+            <Typography variant="body2" sx={{ color: "#f4f5f5" }}>: 3.5 üst ceza skoru oranı (%)</Typography>
           </Stack>
         </Stack>
       </Paper>

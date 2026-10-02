@@ -87,9 +87,9 @@ const OverGoals = ({ goalStats, selectedLeague, isMobile, getTeamLogo, football,
                     />    
                     </Stack>
                   </TableCell>
-                  <SortHeader align="center" field="less25Rate" abc="2.5 Üst"></SortHeader>
-                  <SortHeader align="center" field="less35Rate" abc="3.5 Üst"></SortHeader>
-                  <SortHeader align="center" field="less45Rate" abc="4.5 Üst"></SortHeader>
+                  <SortHeader align="center" field="less25Rate" abc="2.5 Alt"></SortHeader>
+                  <SortHeader align="center" field="less35Rate" abc="3.5 Alt"></SortHeader>
+                  <SortHeader align="center" field="less45Rate" abc="4.5 Alt"></SortHeader>
                 </TableRow>
               </TableHead>
 
