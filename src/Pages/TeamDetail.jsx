@@ -1,8 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { Typography, Stack, Divider, Box, Chip, Select, MenuItem } from "@mui/material";
-import PublicIcon from "@mui/icons-material/Public";
-import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { useData } from "../context/DataContext";
 import GoalsStats from "../Components/TeamDetail_Goal.jsx";
 import CornerStats from "../Components/TeamDetail_Corner.jsx";
@@ -81,11 +79,21 @@ const normalizeLeague = value => String(value ?? "")
   .normalize("NFD")
   .replace(/[\u0300-\u036f]/g, "");
 
+const getTeamCountry = teamName => {
+  const logoFolder = getTeamLogo(teamName).split("/")[2] || "";
+  const separatorIndex = logoFolder.indexOf(" - ");
+  return separatorIndex === -1 ? "Türkiye" : logoFolder.slice(0, separatorIndex);
+};
+
+const isInternationalLeague = leagueName =>
+  /^(uefa|fifa|conmebol|afc)\b|champions league|europa league|conference league|nations league|world cup/i.test(leagueName);
+
 const TeamDetail = () => {
   const { league, team } = useParams();
-  const { matches, goalStats, setSelectedLeague, selectedLeague, selectedSeason } = useData();
+  const { matches, setSelectedLeague, selectedLeague, selectedSeason } = useData();
   const [selectedSeasonFilter, setSelectedSeasonFilter] = useState(selectedSeason || "2026-2027");
   const leagueLabel = leagueNameMap[league] || league;
+  const teamCountry = getTeamCountry(team);
   const [selectedLeagueFilter, setSelectedLeagueFilter] = useState(leagueLabel || "");
 
   const availableSeasons = useMemo(() => {
@@ -132,6 +140,16 @@ const TeamDetail = () => {
         .filter(Boolean)
     )];
   }, [matches, team, selectedSeasonFilter]);
+
+  const teamDomesticLeague = useMemo(() => {
+    const leagues = [...new Set(
+      (matches || [])
+        .filter(match => (match.homeTeam === team || match.awayTeam === team) && match.league)
+        .map(match => match.league)
+    )];
+
+    return leagues.find(leagueName => !isInternationalLeague(leagueName)) || leagueLabel;
+  }, [matches, team, leagueLabel]);
 
   useEffect(() => {
     setSelectedLeagueFilter("");
@@ -264,16 +282,30 @@ const TeamDetail = () => {
             </Typography>
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
               <Chip
-                icon={<PublicIcon />}
-                label="Türkiye"
+                icon={
+                  <Box
+                    component="img"
+                    src={getTeamLogo(teamCountry)}
+                    alt={`${teamCountry} bayrağı`}
+                    sx={{ width: 20, height: 14, objectFit: "contain" }}
+                  />
+                }
+                label={teamCountry}
                 size="small"
-                sx={{ color: "#fff", backgroundColor: "rgba(255,255,255,0.12)", "& .MuiChip-icon": { color: "#f87171" } }}
+                sx={{ px: 1.25, color: "#fff", backgroundColor: "rgba(255,255,255,0.12)" }}
               />
               <Chip
-                icon={<EmojiEventsIcon />}
-                label={leagueLabel}
+                icon={
+                  <Box
+                    component="img"
+                    src={getLeagueLogo(teamDomesticLeague)}
+                    alt={`${teamDomesticLeague} logosu`}
+                    sx={{ width: 20, height: 20, objectFit: "contain" }}
+                  />
+                }
+                label={teamDomesticLeague}
                 size="small"
-                sx={{ color: "#fff", backgroundColor: "rgba(255,255,255,0.12)", "& .MuiChip-icon": { color: "#fbbf24" } }}
+                sx={{ px: 1.25, color: "#fff", backgroundColor: "rgba(255,255,255,0.12)" }}
               />
             </Stack>
           </Stack>
@@ -336,13 +368,7 @@ const TeamDetail = () => {
         </Stack>
       </Box>
 
-      <Divider />
-
-      {/* Fikstür */}
       <Stack spacing={1}>
-        <Typography variant="h6" fontWeight="bold">
-          Fikstür
-        </Typography>
         <TeamFixture
           matches={sortedTeamMatches}
           team={team}
@@ -355,6 +381,7 @@ const TeamDetail = () => {
           setLeagueFilter={setSelectedLeagueFilter}
           showSeasonFilter={false}
           showLeagueFilter={false}
+          darkTheme
         />
       </Stack>
 
@@ -365,7 +392,7 @@ const TeamDetail = () => {
         <Typography variant="h6" fontWeight="bold">
           Gol İstatistikleri
         </Typography>
-        <GoalsStats matches={teamMatches} team={team} goalStats={goalStats} />
+        <GoalsStats matches={teamMatches} team={team} />
       </Stack>
 
       <Divider />
@@ -375,7 +402,7 @@ const TeamDetail = () => {
         <Typography variant="h6" fontWeight="bold">
           Korner İstatistikleri
         </Typography>
-        <CornerStats matches={teamMatches} />
+        <CornerStats matches={teamMatches} team={team} />
       </Stack>
 
       <Divider />
@@ -385,8 +412,9 @@ const TeamDetail = () => {
         <Typography variant="h6" fontWeight="bold">
           Kart İstatistikleri
         </Typography>
-        <CardStats matches={teamMatches} />
+        <CardStats matches={teamMatches} team={team} />
       </Stack>
+
     </Stack>
   );
 };

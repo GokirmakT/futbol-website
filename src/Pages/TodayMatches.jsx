@@ -303,7 +303,7 @@ function TodayMatches() {
     const targetScrollLeft =
       strip.scrollLeft + buttonRect.left - stripRect.left - (strip.clientWidth - buttonRect.width) / 2;
 
-    strip.scrollTo({ left: Math.max(0, targetScrollLeft), behavior: "smooth" });
+    strip.scrollTo({ left: Math.max(0, targetScrollLeft), behavior: "auto" });
   }, [selectedDate, isLoading, isMobile]);
 
   const groupedMatches = useMemo(() => {
@@ -447,7 +447,7 @@ function TodayMatches() {
                 overflowY: "hidden",
                 touchAction: "pan-x",
                 WebkitOverflowScrolling: "touch",
-                scrollBehavior: "smooth",
+                scrollBehavior: "auto",
                 scrollbarWidth: "none",
                 msOverflowStyle: "none",
                 "&::-webkit-scrollbar": { display: "none" },

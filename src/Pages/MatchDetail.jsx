@@ -631,7 +631,7 @@ const awayLast10 = useMemo(
         sx={{
           position: "relative",
           overflow: "hidden",
-          px: { xs: 2, sm: 3, md: 4 },
+          px: { xs: 1, sm: 2, md: 4 },
           py: { xs: 2.5, sm: 3 },
           mb: 3,
           borderRadius: 3,
@@ -651,37 +651,37 @@ const awayLast10 = useMemo(
         }}
       >
         <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={{ xs: 2, sm: 3 }}
+          direction="row"
+          spacing={{ xs: 0.5, sm: 1.5, md: 3 }}
           alignItems="center"
           justifyContent="center"
-          sx={{ position: "relative", zIndex: 1 }}
+          sx={{ position: "relative", zIndex: 1, width: "100%", minWidth: 0 }}
         >
           <Box
             component="img"
             src={getTeamLogo(home)}
             alt={`${home} logosu`}
             sx={{
-              width: { xs: 72, sm: 92 },
-              height: { xs: 72, sm: 92 },
+              width: { xs: 44, sm: 72, md: 92 },
+              height: { xs: 44, sm: 72, md: 92 },
               objectFit: "contain",
               flexShrink: 0,
-              p: 1,
+              p: { xs: 0.5, sm: 1 },
               borderRadius: "50%",
               backgroundColor: "rgba(255,255,255,0.96)",
               border: "4px solid rgba(255,255,255,0.18)",
             }}
           />
 
-          <Stack spacing={1} alignItems="center" sx={{ minWidth: 0, textAlign: "center" }}>
-            <Stack direction="row" alignItems="center" spacing={1.5} flexWrap="wrap" justifyContent="center">
-              <Typography variant="h4" component="h1" sx={{ fontWeight: 800, fontSize: { xs: "1.8rem", sm: "2.5rem" }, lineHeight: 1.1 }}>
+          <Stack spacing={{ xs: 0.75, sm: 1 }} alignItems="center" sx={{ flex: 1, minWidth: 0, textAlign: "center" }}>
+            <Stack direction="row" alignItems="center" spacing={{ xs: 0.25, sm: 1, md: 1.5 }} flexWrap="nowrap" justifyContent="center" sx={{ width: "100%", minWidth: 0 }}>
+              <Typography variant="h4" component="h1" sx={{ flex: "1 1 0%", minWidth: 0, whiteSpace: "normal", overflowWrap: "anywhere", fontWeight: 800, fontSize: { xs: "clamp(0.72rem, 3.4vw, 1rem)", sm: "clamp(1rem, 2.7vw, 1.5rem)", md: "2.5rem" }, lineHeight: 1.1 }}>
                 {home}
               </Typography>
-              <Typography variant="h5" sx={{ fontWeight: 700, opacity: 0.9 }}>
+              <Typography variant="h5" sx={{ flexShrink: 0, fontSize: { xs: "0.8rem", sm: "1.2rem", md: "1.5rem" }, fontWeight: 700, opacity: 0.9 }}>
                 -
               </Typography>
-              <Typography variant="h4" component="h1" sx={{ fontWeight: 800, fontSize: { xs: "1.8rem", sm: "2.5rem" }, lineHeight: 1.1 }}>
+              <Typography variant="h4" component="h1" sx={{ flex: "1 1 0%", minWidth: 0, whiteSpace: "normal", overflowWrap: "anywhere", fontWeight: 800, fontSize: { xs: "clamp(0.72rem, 3.4vw, 1rem)", sm: "clamp(1rem, 2.7vw, 1.5rem)", md: "2.5rem" }, lineHeight: 1.1 }}>
                 {away}
               </Typography>
             </Stack>
@@ -699,10 +699,12 @@ const awayLast10 = useMemo(
               size="medium"
               sx={{
                 color: "#fff",
+                maxWidth: "100%",
+                minWidth: 0,
                 backgroundColor: "rgba(255,255,255,0.12)",
                 border: "1px solid rgba(255,255,255,0.2)",
                 fontWeight: 700,
-                fontSize: "0.96rem",
+                fontSize: { xs: "0.7rem", sm: "0.82rem", md: "0.96rem" },
                 height: 34,
                 px: 0.75,
                 borderRadius: 999,
@@ -713,8 +715,12 @@ const awayLast10 = useMemo(
                   height: 22,
                 },
                 "& .MuiChip-label": {
+                  maxWidth: "calc(100% - 38px)",
+                  overflow: "hidden",
                   px: 0.75,
                   lineHeight: 1.2,
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
                 },
               }}
             />
@@ -725,11 +731,11 @@ const awayLast10 = useMemo(
             src={getTeamLogo(away)}
             alt={`${away} logosu`}
             sx={{
-              width: { xs: 72, sm: 92 },
-              height: { xs: 72, sm: 92 },
+              width: { xs: 44, sm: 72, md: 92 },
+              height: { xs: 44, sm: 72, md: 92 },
               objectFit: "contain",
               flexShrink: 0,
-              p: 1,
+              p: { xs: 0.5, sm: 1 },
               borderRadius: "50%",
               backgroundColor: "rgba(255,255,255,0.96)",
               border: "4px solid rgba(255,255,255,0.18)",

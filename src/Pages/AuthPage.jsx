@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Alert,
   Box,
@@ -24,7 +24,8 @@ import { loginUser, registerUser } from "../api/auth";
 
 const AuthPage = () => {
   const navigate = useNavigate();
-  const [isLogin, setIsLogin] = useState(true);
+  const location = useLocation();
+  const [isLogin, setIsLogin] = useState(() => location.state?.authMode !== "register");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -72,7 +73,7 @@ const AuthPage = () => {
       }
 
       setAuthSuccess(isLogin ? "Giriş başarılı." : "Kayıt başarılı. Giriş yapıldı.");
-      setTimeout(() => navigate("/TodayMatches"), 700);
+      setTimeout(() => navigate(location.state?.from || "/TodayMatches", { replace: true }), 700);
     } catch (error) {
       setAuthError(error?.message || (isLogin ? "Giriş sırasında hata oluştu." : "Kayıt sırasında hata oluştu."));
     } finally {
@@ -84,12 +85,14 @@ const AuthPage = () => {
     "& .MuiOutlinedInput-root": {
       minHeight: 56,
       borderRadius: "8px",
-      backgroundColor: "#fff",
-      "& fieldset": { borderColor: "#d8ded8" },
-      "&:hover fieldset": { borderColor: "#77887c" },
-      "&.Mui-focused fieldset": { borderColor: "#183b2e", borderWidth: 1.5 },
+      backgroundColor: "#222729",
+      "& fieldset": { borderColor: "#303638" },
+      "&:hover fieldset": { borderColor: "#626b6e" },
+      "&.Mui-focused fieldset": { borderColor: "#1976d2", borderWidth: 1.5 },
     },
-    "& .MuiInputLabel-root.Mui-focused": { color: "#183b2e" },
+    "& .MuiInputBase-input": { color: "#f4f5f5" },
+    "& .MuiInputLabel-root": { color: "#aeb6b8" },
+    "& .MuiInputLabel-root.Mui-focused": { color: "#1976d2" },
   };
 
   return (
@@ -100,8 +103,8 @@ const AuthPage = () => {
         minHeight: "100svh",
         display: "grid",
         gridTemplateColumns: { xs: "1fr", md: "minmax(0, 1.04fr) minmax(420px, 0.96fr)" },
-        backgroundColor: "#f4f5f0",
-        color: "#17231c",
+        backgroundColor: "#101416",
+        color: "#f4f5f5",
         fontFamily: "'DM Sans', sans-serif",
         "& > section": { boxSizing: "border-box" },
       }}
@@ -119,9 +122,9 @@ const AuthPage = () => {
           overflow: "hidden",
           px: { xs: 3, sm: 5, md: 7, lg: 9 },
           py: { xs: 2.5, md: 5 },
-          color: "#f5f6ef",
-          backgroundColor: "#13261e",
-          backgroundImage: "linear-gradient(90deg, rgba(9,24,17,.88), rgba(9,24,17,.55) 60%, rgba(9,24,17,.28)), linear-gradient(0deg, rgba(9,24,17,.72), transparent 55%), url('https://images.unsplash.com/photo-1577223625816-7546f13df25d?auto=format&fit=crop&w=1800&q=85')",
+          color: "#f4f5f5",
+          backgroundColor: "#171b1d",
+          backgroundImage: "linear-gradient(90deg, rgba(8,10,11,.88), rgba(8,10,11,.55) 60%, rgba(8,10,11,.28)), linear-gradient(0deg, rgba(8,10,11,.72), transparent 55%), url('https://images.unsplash.com/photo-1577223625816-7546f13df25d?auto=format&fit=crop&w=1800&q=85')",
           backgroundPosition: "center",
           backgroundSize: "cover",
           "&::after": {
@@ -136,30 +139,30 @@ const AuthPage = () => {
         }}
       >
         <Stack direction="row" spacing={1.2} alignItems="center" sx={{ position: "relative" }}>
-          <Box sx={{ width: 38, height: 38, display: "grid", placeItems: "center", border: "1px solid rgba(245,246,239,.45)", borderRadius: "50%", color: "#d9f36a" }}>
+          <Box sx={{ width: 38, height: 38, display: "grid", placeItems: "center", border: "1px solid rgba(244,245,245,.45)", borderRadius: "50%", color: "#1976d2" }}>
             <SportsSoccerRoundedIcon sx={{ fontSize: 21 }} />
           </Box>
           <Typography sx={{ fontSize: 14, fontWeight: 800, letterSpacing: ".12em" }}>
-            FUTBOL<span style={{ color: "#d9f36a" }}>.</span>
+            FUTBOL<span style={{ color: "#1976d2" }}>.</span>
           </Typography>
         </Stack>
 
         <Box sx={{ position: "relative", maxWidth: 620, py: { xs: 2, md: 0 }, animation: "auth-rise .7s ease-out both" }}>
-          <Typography sx={{ mb: 2, color: "#d9f36a", fontSize: 11, fontWeight: 800, letterSpacing: ".18em", textTransform: "uppercase" }}>
+          <Typography sx={{ mb: 2, color: "#64b5f6", fontSize: 11, fontWeight: 800, letterSpacing: ".18em", textTransform: "uppercase" }}>
             Futbol, başka bir açıdan
           </Typography>
             <Typography component="h1" sx={{ maxWidth: 600, fontFamily: "'Barlow Condensed', sans-serif", fontSize: { xs: 38, md: 68, lg: 78 }, fontWeight: 700, lineHeight: 0.96, letterSpacing: 0, textTransform: "uppercase" }}>
             Oyunu sadece izleme.
-            <Box component="span" sx={{ display: "block", color: "#d9f36a" }}>Oku.</Box>
+            <Box component="span" sx={{ display: "block", color: "#64b5f6" }}>Oku.</Box>
           </Typography>
-          <Typography sx={{ mt: 2.5, maxWidth: 380, color: "rgba(245,246,239,.78)", fontSize: 15, lineHeight: 1.7 }}>
+          <Typography sx={{ mt: 2.5, maxWidth: 380, color: "rgba(244,245,245,.78)", fontSize: 15, lineHeight: 1.7 }}>
             Her maçın içinde, skordan fazlası var.
           </Typography>
         </Box>
 
-        <Stack direction="row" alignItems="center" spacing={1.4} sx={{ position: "relative", pt: 2, borderTop: "1px solid rgba(245,246,239,.28)" }}>
-          <Box sx={{ width: 7, height: 7, borderRadius: "50%", backgroundColor: "#d9f36a" }} />
-          <Typography sx={{ color: "rgba(245,246,239,.76)", fontSize: 11, fontWeight: 700, letterSpacing: ".12em" }}>
+        <Stack direction="row" alignItems="center" spacing={1.4} sx={{ position: "relative", pt: 2, borderTop: "1px solid rgba(244,245,245,.28)" }}>
+          <Box sx={{ width: 7, height: 7, borderRadius: "50%", backgroundColor: "#1976d2" }} />
+          <Typography sx={{ color: "rgba(244,245,245,.76)", fontSize: 11, fontWeight: 700, letterSpacing: ".12em" }}>
             FUTBOLUN HER DETAYI, TEK YERDE
           </Typography>
         </Stack>
@@ -170,7 +173,7 @@ const AuthPage = () => {
         sx={{ minHeight: { xs: 0, md: "100svh" }, display: "flex", alignItems: "center", justifyContent: "center", px: { xs: 2.5, sm: 5, md: 6, lg: 9 }, py: { xs: 3, md: 7 } }}
       >
         <Box sx={{ width: "100%", maxWidth: 430, animation: "auth-rise .7s .08s ease-out both", "@keyframes auth-rise": { from: { opacity: 0, transform: "translateY(14px)" }, to: { opacity: 1, transform: "translateY(0)" } } }}>
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 4, color: "#647268" }}>
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 4, color: "#aeb6b8" }}>
             <LockOutlinedIcon sx={{ fontSize: 16 }} />
             <Typography sx={{ fontSize: 12, fontWeight: 600 }}>Güvenli oturum</Typography>
           </Stack>
@@ -178,7 +181,7 @@ const AuthPage = () => {
           <Typography component="h2" sx={{ fontSize: 32, fontWeight: 750, letterSpacing: 0, lineHeight: 1.15 }}>
             {isLogin ? "Tekrar hoş geldin." : "Aramıza katıl."}
           </Typography>
-          <Typography sx={{ mt: 1, mb: 3.5, color: "#66736b", fontSize: 14, lineHeight: 1.6 }}>
+          <Typography sx={{ mt: 1, mb: 3.5, color: "#aeb6b8", fontSize: 14, lineHeight: 1.6 }}>
             {isLogin ? "Hesabına giriş yap ve kaldığın yerden devam et." : "Hesabını oluştur, maçın detaylarına yaklaş."}
           </Typography>
 
@@ -191,12 +194,12 @@ const AuthPage = () => {
             sx={{
               mb: 3,
               p: 0.5,
-              border: "1px solid #dce1da",
+              border: "1px solid #303638",
               borderRadius: "9px",
-              backgroundColor: "#e9ece6",
+              backgroundColor: "#222729",
               "& .MuiToggleButtonGroup-grouped": { border: 0, borderRadius: "6px !important" },
-              "& .MuiToggleButton-root": { minHeight: 42, color: "#657168", fontSize: 13, fontWeight: 700, textTransform: "none" },
-              "& .Mui-selected": { color: "#17231c !important", backgroundColor: "#fff !important", boxShadow: "0 1px 4px rgba(20,35,27,.12)" },
+              "& .MuiToggleButton-root": { minHeight: 42, color: "#aeb6b8", fontSize: 13, fontWeight: 700, textTransform: "none" },
+              "& .Mui-selected": { color: "#f4f5f5 !important", backgroundColor: "#171b1d !important", boxShadow: "0 1px 4px rgba(0,0,0,.3)" },
             }}
           >
             <ToggleButton value="login">Giriş yap</ToggleButton>
@@ -207,21 +210,21 @@ const AuthPage = () => {
             <Stack spacing={1.8}>
               {!isLogin && (
                 <TextField fullWidth label="Kullanıcı adı" value={username} onChange={event => setUsername(event.target.value)} autoComplete="username" sx={fieldSx}
-                  InputProps={{ startAdornment: <InputAdornment position="start"><PersonOutlineRoundedIcon sx={{ color: "#7b887e", fontSize: 20 }} /></InputAdornment> }}
+                  InputProps={{ startAdornment: <InputAdornment position="start"><PersonOutlineRoundedIcon sx={{ color: "#aeb6b8", fontSize: 20 }} /></InputAdornment> }}
                 />
               )}
               <TextField fullWidth label="E-posta adresi" type="email" value={email} onChange={event => setEmail(event.target.value)} autoComplete="email" sx={fieldSx}
-                InputProps={{ startAdornment: <InputAdornment position="start"><AlternateEmailRoundedIcon sx={{ color: "#7b887e", fontSize: 20 }} /></InputAdornment> }}
+                InputProps={{ startAdornment: <InputAdornment position="start"><AlternateEmailRoundedIcon sx={{ color: "#aeb6b8", fontSize: 20 }} /></InputAdornment> }}
               />
               <TextField fullWidth label="Şifre" type={showPassword ? "text" : "password"} value={password} onChange={event => setPassword(event.target.value)} autoComplete={isLogin ? "current-password" : "new-password"} sx={fieldSx}
                 InputProps={{
-                  startAdornment: <InputAdornment position="start"><LockOutlinedIcon sx={{ color: "#7b887e", fontSize: 19 }} /></InputAdornment>,
-                  endAdornment: <InputAdornment position="end"><IconButton aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"} onClick={() => setShowPassword(value => !value)} edge="end" size="small">{showPassword ? <VisibilityOffRoundedIcon fontSize="small" /> : <VisibilityRoundedIcon fontSize="small" />}</IconButton></InputAdornment>,
+                  startAdornment: <InputAdornment position="start"><LockOutlinedIcon sx={{ color: "#aeb6b8", fontSize: 19 }} /></InputAdornment>,
+                  endAdornment: <InputAdornment position="end"><IconButton aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"} onClick={() => setShowPassword(value => !value)} edge="end" size="small" sx={{ color: "#f4f5f5" }}>{showPassword ? <VisibilityOffRoundedIcon fontSize="small" /> : <VisibilityRoundedIcon fontSize="small" />}</IconButton></InputAdornment>,
                 }}
               />
               {!isLogin && (
                 <TextField fullWidth label="Şifreyi tekrar gir" type={showPassword ? "text" : "password"} value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} autoComplete="new-password" sx={fieldSx}
-                  InputProps={{ startAdornment: <InputAdornment position="start"><LockOutlinedIcon sx={{ color: "#7b887e", fontSize: 19 }} /></InputAdornment> }}
+                  InputProps={{ startAdornment: <InputAdornment position="start"><LockOutlinedIcon sx={{ color: "#aeb6b8", fontSize: 19 }} /></InputAdornment> }}
                 />
               )}
 
@@ -233,14 +236,23 @@ const AuthPage = () => {
                 variant="contained"
                 disabled={isSubmitting}
                 endIcon={!isSubmitting && <ArrowForwardRoundedIcon />}
-                sx={{ minHeight: 54, mt: 0.5, borderRadius: "8px", backgroundColor: "#d9f36a", color: "#17231c", fontSize: 14, fontWeight: 800, textTransform: "none", boxShadow: "none", "&:hover": { backgroundColor: "#c9e752", boxShadow: "0 8px 18px rgba(23,35,28,.12)" }, "&.Mui-disabled": { backgroundColor: "#cbd2c7", color: "#68736a" } }}
+                sx={{ minHeight: 54, mt: 0.5, borderRadius: "8px", backgroundColor: "#1976d2", color: "#fff", fontSize: 14, fontWeight: 800, textTransform: "none", boxShadow: "none", "&:hover": { backgroundColor: "#1565c0", boxShadow: "0 8px 18px rgba(0,0,0,.25)" }, "&.Mui-disabled": { backgroundColor: "#303638", color: "#aeb6b8" } }}
               >
                 {isSubmitting ? <CircularProgress size={21} sx={{ color: "#17231c" }} /> : isLogin ? "Giriş yap" : "Hesabını oluştur"}
+              </Button>
+              <Button
+                component={Link}
+                to="/TodayMatches"
+                variant="outlined"
+                startIcon={<SportsSoccerRoundedIcon />}
+                sx={{ minHeight: 48, borderRadius: "8px", borderColor: "#626b6e", color: "#f4f5f5", fontSize: 13, fontWeight: 700, textTransform: "none", "&:hover": { borderColor: "#1976d2", backgroundColor: "#222729" } }}
+              >
+                Günün maçlarına bak
               </Button>
             </Stack>
           </Box>
 
-          <Typography sx={{ mt: 3, color: "#7a857d", fontSize: 11, lineHeight: 1.6, textAlign: "center" }}>
+          <Typography sx={{ mt: 3, color: "#aeb6b8", fontSize: 11, lineHeight: 1.6, textAlign: "center" }}>
             Devam ederek hesabına güvenli biçimde erişirsin.
           </Typography>
         </Box>

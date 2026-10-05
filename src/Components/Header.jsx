@@ -322,9 +322,11 @@ export default function Header() {
                   anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                   transformOrigin={{ vertical: "top", horizontal: "right" }}
                 >
-                  <MenuItem onClick={async () => { setUserMenuAnchor(null); await signOut(); navigate("/TodayMatches"); }}>
-                    Çıkış
-                  </MenuItem>
+                  {isAuthenticated && (
+                    <MenuItem onClick={async () => { setUserMenuAnchor(null); await signOut(); navigate("/TodayMatches"); }}>
+                      Çıkış
+                    </MenuItem>
+                  )}
                 </Menu>
               </>
             )}
@@ -392,9 +394,11 @@ export default function Header() {
                   anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                   transformOrigin={{ vertical: "top", horizontal: "right" }}
                 >
-                  <MenuItem onClick={async () => { setUserMenuAnchor(null); await signOut(); navigate("/TodayMatches"); }}>
-                    Çıkış
-                  </MenuItem>
+                  {isAuthenticated && (
+                    <MenuItem onClick={async () => { setMenuAnchor(null); await signOut(); navigate("/TodayMatches"); }}>
+                      Çıkış
+                    </MenuItem>
+                  )}
                 </Menu>
               </>
             )}
@@ -452,9 +456,11 @@ export default function Header() {
                   />
                   Gol</MenuItem>
                 
-                  <MenuItem onClick={async () => { setUserMenuAnchor(null); await signOut(); navigate("/TodayMatches"); }}>
-                    Çıkış
-                  </MenuItem>
+                  {isAuthenticated && (
+                    <MenuItem onClick={async () => { setMenuAnchor(null); await signOut(); navigate("/TodayMatches"); }}>
+                      Çıkış
+                    </MenuItem>
+                  )}
               </Menu>
 
             </>
