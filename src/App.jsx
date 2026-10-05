@@ -15,14 +15,14 @@ import AuthPage from "./Pages/AuthPage.jsx";
 import { useAuth } from "./context/AuthContext";
 
 function ProtectedRoute({ children }) {
-  const { isAuthenticated, loading, sessionExpired } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
     return <PageLoader />;
   }
 
   if (!isAuthenticated) {
-    return <Navigate to={sessionExpired ? "/TodayMatches" : "/auth"} replace />;
+    return <Navigate to="/auth" replace />;
   }
 
   return children;
