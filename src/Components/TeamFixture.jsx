@@ -151,12 +151,12 @@ const TeamFixture = ({ matches, team, league, display, selectedSeason, setSelect
       spacing={2}
       sx={{
         width: "100%",
-        display: display === "none" ? "none" : "flex",
+        display: "flex",
         flexDirection: "column",
         alignItems: "center",
       }}
     >
-      <Stack spacing={1.5} width={matchColumnWidth}>
+      <Stack spacing={1.5} width={matchColumnWidth} sx={{ display: display === "none" ? "none" : "flex" }}>
         <Box
           sx={{
             display: "grid",
