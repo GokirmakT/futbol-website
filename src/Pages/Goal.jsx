@@ -25,6 +25,7 @@ import LessGoals45HomeAway from "../Components/Tables/GoalTables/LessGoals45Home
 import KgGoalsTable from "../Components/Tables/GoalTables/KgGoalsTable";
 import ScoreBothHalf from "../Components/Tables/GoalTables/ScoreBothHalf";
 import SeasonFilter from "../Components/SeasonFilter.jsx";
+import PageLoader from "../Components/LoadingPage.jsx";
 
 const HOME_AWAY_TABLES = {
   over15: { Table: OverGoals15HomeAway, line: "1.5", type: "Üst" },
@@ -76,7 +77,7 @@ function Goals() {
     document.body.style.overflow = lock ? "hidden" : "auto";
   };
 
-  if (isLoading || isLoadingGoals) return <div>Loading...</div>;
+  if (isLoading || isLoadingGoals) return <PageLoader label="Gol istatistikleri yükleniyor..." />;
   if (error || goalsError) return <div>Error loading goal statistics</div>;
 
   return (
@@ -113,6 +114,7 @@ function Goals() {
         <Box
           sx={{
             width: { xs: "calc(100% - 24px)", md: "70%", lg: "50%" },
+            boxSizing: "border-box",
             mb: 1,
             px: { xs: 2, sm: 2.5 },
             py: { xs: 2, sm: 2.5 },
@@ -181,6 +183,8 @@ function Goals() {
                 toggleBodyScroll(true);
               }}
               sx={{
+                minWidth: 0,
+                height: 64,
                 justifyContent: "flex-start",
                 textTransform: "none",
                 backgroundColor: "#171b1d",
@@ -199,15 +203,20 @@ function Goals() {
                   src={`/leagues/${selectedLeague}.png`}
                   width={32}
                   height={32}
-                  style={{ marginRight: 8, borderRadius: "4px" }}
+                  style={{ marginRight: 8, borderRadius: "4px", flexShrink: 0 }}
                   alt={selectedLeague}
                 />
               )}
-              <Box sx={{ textAlign: "left" }}>
-                <Typography variant="caption" sx={{ display: "block", color: "#aeb6b8" }}>
+              <Box sx={{ textAlign: "left", minWidth: 0, flex: 1 }}>
+                <Typography variant="caption" sx={{ display: "block", color: "#aeb6b8", lineHeight: 1.4 }}>
                   Lig Seç
                 </Typography>
-                <Typography variant="body1" sx={{ color: "#f4f5f5" }}>
+                <Typography
+                  variant="body1"
+                  noWrap
+                  title={selectedLeague || "Lig seçmek için tıklayın"}
+                  sx={{ color: "#f4f5f5", lineHeight: 1.5 }}
+                >
                   {selectedLeague || "Lig seçmek için tıklayın"}
                 </Typography>
               </Box>

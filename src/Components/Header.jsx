@@ -375,35 +375,6 @@ export default function Header() {
                 />                
               </Button>
 
-              {isAuthenticated && !isMobile && (
-              <>
-                <IconButton
-                  size="small"
-                  onClick={(e) => setUserMenuAnchor(e.currentTarget)}
-                  sx={{ width: 40, height: 40, p: 0 }}
-                >
-                  <Avatar sx={{ width: 36, height: 36, bgcolor: "secondary.main" }}>
-                    {user?.username ? user.username.charAt(0).toUpperCase() : (user?.email?.charAt(0).toUpperCase())}
-                  </Avatar>
-                </IconButton>
-
-                <Menu
-                  anchorEl={userMenuAnchor}
-                  open={Boolean(userMenuAnchor)}
-                  onClose={() => setUserMenuAnchor(null)}
-                  anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                  transformOrigin={{ vertical: "top", horizontal: "right" }}
-                >
-                  {isAuthenticated && (
-                    <MenuItem onClick={async () => { setMenuAnchor(null); await signOut(); navigate("/TodayMatches"); }}>
-                      Çıkış
-                    </MenuItem>
-                  )}
-                </Menu>
-              </>
-            )}
-
-
               {/* ANA MOBİL MENÜ */}
               <Menu
                 sx={{ mt: "5px" }}

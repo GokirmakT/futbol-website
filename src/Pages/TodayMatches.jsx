@@ -21,6 +21,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { addDays, format, isSameDay } from "date-fns";
 import { tr } from "date-fns/locale";
 import { useData } from "../context/DataContext";
+import PageLoader from "../Components/LoadingPage.jsx";
 import { getTeamLogo } from "../Components/teamLogos.js";
 import football from "/football.png";
 import card from "/yellow-card.png";
@@ -354,7 +355,7 @@ function TodayMatches() {
     })),
   ];
 
-  if (isLoading) return <Typography textAlign="center">Yükleniyor...</Typography>;
+  if (isLoading) return <PageLoader label="Maçlar yükleniyor..." />;
   if (error) return <Typography textAlign="center">Hata oluştu</Typography>;
 
   const leagues = Object.keys(groupedMatches);

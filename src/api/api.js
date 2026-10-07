@@ -7,45 +7,56 @@ const api = axios.create({
   },
 });
 
-const getAllMatchPages = async (url, params = {}) => {
+const getAllMatchPages = async (url, params = {}, signal) => {
   const pageSize = 100;
   const firstResponse = await api.get(url, {
     params: { ...params, page: 1, pageSize },
+    signal,
   });
   const { items, totalCount } = firstResponse.data;
   const pageCount = Math.ceil(totalCount / pageSize);
 
   if (pageCount <= 1) return items;
 
-  const remainingPages = await Promise.all(
-    Array.from({ length: pageCount - 1 }, (_, index) =>
-      api.get(url, {
-        params: { ...params, page: index + 2, pageSize },
-      })
-    )
-  );
+  const allItems = [...items];
+  const batchSize = 4;
 
-  return [
-    ...items,
-    ...remainingPages.flatMap(response => response.data.items),
-  ];
+  for (let firstPage = 2; firstPage <= pageCount; firstPage += batchSize) {
+    signal?.throwIfAborted();
+    const pages = Array.from(
+      { length: Math.min(batchSize, pageCount - firstPage + 1) },
+      (_, index) => firstPage + index
+    );
+    const responses = await Promise.all(
+      pages.map(page =>
+        api.get(url, {
+          params: { ...params, page, pageSize },
+          signal,
+        })
+      )
+    );
+
+    allItems.push(...responses.flatMap(response => response.data.items));
+  }
+
+  return allItems;
 };
 
-export const getMatchOptions = async () => {
-  const response = await api.get("/matches/options");
+export const getMatchOptions = async signal => {
+  const response = await api.get("/matches/options", { signal });
   return response.data;
 };
 
-export const getMatchFixtures = async filters => {
-  return getAllMatchPages("/matches/fixtures", filters);
+export const getMatchFixtures = async (filters, signal) => {
+  return getAllMatchPages("/matches/fixtures", filters, signal);
 };
 
-export const getMatchAnalysis = async filters => {
-  return getAllMatchPages("/matches/analysis", filters);
+export const getMatchAnalysis = async (filters, signal) => {
+  return getAllMatchPages("/matches/analysis", filters, signal);
 };
 
-export const getTeamMatches = async (team, filters = {}) => {
-  return getAllMatchPages(`/matches/team/${encodeURIComponent(team)}`, filters);
+export const getTeamMatches = async (team, filters = {}, signal) => {
+  return getAllMatchPages(`/matches/team/${encodeURIComponent(team)}`, filters, signal);
 };
 
 export const getMatchById = async id => {

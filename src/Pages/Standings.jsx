@@ -13,6 +13,7 @@ import {
   Paper,
 } from "@mui/material";
 import { useData } from "../context/DataContext";
+import PageLoader from "../Components/LoadingPage.jsx";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { getTeamLogo } from "../Components/teamLogos.js";
 
@@ -126,11 +127,7 @@ function Standings() {
   }, [standings, currentLeague]);
 
   if (isLoadingStandings) {    
-    return (
-      <Typography textAlign="center" sx={{ color: "#fff", mt: 3 }}>
-        Yükleniyor...
-      </Typography>
-    );
+    return <PageLoader label="Puan durumu yükleniyor..." />;
   }
 
   if (standingsError) {
@@ -454,4 +451,3 @@ function Standings() {
 }
 
 export default Standings;
-

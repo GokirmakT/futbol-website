@@ -12,7 +12,6 @@ import {
   getGoalStats,
   getCornerStats,
 } from "../api/api";
-import PageLoader from "../Components/LoadingPage.jsx";
 import { DataContext } from "./DataContext";
 
 const DataProvider = ({ children }) => {
@@ -21,6 +20,8 @@ const DataProvider = ({ children }) => {
   const { pathname } = useLocation();
   const { isAuthenticated } = useAuth();
   const currentPath = pathname.toLowerCase();
+  const isAuthPage = currentPath === "/auth";
+  const needsMatchData = !isAuthPage;
   const isStandingsPage = isAuthenticated && currentPath.startsWith("/lig/");
   const isCardPage = isAuthenticated && currentPath === "/cards";
   const isGoalPage = isAuthenticated && currentPath === "/goals";
@@ -32,7 +33,9 @@ const DataProvider = ({ children }) => {
     error: matchOptionsError,
   } = useQuery({
     queryKey: ["matchOptions"],
-    queryFn: getMatchOptions,
+    queryFn: ({ signal }) => getMatchOptions(signal),
+    enabled: needsMatchData,
+    staleTime: 30 * 60 * 1000,
   });
 
   const seasons = matchOptions?.seasons ?? [];
@@ -79,27 +82,28 @@ const DataProvider = ({ children }) => {
     error: matchesError,
   } = useQuery({
     queryKey: ["matches", matchRequest],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       if (matchRequest.type === "team") {
         const teamMatches = await Promise.all(
-          matchRequest.teams.map(team => getTeamMatches(team))
+          matchRequest.teams.map(team => getTeamMatches(team, {}, signal))
         );
         return [...new Map(teamMatches.flat().map(match => [match.id, match])).values()];
       }
 
       if (matchRequest.type === "fixtures") {
-        return getMatchFixtures({ season: matchRequest.season });
+        return getMatchFixtures({ season: matchRequest.season }, signal);
       }
 
       return getMatchAnalysis({
         season: matchRequest.season,
         league: matchRequest.league,
-      });
+      }, signal);
     },
-    enabled: Boolean(activeSeason),
+    enabled: needsMatchData && Boolean(activeSeason),
+    staleTime: 30 * 60 * 1000,
   });
 
-  const isLoading = isLoadingMatchOptions || isLoadingMatches;
+  const isLoading = needsMatchData && (isLoadingMatchOptions || isLoadingMatches);
   const error = matchOptionsError || matchesError;
 
   const seasonMatches = useMemo(() => {
@@ -286,10 +290,6 @@ const DataProvider = ({ children }) => {
     cornerStatsByLeague,
   };
    
-  if (isLoading) {
-    return <PageLoader />;
-  }
-
   return (
     <DataContext.Provider value={value}>
       {children}

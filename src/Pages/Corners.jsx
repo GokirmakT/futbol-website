@@ -15,6 +15,7 @@ import OverCornersTable from "../Components/Tables/CornerTables/OverCornersTable
 import OverHomeCornersTable from "../Components/Tables/CornerTables/OverHomeCornersTable";
 import OverHomeCornersTable2 from "../Components/Tables/CornerTables/OverHomeCornersTable2";
 import SeasonFilter from "../Components/SeasonFilter.jsx";
+import PageLoader from "../Components/LoadingPage.jsx";
 
 function Corner() {
   const { cornerStats, seasonMatches, isLoading, isLoadingCorners, selectedLeague, setSelectedLeague, error, cornersError, leagues, seasons, selectedSeason, setSelectedSeason } = useData();
@@ -56,21 +57,76 @@ function Corner() {
   const toggleBodyScroll = (lock) => {
   document.body.style.overflow = lock ? "hidden" : "auto";};
 
-  if (isLoading || isLoadingCorners) return <div>Loading...</div>;
+  if (isLoading || isLoadingCorners) return <PageLoader label="Korner istatistikleri yükleniyor..." />;
   if (error || cornersError) return <div>Error loading corner statistics</div>;
 
   return (
     <Stack sx={{ width: "100%", minHeight: "100vh", background: "#2a3b47"}} spacing={3}>
-      <Stack direction={'column'} alignItems="center" sx={{pt: 5}}>
+      <Stack direction="column" alignItems="center" sx={{ pt: 5 }}>
+        <Box
+          sx={{
+            width: { xs: "calc(100% - 24px)", md: "70%", lg: "50%" },
+            boxSizing: "border-box",
+            mb: 1,
+            px: { xs: 2, sm: 2.5 },
+            py: { xs: 2, sm: 2.5 },
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            border: "1px solid rgba(255, 152, 0, 0.24)",
+            borderRadius: 2,
+            background: "linear-gradient(115deg, #202d35 0%, #172127 68%, #29251f 100%)",
+            boxShadow: "0 10px 28px rgba(0, 0, 0, 0.16)",
+          }}
+        >
+          <Box
+            sx={{
+              width: { xs: 46, sm: 54 },
+              height: { xs: 46, sm: 54 },
+              flexShrink: 0,
+              display: "grid",
+              placeItems: "center",
+              borderRadius: 1.5,
+              color: "#ffb74d",
+              backgroundColor: "rgba(255, 152, 0, 0.13)",
+              border: "1px solid rgba(255, 183, 77, 0.2)",
+            }}
+          >
+            <Box
+              component="img"
+              src={corner}
+              alt=""
+              sx={{
+                width: { xs: 32, sm: 38 },
+                height: { xs: 32, sm: 38 },
+                objectFit: "contain",
+                filter: "brightness(0) invert(1)",
+              }}
+            />
+          </Box>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography
+              variant="h5"
+              sx={{
+                color: "#fff",
+                fontWeight: 800,
+                fontSize: { xs: "19px", sm: "24px" },
+                lineHeight: 1.2,
+                letterSpacing: "0.01em",
+              }}
+            >
+              Korner İstatistikleri
+            </Typography>
+            <Typography sx={{ mt: 0.5, color: "#aeb9bf", fontSize: { xs: "12px", sm: "14px" }, lineHeight: 1.45 }}>
+              Takımların korner eğilimlerini lig ve sezona göre keşfet.
+            </Typography>
+          </Box>
+        </Box>
 
-        {/* Lig Seçimi */}
-        <Box sx={{ width: { xs: '100%', md: '300px' } }} justifyContent="center" alignItems="center" direction={{ xs: 'column', md: 'row' }}>
-            <Typography textAlign="center" variant="h5" sx={{ color: "#fff", fontWeight: "bold"}}>
-            Korner İstatistikleri
-          </Typography>
-
-                    {/* Autocomplete yerine buton + panel */}
-          <Box sx={{ mt: 4, px: 1.5 }}>
+        {/* Lig seçimi */}
+        <Box sx={{ width: { xs: "100%", md: "70%", lg: "50%" } }}>
+          <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", alignItems: "stretch" }}>
+          <Box sx={{ mt: 2, px: 1.5, minWidth: 0 }}>
             <Button
               fullWidth
               variant="outlined"
@@ -80,6 +136,8 @@ function Corner() {
                 toggleBodyScroll(true);
               }}
               sx={{
+                minWidth: 0,
+                height: 64,
                 justifyContent: "flex-start",
                 textTransform: "none",
                 backgroundColor: "#171b1d",
@@ -96,17 +154,22 @@ function Corner() {
               {selectedLeague && (
                 <img
                   src={`/leagues/${selectedLeague}.png`}
-                  width={24}
-                  height={24}
-                  style={{ marginRight: 8, borderRadius: "4px" }}
+                  width={32}
+                  height={32}
+                  style={{ marginRight: 8, borderRadius: "4px", flexShrink: 0 }}
                   alt={selectedLeague}
                 />
               )}
-              <Box sx={{ textAlign: "left" }}>
-                <Typography variant="caption" sx={{ display: "block", color: "#aeb6b8" }}>
+              <Box sx={{ textAlign: "left", minWidth: 0, flex: 1 }}>
+                <Typography variant="caption" sx={{ display: "block", color: "#aeb6b8", lineHeight: 1.4 }}>
                   Lig Seç
                 </Typography>
-                <Typography variant="body1" sx={{ color: "#f4f5f5" }}>
+                <Typography
+                  variant="body1"
+                  noWrap
+                  title={selectedLeague || "Lig seçmek için tıklayın"}
+                  sx={{ color: "#f4f5f5", lineHeight: 1.5 }}
+                >
                   {selectedLeague || "Lig seçmek için tıklayın"}
                 </Typography>
               </Box>
@@ -117,8 +180,10 @@ function Corner() {
             seasons={seasons}
             selectedSeason={selectedSeason}
             setSelectedSeason={setSelectedSeason}
-            sx={{ px: 1.5 }}
+            dark
+            sx={{ mt: 2, px: 1.5, minWidth: 0 }}
           />
+          </Box>
 
           {/* Lig seçim paneli */}
           {isLeaguePanelOpen && (
