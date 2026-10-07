@@ -751,8 +751,8 @@ const awayLast10 = useMemo(
         sx={{ width: "100%" }}
       >
         {/* EV SAHİBİ */}
-        <Box sx={{ flex: 1, minWidth: 0, pr: 3}}>
-          <Paper sx={{ width: "100%", maxWidth: 600, minWidth: 0, mx: "auto", p: 2, display: "flex", flexDirection: "column", gap: 2, backgroundColor: "#36454f", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 2, color: "#f4f5f5" }}>
+        <Box sx={{ flex: 1, minWidth: 0, pr: { xs: 0, lg: 3 } }}>
+          <Paper sx={{ width: "100%", maxWidth: 600, minWidth: 0, boxSizing: "border-box", mx: "auto", p: 2, display: "flex", flexDirection: "column", gap: 2, backgroundColor: "#36454f", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 2, color: "#f4f5f5" }}>
             <Typography
               variant="h6"
               fontWeight="bold"
@@ -1131,8 +1131,8 @@ const awayLast10 = useMemo(
         </Box>
 
         {/* DEPLASMAN */}
-        <Box sx={{ flex: 1, minWidth: 0, pr: 3 }}>
-          <Paper sx={{ width: "100%", maxWidth: 600, minWidth: 0, mx: "auto", p: 2, display: "flex", flexDirection: "column", gap: 2, backgroundColor: "#36454f", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 2, color: "#f4f5f5" }}>
+        <Box sx={{ flex: 1, minWidth: 0, pr: { xs: 0, lg: 3 } }}>
+          <Paper sx={{ width: "100%", maxWidth: 600, minWidth: 0, boxSizing: "border-box", mx: "auto", p: 2, display: "flex", flexDirection: "column", gap: 2, backgroundColor: "#36454f", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 2, color: "#f4f5f5" }}>
             <Typography
               variant="h6"
               fontWeight="bold"
@@ -1509,11 +1509,28 @@ const awayLast10 = useMemo(
         </Box>
       </Stack>
 
-      <Box sx={{ width: "100%", maxWidth: 600, mx: "auto", mt: 3 }}>
+      <Paper
+        sx={{
+          width: "100%",
+          maxWidth: 600,
+          minWidth: 0,
+          boxSizing: "border-box",
+          mx: "auto",
+          mt: 3,
+          p: 2,
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+          backgroundColor: "#36454f",
+          border: "1px solid rgba(255,255,255,0.1)",
+          borderRadius: 2,
+          color: "#f4f5f5",
+        }}
+      >
         <Typography variant="h6" fontWeight="bold" gutterBottom>
           Karşılıklı Maçlar
         </Typography>
-        <Typography variant="body2" color="text.secondary" mb={2}>
+        <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.72)" }}>
           {home} ve {away} takımlarının daha önce oynadığı maçların istatistikleri.
         </Typography>
         {headToHeadMatches.length ? (
@@ -1527,7 +1544,7 @@ const awayLast10 = useMemo(
             darkTheme
           />
         ) : (
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2">
             Bu takımlar arasında oynanmış maç bulunamadı.
           </Typography>
         )}
@@ -1565,7 +1582,7 @@ const awayLast10 = useMemo(
             </CollapsibleStatsPanel>
           </Stack>
         )}
-      </Box>
+      </Paper>
     </Box>
   );
 };
