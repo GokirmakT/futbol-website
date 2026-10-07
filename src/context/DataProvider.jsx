@@ -1,7 +1,12 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "react-router-dom";
+import { useAuth } from "./AuthContext";
 import {
-  getMatches,
+  getMatchAnalysis,
+  getMatchFixtures,
+  getMatchOptions,
+  getTeamMatches,
   getStandings,
   getCardStats,
   getGoalStats,
@@ -13,32 +18,89 @@ import { DataContext } from "./DataContext";
 const DataProvider = ({ children }) => {
   const [selectedLeague, setSelectedLeague] = useState("Super Lig");
   const [selectedSeason, setSelectedSeason] = useState(null);
+  const { pathname } = useLocation();
+  const { isAuthenticated } = useAuth();
+  const currentPath = pathname.toLowerCase();
+  const isStandingsPage = isAuthenticated && currentPath.startsWith("/lig/");
+  const isCardPage = isAuthenticated && currentPath === "/cards";
+  const isGoalPage = isAuthenticated && currentPath === "/goals";
+  const isCornerPage = isAuthenticated && currentPath === "/corners";
+
+  const {
+    data: matchOptions,
+    isLoading: isLoadingMatchOptions,
+    error: matchOptionsError,
+  } = useQuery({
+    queryKey: ["matchOptions"],
+    queryFn: getMatchOptions,
+  });
+
+  const seasons = matchOptions?.seasons ?? [];
+  const defaultSeason =
+    matchOptions?.defaultSeason ?? [...seasons].sort().at(-1) ?? null;
+  const activeSeason = selectedSeason ?? defaultSeason;
+  const routeParts = useMemo(
+    () => pathname
+      .split("/")
+      .filter(Boolean)
+      .map(part => {
+        try {
+          return decodeURIComponent(part);
+        } catch (error) {
+          if (error instanceof URIError) return part;
+          throw error;
+        }
+      }),
+    [pathname]
+  );
+
+  const matchRequest = useMemo(() => {
+    if (currentPath.startsWith("/team/") && routeParts[2]) {
+      return { type: "team", teams: [routeParts[2]] };
+    }
+    if (currentPath.startsWith("/match/") && routeParts[2] && routeParts[3]) {
+      return { type: "team", teams: [routeParts[2], routeParts[3]] };
+    }
+    if (currentPath.startsWith("/lig/")) {
+      return { type: "fixtures", season: activeSeason };
+    }
+    if (currentPath === "/goals" || currentPath === "/cards" || currentPath === "/corners" || currentPath === "/iy-ms") {
+      return { type: "analysis", season: activeSeason, league: selectedLeague };
+    }
+    if (currentPath === "/statistics" || currentPath === "/todaymatches") {
+      return { type: "analysis", season: activeSeason };
+    }
+    return { type: "fixtures", season: activeSeason };
+  }, [activeSeason, currentPath, routeParts, selectedLeague]);
 
   const {
     data: matches = [],
-    isLoading,
-    error,
+    isLoading: isLoadingMatches,
+    error: matchesError,
   } = useQuery({
-    queryKey: ["matches"],
-    queryFn: getMatches,
+    queryKey: ["matches", matchRequest],
+    queryFn: async () => {
+      if (matchRequest.type === "team") {
+        const teamMatches = await Promise.all(
+          matchRequest.teams.map(team => getTeamMatches(team))
+        );
+        return [...new Map(teamMatches.flat().map(match => [match.id, match])).values()];
+      }
+
+      if (matchRequest.type === "fixtures") {
+        return getMatchFixtures({ season: matchRequest.season });
+      }
+
+      return getMatchAnalysis({
+        season: matchRequest.season,
+        league: matchRequest.league,
+      });
+    },
+    enabled: Boolean(activeSeason),
   });
 
-  const seasons = useMemo(() => {
-    if (!Array.isArray(matches) || !matches.length) return [];
-    return [...new Set(matches.map(m => m.season).filter(Boolean))].sort();
-  }, [matches]);
-
-  const defaultSeason = useMemo(() => {
-    if (!seasons.length) return null;
-    const latestWithCompletedMatches = [...seasons]
-      .reverse()
-      .find(season =>
-        matches.some(m => m.season === season && m.winner !== "TBD")
-      );
-    return latestWithCompletedMatches || seasons[seasons.length - 1];
-  }, [matches, seasons]);
-
-  const activeSeason = selectedSeason ?? defaultSeason;
+  const isLoading = isLoadingMatchOptions || isLoadingMatches;
+  const error = matchOptionsError || matchesError;
 
   const seasonMatches = useMemo(() => {
     if (!activeSeason || !Array.isArray(matches)) return [];
@@ -52,7 +114,7 @@ const DataProvider = ({ children }) => {
   } = useQuery({
     queryKey: ["standings", activeSeason],
     queryFn: () => getStandings(null, activeSeason),
-    enabled: Boolean(activeSeason),
+    enabled: isStandingsPage && Boolean(activeSeason),
   });
 
   const filteredStandings = useMemo(() => {
@@ -67,7 +129,7 @@ const DataProvider = ({ children }) => {
   } = useQuery({
     queryKey: ["cardStats", activeSeason, selectedLeague],
     queryFn: () => getCardStats(activeSeason, selectedLeague),
-    enabled: Boolean(activeSeason && selectedLeague),
+    enabled: isCardPage && Boolean(activeSeason && selectedLeague),
     select: data => (Array.isArray(data) ? data : []),
   });
 
@@ -78,7 +140,7 @@ const DataProvider = ({ children }) => {
   } = useQuery({
     queryKey: ["goalStats", activeSeason, selectedLeague],
     queryFn: () => getGoalStats(activeSeason, selectedLeague),
-    enabled: Boolean(activeSeason && selectedLeague),
+    enabled: isGoalPage && Boolean(activeSeason && selectedLeague),
     select: data => (Array.isArray(data) ? data : []),
   });
 
@@ -89,18 +151,17 @@ const DataProvider = ({ children }) => {
   } = useQuery({
     queryKey: ["cornerStats", activeSeason, selectedLeague],
     queryFn: () => getCornerStats(activeSeason, selectedLeague),
-    enabled: Boolean(activeSeason && selectedLeague),
+    enabled: isCornerPage && Boolean(activeSeason && selectedLeague),
     select: data => (Array.isArray(data) ? data : []),
   });
-
   // Lig listesi (seçili sezon)
   const leagues = useMemo(() => {
-    if (!Array.isArray(seasonMatches) || !seasonMatches.length) return [];
-    return [...new Set(seasonMatches.map(m => m.league))].sort();
-  }, [seasonMatches]);
+    return matchOptions?.leaguesBySeason?.[activeSeason] ?? [];
+  }, [activeSeason, matchOptions]);
 
   // Tüm ligler için istatistikler (Bugünkü Maçlar – her maç kendi ligine göre)
   const goalStatsByLeague = useMemo(() => {
+    if (pathname.toLowerCase() !== "/todaymatches" && isAuthenticated) return {};
     const result = {};
     leagues.forEach(leagueName => {
       const leagueMatches = seasonMatches.filter(m => m.league === leagueName && m.winner !== "TBD");
@@ -129,9 +190,10 @@ const DataProvider = ({ children }) => {
       }));
     });
     return result;
-  }, [seasonMatches, leagues]);
+  }, [pathname, isAuthenticated, seasonMatches, leagues]);
 
   const cardStatsByLeague = useMemo(() => {
+    if (pathname.toLowerCase() !== "/todaymatches" && isAuthenticated) return {};
     const result = {};
     leagues.forEach(leagueName => {
       const leagueMatches = seasonMatches.filter(m => m.league === leagueName && m.winner !== "TBD");
@@ -160,9 +222,10 @@ const DataProvider = ({ children }) => {
       }));
     });
     return result;
-  }, [seasonMatches, leagues]);
+  }, [pathname, isAuthenticated, seasonMatches, leagues]);
 
   const cornerStatsByLeague = useMemo(() => {
+    if (pathname.toLowerCase() !== "/todaymatches" && isAuthenticated) return {};
     const result = {};
     leagues.forEach(leagueName => {
       const leagueMatches = seasonMatches.filter(m => m.league === leagueName && m.winner !== "TBD");
@@ -193,7 +256,7 @@ const DataProvider = ({ children }) => {
       }));
     });
     return result;
-  }, [seasonMatches, leagues]);
+  }, [pathname, isAuthenticated, seasonMatches, leagues]);
 
   const value = {
     matches,

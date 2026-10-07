@@ -106,7 +106,7 @@ const OverGoals = ({ goalStats, selectedLeague, isMobile, getTeamLogo, football,
                     >
                       <Stack direction="row" alignItems="center" spacing={1}>
                         <img
-                          src={getTeamLogo[row.team]}
+                          src={getTeamLogo(row.team)}
                           alt={row.team}
                           style={{ width: 22, height: 22 }}
                         />
