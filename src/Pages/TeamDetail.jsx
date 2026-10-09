@@ -1,12 +1,46 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
-import { Typography, Stack, Divider, Box, Chip, Select, MenuItem } from "@mui/material";
+import { Typography, Stack, Box, Chip, Select, MenuItem } from "@mui/material";
 import { useData } from "../context/DataContext";
 import GoalsStats from "../Components/TeamDetail_Goal.jsx";
 import CornerStats from "../Components/TeamDetail_Corner.jsx";
 import CardStats from "../Components/TeamDetail_Card.jsx";
 import TeamFixture from "../Components/TeamFixture.jsx";
 import { getTeamLogo } from "../Components/teamLogos.js";
+
+const StatisticsHeading = ({ icon, children }) => (
+  <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 0, mb: 0.5 }}>
+    <Box
+      component="img"
+      src={icon}
+      alt=""
+      aria-hidden="true"
+      sx={{
+        width: 20,
+        height: 20,
+        objectFit: "contain",
+        flexShrink: 0,
+        filter: icon === "/cards_y.png" ? "none" : "invert(1)",
+      }}
+    />
+    <Typography
+      variant="h6"
+      component="h2"
+      sx={{ color: "#e7eefb", fontWeight: 700, fontSize: "1rem", whiteSpace: "nowrap" }}
+    >
+      {children}
+    </Typography>
+    <Box
+      aria-hidden="true"
+      sx={{
+        height: "1px",
+        flex: 1,
+        minWidth: 12,
+        background: "linear-gradient(90deg, rgba(104,151,203,0.55), rgba(104,151,203,0.16))",
+      }}
+    />
+  </Stack>
+);
 
 const leagueLogos = {
   "Super Lig": "/leagues/Super Lig.png",
@@ -323,19 +357,24 @@ const TeamDetail = () => {
         <Stack
           direction={{ xs: "column", sm: "row" }}
           spacing={1}
-          sx={{ position: "relative", zIndex: 1, mt: 2, maxWidth: { sm: 410 } }}
+          justifyContent="flex-start"
+          sx={{
+            position: "relative",
+            zIndex: 1,
+            mt: { xs: 2, sm: 1.25 },
+          }}
         >
           <Select
             size="small"
             value={selectedSeasonFilter}
             onChange={event => setSelectedSeasonFilter(event.target.value)}
             sx={{
-              minWidth: { sm: 150 },
+              width: { xs: "100%", sm: 150 },
               color: "#fff",
               backgroundColor: "rgba(255,255,255,0.1)",
               ".MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.35)" },
               "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.7)" },
-              ".MuiSvgIcon-root": { color: "#fff" }
+              ".MuiSvgIcon-root": { color: "#fff" },
             }}
           >
             {availableSeasons.map(season => (
@@ -352,12 +391,12 @@ const TeamDetail = () => {
               setSelectedLeague(nextLeague);
             }}
             sx={{
-              minWidth: { sm: 220 },
+              width: { xs: "100%", sm: 220 },
               color: "#fff",
               backgroundColor: "rgba(255,255,255,0.1)",
               ".MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.35)" },
               "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.7)" },
-              ".MuiSvgIcon-root": { color: "#fff" }
+              ".MuiSvgIcon-root": { color: "#fff" },
             }}
           >
             <MenuItem value="">Tüm Ligler</MenuItem>
@@ -367,6 +406,54 @@ const TeamDetail = () => {
           </Select>
         </Stack>
       </Box>
+
+      {/* Gol İstatistikleri */}
+      <Stack
+        spacing={1}
+        sx={{
+          minWidth: 0,
+          boxSizing: "border-box",
+          px: { xs: 1.5, sm: 2 },
+          py: { xs: 1.5, sm: 2 },
+          border: "1px solid rgba(255,255,255,0.1)",
+          borderRadius: 1,
+        }}
+      >
+        <StatisticsHeading icon="/kicking-ball.png">Gol Analizi</StatisticsHeading>
+        <GoalsStats matches={teamMatches} team={team} />
+      </Stack>
+
+      {/* Korner İstatistikleri */}
+      <Stack
+        spacing={1}
+        sx={{
+          minWidth: 0,
+          boxSizing: "border-box",
+          px: { xs: 1.5, sm: 2 },
+          py: { xs: 1.5, sm: 2 },
+          border: "1px solid rgba(255,255,255,0.1)",
+          borderRadius: 1,
+        }}
+      >
+        <StatisticsHeading icon="/corner.png">Korner Analizi</StatisticsHeading>
+        <CornerStats matches={teamMatches} team={team} />
+      </Stack>
+
+      {/* Kart İstatistikleri */}
+      <Stack
+        spacing={1}
+        sx={{
+          minWidth: 0,
+          boxSizing: "border-box",
+          px: { xs: 1.5, sm: 2 },
+          py: { xs: 1.5, sm: 2 },
+          border: "1px solid rgba(255,255,255,0.1)",
+          borderRadius: 1,
+        }}
+      >
+        <StatisticsHeading icon="/cards_y.png">Kart Analizi</StatisticsHeading>
+        <CardStats matches={teamMatches} team={team} />
+      </Stack>
 
       <Stack spacing={1}>
         <TeamFixture
@@ -383,36 +470,6 @@ const TeamDetail = () => {
           showLeagueFilter={false}
           darkTheme
         />
-      </Stack>
-
-      <Divider />
-
-      {/* Gol İstatistikleri */}
-      <Stack spacing={1}>
-        <Typography variant="h6" fontWeight="bold">
-          Gol İstatistikleri
-        </Typography>
-        <GoalsStats matches={teamMatches} team={team} />
-      </Stack>
-
-      <Divider />
-
-      {/* Korner İstatistikleri */}
-      <Stack spacing={1}>
-        <Typography variant="h6" fontWeight="bold">
-          Korner İstatistikleri
-        </Typography>
-        <CornerStats matches={teamMatches} team={team} />
-      </Stack>
-
-      <Divider />
-
-      {/* Kart İstatistikleri */}
-      <Stack spacing={1}>
-        <Typography variant="h6" fontWeight="bold">
-          Kart İstatistikleri
-        </Typography>
-        <CardStats matches={teamMatches} team={team} />
       </Stack>
 
     </Stack>
