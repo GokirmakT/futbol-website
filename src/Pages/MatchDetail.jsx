@@ -762,7 +762,7 @@ const awayLast10 = useMemo(
               {home}
             </Typography>
             <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.72)" }}>
-              Ev sahibi takımın gol, korner ve kart profili (seçili sezon ve lig filtresi bazlı).
+              Ev sahibi takımın gol, korner ve kart istatistikleri (seçili sezon ve lig filtresi bazlı).
             </Typography>
 
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 0.5 }}>
@@ -1142,7 +1142,7 @@ const awayLast10 = useMemo(
               {away}
             </Typography>
             <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.72)" }}>
-              Deplasman takımının gol, korner ve kart profili (seçili sezon ve lig filtresi bazlı).
+              Deplasman takımının gol, korner ve kart istatistikleri (seçili sezon ve lig filtresi bazlı).
             </Typography>
 
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 0.5 }}>
