@@ -64,6 +64,9 @@ const DataProvider = ({ children }) => {
     if (currentPath.startsWith("/match/") && routeParts[2] && routeParts[3]) {
       return { type: "team", teams: [routeParts[2], routeParts[3]] };
     }
+    if (currentPath === "/todaymatches") {
+      return { type: "none" };
+    }
     if (currentPath.startsWith("/lig/")) {
       return { type: "fixtures", season: activeSeason };
     }
@@ -94,17 +97,22 @@ const DataProvider = ({ children }) => {
         return getMatchFixtures({ season: matchRequest.season }, signal);
       }
 
+      if (matchRequest.type === "none") return [];
+
       return getMatchAnalysis({
         season: matchRequest.season,
         league: matchRequest.league,
       }, signal);
     },
-    enabled: needsMatchData && Boolean(activeSeason),
+    enabled: needsMatchData && matchRequest.type !== "none" && Boolean(activeSeason),
     staleTime: 30 * 60 * 1000,
   });
 
-  const isLoading = needsMatchData && (isLoadingMatchOptions || isLoadingMatches);
-  const error = matchOptionsError || matchesError;
+  const isLoading = needsMatchData && (
+    isLoadingMatchOptions ||
+    (matchRequest.type !== "none" && isLoadingMatches)
+  );
+  const error = matchOptionsError || (matchRequest.type !== "none" ? matchesError : null);
 
   const seasonMatches = useMemo(() => {
     if (!activeSeason || !Array.isArray(matches)) return [];

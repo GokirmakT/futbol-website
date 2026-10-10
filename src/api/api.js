@@ -55,6 +55,14 @@ export const getMatchAnalysis = async (filters, signal) => {
   return getAllMatchPages("/matches/analysis", filters, signal);
 };
 
+export const getDailyMatchAnalysis = async (season, date, signal) => {
+  const response = await api.get("/matches/analysis/by-date", {
+    params: { season, date },
+    signal,
+  });
+  return response.data;
+};
+
 export const getTeamMatches = async (team, filters = {}, signal) => {
   return getAllMatchPages(`/matches/team/${encodeURIComponent(team)}`, filters, signal);
 };

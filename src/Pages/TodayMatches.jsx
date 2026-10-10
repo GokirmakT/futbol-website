@@ -21,6 +21,8 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { addDays, format, isSameDay } from "date-fns";
 import { tr } from "date-fns/locale";
 import { useData } from "../context/DataContext";
+import { getDailyMatchAnalysis } from "../api/api";
+import { useQuery } from "@tanstack/react-query";
 import PageLoader from "../Components/LoadingPage.jsx";
 import { getTeamLogo } from "../Components/teamLogos.js";
 import football from "/football.png";
@@ -36,7 +38,7 @@ import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 const DATE_ACCENT = "#1976d2";
 
 function TodayMatches() {
-  const { goalStatsByLeague, cornerStatsByLeague, cardStatsByLeague, matches, seasons, selectedSeason, isLoading, error } = useData();
+  const { seasons, leagues: seasonLeagues, isLoading: isLoadingOptions, error: optionsError } = useData();
   const isMobile = useMediaQuery("(max-width: 900px)");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedLeague, setSelectedLeague] = useState("ALL");
@@ -64,137 +66,22 @@ function TodayMatches() {
     return [...seasons].sort().at(-1) ?? seasons[seasons.length - 1];
   }, [seasons]);
 
-  const seasonMatches = useMemo(() => {
-    if (!Array.isArray(matches) || !currentSeason) return [];
-    return matches.filter(match => match.season === currentSeason);
-  }, [matches, currentSeason]);
-
-  const latestSeasonGoalStatsByLeague = useMemo(() => {
-    if (!Array.isArray(seasonMatches) || !seasonMatches.length) return {};
-
-    const leaguesInSeason = [...new Set(seasonMatches.map(m => m.league).filter(Boolean))];
-    const result = {};
-
-    leaguesInSeason.forEach(leagueName => {
-      const leagueMatches = seasonMatches.filter(m => m.league === leagueName && m.winner !== "TBD");
-      const teamGoals = {};
-
-      leagueMatches.forEach(match => {
-        const totalGoals = match.goalHome + match.goalAway;
-
-        if (!teamGoals[match.homeTeam]) {
-          teamGoals[match.homeTeam] = { team: match.homeTeam, matchCount: 0, over15Count: 0, over25Count: 0, over35Count: 0 };
-        }
-        teamGoals[match.homeTeam].matchCount++;
-        if (totalGoals > 1.5) teamGoals[match.homeTeam].over15Count++;
-        if (totalGoals > 2.5) teamGoals[match.homeTeam].over25Count++;
-        if (totalGoals > 3.5) teamGoals[match.homeTeam].over35Count++;
-
-        if (!teamGoals[match.awayTeam]) {
-          teamGoals[match.awayTeam] = { team: match.awayTeam, matchCount: 0, over15Count: 0, over25Count: 0, over35Count: 0 };
-        }
-        teamGoals[match.awayTeam].matchCount++;
-        if (totalGoals > 1.5) teamGoals[match.awayTeam].over15Count++;
-        if (totalGoals > 2.5) teamGoals[match.awayTeam].over25Count++;
-        if (totalGoals > 3.5) teamGoals[match.awayTeam].over35Count++;
-      });
-
-      result[leagueName] = Object.values(teamGoals).map(t => ({
-        team: t.team,
-        over15Rate: (t.over15Count / t.matchCount) * 100,
-        over25Rate: (t.over25Count / t.matchCount) * 100,
-        over35Rate: (t.over35Count / t.matchCount) * 100,
-      }));
-    });
-
-    return result;
-  }, [seasonMatches]);
-
-  const latestSeasonCornerStatsByLeague = useMemo(() => {
-    if (!Array.isArray(seasonMatches) || !seasonMatches.length) return {};
-
-    const leaguesInSeason = [...new Set(seasonMatches.map(m => m.league).filter(Boolean))];
-    const result = {};
-
-    leaguesInSeason.forEach(leagueName => {
-      const leagueMatches = seasonMatches.filter(m => m.league === leagueName && m.winner !== "TBD");
-      const teamCorners = {};
-
-      leagueMatches.forEach(match => {
-        const matchCorners = match.cornerHome + match.cornerAway;
-
-        if (!teamCorners[match.homeTeam]) {
-          teamCorners[match.homeTeam] = { team: match.homeTeam, matchCount: 0, over85Count: 0, over95Count: 0, over105Count: 0 };
-        }
-        teamCorners[match.homeTeam].matchCount++;
-        if (matchCorners > 8.5) teamCorners[match.homeTeam].over85Count++;
-        if (matchCorners > 9.5) teamCorners[match.homeTeam].over95Count++;
-        if (matchCorners > 10.5) teamCorners[match.homeTeam].over105Count++;
-
-        if (!teamCorners[match.awayTeam]) {
-          teamCorners[match.awayTeam] = { team: match.awayTeam, matchCount: 0, over85Count: 0, over95Count: 0, over105Count: 0 };
-        }
-        teamCorners[match.awayTeam].matchCount++;
-        if (matchCorners > 8.5) teamCorners[match.awayTeam].over85Count++;
-        if (matchCorners > 9.5) teamCorners[match.awayTeam].over95Count++;
-        if (matchCorners > 10.5) teamCorners[match.awayTeam].over105Count++;
-      });
-
-      result[leagueName] = Object.values(teamCorners).map(t => ({
-        team: t.team,
-        over85Rate: (t.over85Count / t.matchCount) * 100,
-        over95Rate: (t.over95Count / t.matchCount) * 100,
-        over105Rate: (t.over105Count / t.matchCount) * 100,
-      }));
-    });
-
-    return result;
-  }, [seasonMatches]);
-
-  const latestSeasonCardStatsByLeague = useMemo(() => {
-    if (!Array.isArray(seasonMatches) || !seasonMatches.length) return {};
-
-    const leaguesInSeason = [...new Set(seasonMatches.map(m => m.league).filter(Boolean))];
-    const result = {};
-
-    leaguesInSeason.forEach(leagueName => {
-      const leagueMatches = seasonMatches.filter(m => m.league === leagueName && m.winner !== "TBD");
-      const teamCards = {};
-
-      leagueMatches.forEach(match => {
-        const matchTotalPenaltyScore = (match.yellowHome * 1) + (match.redHome * 2) + (match.yellowAway * 1) + (match.redAway * 2);
-
-        if (!teamCards[match.homeTeam]) {
-          teamCards[match.homeTeam] = { team: match.homeTeam, matchCount: 0, penaltyOver25Count: 0, penaltyOver35Count: 0, penaltyOver45Count: 0 };
-        }
-        teamCards[match.homeTeam].matchCount++;
-        if (matchTotalPenaltyScore > 2.5) teamCards[match.homeTeam].penaltyOver25Count++;
-        if (matchTotalPenaltyScore > 3.5) teamCards[match.homeTeam].penaltyOver35Count++;
-        if (matchTotalPenaltyScore > 4.5) teamCards[match.homeTeam].penaltyOver45Count++;
-
-        if (!teamCards[match.awayTeam]) {
-          teamCards[match.awayTeam] = { team: match.awayTeam, matchCount: 0, penaltyOver25Count: 0, penaltyOver35Count: 0, penaltyOver45Count: 0 };
-        }
-        teamCards[match.awayTeam].matchCount++;
-        if (matchTotalPenaltyScore > 2.5) teamCards[match.awayTeam].penaltyOver25Count++;
-        if (matchTotalPenaltyScore > 3.5) teamCards[match.awayTeam].penaltyOver35Count++;
-        if (matchTotalPenaltyScore > 4.5) teamCards[match.awayTeam].penaltyOver45Count++;
-      });
-
-      result[leagueName] = Object.values(teamCards).map(t => ({
-        team: t.team,
-        penaltyOver25Rate: (t.penaltyOver25Count / t.matchCount) * 100,
-        penaltyOver35Rate: (t.penaltyOver35Count / t.matchCount) * 100,
-        penaltyOver45Rate: (t.penaltyOver45Count / t.matchCount) * 100,
-      }));
-    });
-
-    return result;
-  }, [seasonMatches]);
-
-  const effectiveGoalStatsByLeague = currentSeason === selectedSeason ? goalStatsByLeague : latestSeasonGoalStatsByLeague;
-  const effectiveCornerStatsByLeague = currentSeason === selectedSeason ? cornerStatsByLeague : latestSeasonCornerStatsByLeague;
-  const effectiveCardStatsByLeague = currentSeason === selectedSeason ? cardStatsByLeague : latestSeasonCardStatsByLeague;
+  const selectedDay = format(selectedDate, "yyyy-MM-dd");
+  const {
+    data: dailyAnalysis,
+    isLoading: isLoadingDailyAnalysis,
+    error: dailyAnalysisError,
+  } = useQuery({
+    queryKey: ["dailyMatchAnalysis", currentSeason, selectedDay],
+    queryFn: ({ signal }) => getDailyMatchAnalysis(currentSeason, selectedDay, signal),
+    enabled: Boolean(currentSeason),
+    staleTime: 30 * 60 * 1000,
+  });
+  const dailyMatches = dailyAnalysis?.items;
+  const isLoading = isLoadingOptions || isLoadingDailyAnalysis;
+  const effectiveGoalStatsByLeague = dailyAnalysis?.goalStatsByLeague ?? {};
+  const effectiveCornerStatsByLeague = dailyAnalysis?.cornerStatsByLeague ?? {};
+  const effectiveCardStatsByLeague = dailyAnalysis?.cardStatsByLeague ?? {};
 
   const leagueIconMap = {
     "Süper Lig": "/leagues/Super Lig.png",
@@ -277,7 +164,7 @@ function TodayMatches() {
     return { date: newDate, time: newTime };
   };
 
-  const today = format(selectedDate, "yyyy-MM-dd");
+  const today = selectedDay;
   const dateWindowSize = isMobile ? 61 : 7;
   const weekDays = useMemo(() => {
     const midpoint = Math.floor(dateWindowSize / 2);
@@ -308,9 +195,9 @@ function TodayMatches() {
   }, [selectedDate, isLoading, isMobile]);
 
   const groupedMatches = useMemo(() => {
-    if (!seasonMatches.length) return {};
+    if (!Array.isArray(dailyMatches) || !dailyMatches.length) return {};
 
-    const todayMatches = seasonMatches
+    const todayMatches = dailyMatches
       .map(m => {
         if (!m.date || !m.time) return null;
 
@@ -337,14 +224,15 @@ function TodayMatches() {
       acc[match.league].push(match);
       return acc;
     }, {});
-  }, [seasonMatches, today]);
+  }, [dailyMatches, today]);
 
   const allLeagues = useMemo(() => {
-    if (!seasonMatches.length) return [];
-    return [...new Set(seasonMatches.map(m => m.league).filter(Boolean))].sort((a, b) =>
+    const availableLeagues = dailyAnalysis?.leagues ?? seasonLeagues;
+    if (!Array.isArray(availableLeagues)) return [];
+    return [...new Set(availableLeagues.filter(Boolean))].sort((a, b) =>
       a.localeCompare(b, "tr")
     );
-  }, [seasonMatches]);
+  }, [dailyAnalysis, seasonLeagues]);
 
   const leagueOptions = [
     { label: "Tüm Maçlar", value: "ALL", icon: football },
@@ -355,8 +243,8 @@ function TodayMatches() {
     })),
   ];
 
-  if (isLoading) return <PageLoader label="Maçlar yükleniyor..." />;
-  if (error) return <Typography textAlign="center">Hata oluştu</Typography>;
+  if (isLoadingOptions || isLoadingDailyAnalysis) return <PageLoader label="Maçlar yükleniyor..." />;
+  if (optionsError || dailyAnalysisError) return <Typography textAlign="center">Hata oluştu</Typography>;
 
   const leagues = Object.keys(groupedMatches);
   const visibleLeagues =
@@ -755,63 +643,18 @@ function TodayMatches() {
 
               const homeGoalStats = leagueGoalStats.find(t => t.team === match.homeTeam);
               const awayGoalStats = leagueGoalStats.find(t => t.team === match.awayTeam);
-              const homeGoalOver15 = homeGoalStats?.over15Rate != null ? homeGoalStats.over15Rate.toFixed(0) : "—";
-              const awayGoalOver15 = awayGoalStats?.over15Rate != null ? awayGoalStats.over15Rate.toFixed(0) : "—";
-
               const homeGoalOver25 = homeGoalStats?.over25Rate != null ? homeGoalStats.over25Rate.toFixed(0) : "—";
               const awayGoalOver25 = awayGoalStats?.over25Rate != null ? awayGoalStats.over25Rate.toFixed(0) : "—";
-
-              const homeGoalOver35 = homeGoalStats?.over35Rate != null ? homeGoalStats.over35Rate.toFixed(0) : "—";
-              const awayGoalOver35 = awayGoalStats?.over35Rate != null ? awayGoalStats.over35Rate.toFixed(0) : "—";
 
               const homeCornerStats = leagueCornerStats.find(t => t.team === match.homeTeam);
               const awayCornerStats = leagueCornerStats.find(t => t.team === match.awayTeam);
               const homeCornerOver85 = homeCornerStats?.over85Rate != null ? homeCornerStats.over85Rate.toFixed(0) : "—";
               const awayCornerOver85 = awayCornerStats?.over85Rate != null ? awayCornerStats.over85Rate.toFixed(0) : "—";
 
-              const homeCornerOver95 = homeCornerStats?.over95Rate != null ? homeCornerStats.over95Rate.toFixed(0) : "—";
-              const awayCornerOver95 = awayCornerStats?.over95Rate != null ? awayCornerStats.over95Rate.toFixed(0) : "—";
-
-              const homeCornerOver105 = homeCornerStats?.over105Rate != null ? homeCornerStats.over105Rate.toFixed(0) : "—";
-              const awayCornerOver105 = awayCornerStats?.over105Rate != null ? awayCornerStats.over105Rate.toFixed(0) : "—";
-
               const homeCardStats = leagueCardStats.find(t => t.team === match.homeTeam);
               const awayCardStats = leagueCardStats.find(t => t.team === match.awayTeam);
-              const homeCardOver25 = homeCardStats?.penaltyOver25Rate != null ? homeCardStats.penaltyOver25Rate.toFixed(0) : "—";
-              const awayCardOver25 = awayCardStats?.penaltyOver25Rate != null ? awayCardStats.penaltyOver25Rate.toFixed(0) : "—";
-
               const homeCardOver35 = homeCardStats?.penaltyOver35Rate != null ? homeCardStats.penaltyOver35Rate.toFixed(0) : "—";
               const awayCardOver35 = awayCardStats?.penaltyOver35Rate != null ? awayCardStats.penaltyOver35Rate.toFixed(0) : "—";
-
-              const homeCardOver45 = homeCardStats?.penaltyOver45Rate != null ? homeCardStats.penaltyOver45Rate.toFixed(0) : "—";
-              const awayCardOver45 = awayCardStats?.penaltyOver45Rate != null ? awayCardStats.penaltyOver45Rate.toFixed(0) : "—";
-
-              const toNumberOrNull = (value) => {
-                if (value === "—" || value == null) return null;
-                const n = Number(value);
-                return Number.isNaN(n) ? null : n;
-              };
-
-              const avg = (a, b) => {
-                if (a == null && b == null) return null;
-                if (a == null) return b;
-                if (b == null) return a;
-                return (a + b) / 2;
-              };
-
-              const goal15 = avg(toNumberOrNull(homeGoalOver15), toNumberOrNull(awayGoalOver15));
-              const goal25 = avg(toNumberOrNull(homeGoalOver25), toNumberOrNull(awayGoalOver25));
-              const goal35 = avg(toNumberOrNull(homeGoalOver35), toNumberOrNull(awayGoalOver35));
-
-              const corner85 = avg(toNumberOrNull(homeCornerOver85), toNumberOrNull(awayCornerOver85));
-              const corner95 = avg(toNumberOrNull(homeCornerOver95), toNumberOrNull(awayCornerOver95));
-              const corner105 = avg(toNumberOrNull(homeCornerOver105), toNumberOrNull(awayCornerOver105));
-
-              const card25 = avg(toNumberOrNull(homeCardOver25), toNumberOrNull(awayCardOver25));
-              const card35 = avg(toNumberOrNull(homeCardOver35), toNumberOrNull(awayCardOver35));
-              const card45 = avg(toNumberOrNull(homeCardOver45), toNumberOrNull(awayCardOver45));
-
-              const formatRate = (value) => (value == null ? "—" : `${value.toFixed(0)}%`);
 
               return (
                 <Box
